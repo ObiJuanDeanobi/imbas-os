@@ -123,3 +123,7 @@ Terminal/admin and automation interface for humans, scripts, and agents.
 ## Module selection
 
 See [`module-selection.md`](module-selection.md). Imbas OS should be modular: users should be able to enable Artifact Vault, Memsocket, Sanctum, Conduit, Lorekeeper, Runledger, Atlas, SyncCore, Desktop, Mobile, and CLI according to their needs rather than being forced into a monolith.
+
+## AI-first OS principle
+
+See [`ai-first-os.md`](ai-first-os.md). Imbas OS should be treated as an AI-first operating layer: the durable agent world is the source of truth, and the UI is how humans see into, correct, approve, and steer that world.
