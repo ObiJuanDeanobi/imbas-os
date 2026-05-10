@@ -152,3 +152,14 @@ Sprint 4 adds the first durable AI-world timeline and proposal surfaces:
 - `POST /v0/wiki/proposals/:id/reject` — mark a proposal rejected.
 
 Lorekeeper is proposal-first by design. Agents can suggest durable wiki knowledge, but Imbas OS does not silently rewrite human-readable notes or external vaults. Applying approved proposals to managed blocks/pages is a later guarded slice.
+
+
+## Mobile companion pairing endpoints
+
+Sprint 5 adds a private-preview Android/mobile pairing foundation:
+
+- `POST /v0/mobile/pairing-challenges` — create a short-lived six-digit pairing challenge.
+- `POST /v0/mobile/pairing-challenges/complete` — complete pairing and return a one-time `imbas_mobile_*` token.
+- `POST /v0/mobile/sessions/:id/revoke` — revoke a mobile session.
+
+Imbas OS stores session token hashes, not raw tokens. Android/mobile clients should use Conduit APIs only and must not touch internal files or databases.

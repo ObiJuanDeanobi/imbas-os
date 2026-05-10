@@ -117,6 +117,7 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/architecture/subsystems.md` — subsystem map.
 - `docs/architecture/module-selection.md` — optional module/install-profile direction.
 - `docs/architecture/ai-first-os.md` — product principle: UI as a window into the AI operating layer.
+- `docs/mobile/android-companion.md` — Android companion MVP, pairing, scopes, and screen contract.
 - `docs/connectors/protocol.md` — connector/API design target.
 - `docs/sanctum/agent-secret-vault.md` — secret/capability boundary.
 - `docs/file-format.md` — current artifact/wiki storage format.

@@ -94,6 +94,7 @@ Start here:
 - [`docs/architecture/subsystems.md`](docs/architecture/subsystems.md) — subsystem map.
 - [`docs/architecture/module-selection.md`](docs/architecture/module-selection.md) — optional module/install-profile direction.
 - [`docs/architecture/ai-first-os.md`](docs/architecture/ai-first-os.md) — product principle: UI as a window into the AI operating layer.
+- [`docs/mobile/android-companion.md`](docs/mobile/android-companion.md) — Android companion MVP, pairing, scopes, and screen contract.
 - [`docs/sanctum/agent-secret-vault.md`](docs/sanctum/agent-secret-vault.md) — Sanctum secret/capability design.
 - [`docs/connectors/protocol.md`](docs/connectors/protocol.md) — connector/API target.
 

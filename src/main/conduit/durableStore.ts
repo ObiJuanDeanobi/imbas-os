@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs';
 import { ConduitRecordStore, ConduitSanctumAuditEntry } from './localApi.js';
 import { RunledgerEntry } from '../runledger/store.js';
 import { LorekeeperProposal } from '../lorekeeper/proposals.js';
+import { MobilePairingChallenge, MobileSession } from '../mobile/pairing.js';
 import { createDefaultModuleRegistry } from '../../shared/imbas/modules.js';
 import { ImbasContextEventDraft, ImbasRunSummaryDraft } from '../../shared/imbas/protocol.js';
 
@@ -18,12 +19,18 @@ export async function createDurableConduitRecordStore(options: DurableConduitSto
   const auditPath = path.join(options.dir, 'sanctum-audit.jsonl');
   const runledgerPath = path.join(options.dir, 'runledger.jsonl');
   const lorekeeperPath = path.join(options.dir, 'lorekeeper-proposals.jsonl');
+  const mobileChallengesPath = path.join(options.dir, 'mobile-pairing-challenges.jsonl');
+  const mobileSessionsPath = path.join(options.dir, 'mobile-sessions.jsonl');
   const store: ConduitRecordStore = {
     events: await readJsonl<ImbasContextEventDraft>(eventsPath),
     runs: await readJsonl<ImbasRunSummaryDraft>(runsPath),
     sanctumAudit: await readJsonl<ConduitSanctumAuditEntry>(auditPath),
     runledger: await readJsonl<RunledgerEntry>(runledgerPath),
     lorekeeperProposals: await readJsonl<LorekeeperProposal>(lorekeeperPath),
+    mobile: {
+      challenges: await readJsonl<MobilePairingChallenge>(mobileChallengesPath),
+      sessions: await readJsonl<MobileSession>(mobileSessionsPath)
+    },
     modules: createDefaultModuleRegistry(),
     persist: async () => {
       await writeJsonl(eventsPath, store.events);
@@ -31,6 +38,8 @@ export async function createDurableConduitRecordStore(options: DurableConduitSto
       await writeJsonl(auditPath, store.sanctumAudit);
       await writeJsonl(runledgerPath, store.runledger);
       await writeJsonl(lorekeeperPath, store.lorekeeperProposals);
+      await writeJsonl(mobileChallengesPath, store.mobile.challenges);
+      await writeJsonl(mobileSessionsPath, store.mobile.sessions);
     }
   };
   return store;

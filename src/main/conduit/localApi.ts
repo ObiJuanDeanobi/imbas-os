@@ -4,6 +4,7 @@ import { createDefaultModuleRegistry, ImbasModuleRegistry } from '../../shared/i
 import { MemsocketCliClient } from '../memsocket/cliClient.js';
 import { createRunledgerEntry, RunledgerEntry, searchRunledger } from '../runledger/store.js';
 import { createLorekeeperProposal, LorekeeperProposal, searchLorekeeperProposals, transitionLorekeeperProposal } from '../lorekeeper/proposals.js';
+import { completePairingChallenge, createMobilePairingStore, createPairingChallenge, MobilePairingStore, MobileSessionScope, revokeMobileSession } from '../mobile/pairing.js';
 
 export interface ConduitSanctumAuditEntry {
   createdAt: string;
@@ -21,6 +22,7 @@ export interface ConduitRecordStore {
   sanctumAudit: ConduitSanctumAuditEntry[];
   runledger: RunledgerEntry[];
   lorekeeperProposals: LorekeeperProposal[];
+  mobile: MobilePairingStore;
   modules: ImbasModuleRegistry;
   memsocket?: MemsocketCliClient;
   persist?: () => Promise<void>;
@@ -32,7 +34,7 @@ export interface ConduitResponse {
 }
 
 export function createConduitRecordStore(): ConduitRecordStore {
-  return { events: [], runs: [], sanctumAudit: [], runledger: [], lorekeeperProposals: [], modules: createDefaultModuleRegistry() };
+  return { events: [], runs: [], sanctumAudit: [], runledger: [], lorekeeperProposals: [], mobile: createMobilePairingStore(), modules: createDefaultModuleRegistry() };
 }
 
 export async function handleConduitRequest(request: Request, store: ConduitRecordStore): Promise<ConduitResponse> {
@@ -45,15 +47,19 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       body: {
         service: 'imbas-os-conduit',
         status: 'ok',
-        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals'],
+        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke'],
         modules: store.modules,
         pending: ['POST /v0/artifacts', 'POST /v0/snapshots', 'POST /v0/wiki/proposals/:id/approve-apply'],
-        counts: { events: store.events.length, runs: store.runs.length, runledger: store.runledger.length, lorekeeperProposals: store.lorekeeperProposals.length },
+        counts: { events: store.events.length, runs: store.runs.length, runledger: store.runledger.length, lorekeeperProposals: store.lorekeeperProposals.length, mobileSessions: store.mobile.sessions.filter((session) => !session.revokedAt).length },
         recentEvents: store.events.slice(-5).reverse(),
         recentRuns: store.runs.slice(-5).reverse(),
         sanctumAudit: store.sanctumAudit.slice(-10).reverse(),
         recentRunledger: store.runledger.slice(-5).reverse(),
-        recentLorekeeperProposals: store.lorekeeperProposals.slice(-5).reverse()
+        recentLorekeeperProposals: store.lorekeeperProposals.slice(-5).reverse(),
+        mobile: {
+          pendingPairingChallenges: store.mobile.challenges.filter((challenge) => challenge.status === 'pending').length,
+          activeSessions: store.mobile.sessions.filter((session) => !session.revokedAt).map((session) => ({ id: session.id, deviceLabel: session.deviceLabel, scopes: session.scopes, createdAt: session.createdAt }))
+        }
       }
     };
   }
@@ -76,6 +82,43 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
   if (request.method === 'GET' && path === '/v0/wiki/proposals') {
     const limit = parseLimit(url.searchParams.get('limit'));
     return { status: 200, body: { proposals: searchLorekeeperProposals(store.lorekeeperProposals, url.searchParams.get('query') ?? '', limit), count: store.lorekeeperProposals.length } };
+  }
+
+  if (request.method === 'POST' && path === '/v0/mobile/pairing-challenges') {
+    try {
+      const body = await readJson<{ scopes?: MobileSessionScope[]; ttlMs?: number }>(request);
+      const challenge = await createPairingChallenge(store.mobile, body);
+      store.modules.mobile = { ...store.modules.mobile, enabled: true, available: true, configured: true, health: 'limited' };
+      await store.persist?.();
+      return { status: 202, body: { challenge } };
+    } catch (error) {
+      return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
+  }
+
+  if (request.method === 'POST' && path === '/v0/mobile/pairing-challenges/complete') {
+    try {
+      const body = await readJson<{ challengeId: string; code: string; deviceLabel: string }>(request);
+      const completed = await completePairingChallenge(store.mobile, body);
+      store.runledger.push(createRunledgerEntry({ kind: 'event', connector: 'mobile', agent: completed.session.deviceLabel, title: 'Mobile companion paired', outcome: 'completed', summary: `Paired ${completed.session.deviceLabel}`, refs: [completed.session.id], createdAt: completed.session.createdAt }));
+      store.modules.mobile = { ...store.modules.mobile, enabled: true, available: true, configured: true, health: 'ok' };
+      store.modules.runledger = { ...store.modules.runledger, enabled: true, available: true, configured: true, health: 'limited' };
+      await store.persist?.();
+      return { status: 200, body: completed };
+    } catch (error) {
+      return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
+  }
+
+  const mobileRevokeMatch = path.match(/^\/v0\/mobile\/sessions\/([^/]+)\/revoke$/);
+  if (request.method === 'POST' && mobileRevokeMatch) {
+    try {
+      const session = await revokeMobileSession(store.mobile, mobileRevokeMatch[1]);
+      await store.persist?.();
+      return { status: 200, body: { session } };
+    } catch (error) {
+      return { status: 404, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
   }
 
   if (request.method === 'POST' && path === '/v0/wiki/proposals') {
