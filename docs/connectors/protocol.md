@@ -103,3 +103,16 @@ An agent run should include:
 - Connectors should support dry-run/shadow mode during dogfood.
 - Connectors should include provenance for durable facts and decisions.
 - Connectors should avoid giant transcript dumps when a context pack/search can be more precise.
+
+
+## Loopback service status
+
+Private preview now has a Node loopback service wrapper around the Conduit handler. It can bind to `127.0.0.1` for local agents/tools and serves the same transport-neutral API used by tests. The Electron app starts it only when `IMBAS_OS_CONDUIT_LOOPBACK=1` is set; this keeps the default desktop surface conservative while we dogfood OpenClaw/Hermes shadow connectors.
+
+Current implemented endpoints:
+
+- `GET /v0/status` — service health, counts, implemented/pending endpoints, and module registry.
+- `POST /v0/events` — redacted Imbas context event drafts.
+- `POST /v0/runs` — redacted agent run summaries.
+
+The status response includes module capability state so UI, CLI, Android, and agents can all see the same AI operating-layer world rather than maintaining hidden UI-only state.

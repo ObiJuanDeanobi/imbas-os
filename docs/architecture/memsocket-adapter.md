@@ -48,3 +48,10 @@ Not implemented yet:
 ## Module packaging note
 
 See [`module-selection.md`](module-selection.md). Memsocket is currently a separate engine repo with an Imbas adapter, not vendored into this repo. The intended private-preview direction is optional integration through stable boundaries.
+
+
+## CLI boundary
+
+Private preview now includes a Memsocket CLI client boundary in `src/main/memsocket/cliClient.ts`. It shells out to `python3 -m memsocket.cli` by default and passes mapped/redacted Imbas events through JSON stdin. It also exposes search and context-pack (`brief`) calls.
+
+This is not the final public 1.0 merge shape; it is the first live boundary for dogfooding. Public 1.0 still requires Memsocket to be merged/integrated/tested as a first-class Imbas OS module.

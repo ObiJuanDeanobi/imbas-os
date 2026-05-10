@@ -1,9 +1,11 @@
 import { redactSensitiveText } from '../sanctum/secretHandles.js';
 import { ImbasContextEventDraft, ImbasRunSummaryDraft, validateContextEventDraft } from '../../shared/imbas/protocol.js';
+import { createDefaultModuleRegistry, ImbasModuleRegistry } from '../../shared/imbas/modules.js';
 
 export interface ConduitRecordStore {
   events: ImbasContextEventDraft[];
   runs: ImbasRunSummaryDraft[];
+  modules: ImbasModuleRegistry;
 }
 
 export interface ConduitResponse {
@@ -12,7 +14,7 @@ export interface ConduitResponse {
 }
 
 export function createConduitRecordStore(): ConduitRecordStore {
-  return { events: [], runs: [] };
+  return { events: [], runs: [], modules: createDefaultModuleRegistry() };
 }
 
 export async function handleConduitRequest(request: Request, store: ConduitRecordStore): Promise<ConduitResponse> {
@@ -26,6 +28,7 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
         service: 'imbas-os-conduit',
         status: 'ok',
         implemented: ['GET /v0/status', 'POST /v0/events', 'POST /v0/runs'],
+        modules: store.modules,
         pending: ['POST /v0/artifacts', 'GET /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/snapshots'],
         counts: { events: store.events.length, runs: store.runs.length }
       }

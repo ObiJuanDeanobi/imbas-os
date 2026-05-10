@@ -10,18 +10,29 @@ import { seedDemoVault } from './demo/demoVault.js';
 import { buildWikiBridgeReport, indexMarkdownVault, mergeArtifactAndWikiGraphs, readMarkdownPage, searchMarkdownPages } from './wiki/wikiBridge.js';
 import { getSyncStatus, rebuildSyncManifest } from './sync/syncManifest.js';
 import { createMarkdownPage, getMarkdownGraph, readMarkdownPageFromVault, searchMarkdownPagesInVault, updateMarkdownPage } from './markdown/markdownStore.js';
+import { startConduitLoopbackService, ConduitLoopbackService } from './conduit/server.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const devServerUrl = process.env.IMBAS_OS_DEV_SERVER_URL ?? process.env.ARTIFACT_VAULT_DEV_SERVER_URL;
 const capturePath = process.env.IMBAS_OS_CAPTURE_PATH ?? process.env.ARTIFACT_VAULT_CAPTURE_PATH;
 let vaultRoot = '';
 let wikiBridgeRoot = '';
+let conduitService: ConduitLoopbackService | null = null;
 
 async function prepareRuntime() {
   vaultRoot = defaultVaultRoot(app.getPath('userData'));
   await initVault(vaultRoot);
   installArtifactProtocol();
   installNetworkBlocker();
+  await maybeStartConduitLoopback();
+}
+
+async function maybeStartConduitLoopback() {
+  if (process.env.IMBAS_OS_CONDUIT_LOOPBACK !== '1') return;
+  if (conduitService) return;
+  const port = process.env.IMBAS_OS_CONDUIT_PORT ? Number(process.env.IMBAS_OS_CONDUIT_PORT) : 0;
+  conduitService = await startConduitLoopbackService({ port });
+  console.log(`Imbas OS Conduit loopback listening on ${conduitService.url}`);
 }
 
 async function createWindow() {
@@ -187,6 +198,13 @@ app.whenReady().then(async () => {
   if (process.env.IMBAS_OS_SECURITY_SMOKE === '1' || process.env.ARTIFACT_VAULT_SECURITY_SMOKE === '1') return runSecuritySmoke();
   await prepareRuntime();
   return createWindow();
+});
+
+app.on('before-quit', () => {
+  if (conduitService) {
+    void conduitService.close();
+    conduitService = null;
+  }
 });
 
 app.on('window-all-closed', () => {

@@ -8,7 +8,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 const demos = [
   { file: 'pr-review.html', title: 'Annotated PR Review', tags: ['demo-pack', 'code-review'], prompt: 'Review this PR as an annotated HTML diff with severity notes.' },
-  { file: 'architecture-map.html', title: 'Artifact Vault Architecture Map', tags: ['demo-pack', 'architecture'], prompt: 'Map the local-first artifact vault architecture and trust boundaries.' },
+  { file: 'architecture-map.html', title: 'Imbas Artifact Workbench Architecture Map', tags: ['demo-pack', 'architecture'], prompt: 'Map the local-first artifact vault architecture and trust boundaries.' },
   { file: 'decision-matrix.html', title: 'Product Direction Decision Matrix', tags: ['demo-pack', 'strategy'], prompt: 'Compare product directions as an HTML decision matrix.' },
   { file: 'compliance-pack.html', title: 'Compliance Evidence Pack', tags: ['demo-pack', 'compliance'], prompt: 'Create an evidence pack for access-control review.' },
   { file: 'lesson-quiz.html', title: 'Interactive Learning Lesson', tags: ['demo-pack', 'learning'], prompt: 'Teach sandbox basics with a tiny interactive quiz.' },

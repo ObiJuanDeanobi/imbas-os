@@ -37,10 +37,10 @@ Implemented now:
 
 Not implemented yet:
 
-- Memsocket adapter.
-- Imbas OS local service/API.
+- Live Memsocket write/search/context-pack integration.
+- Production-bound Imbas OS local service/API.
 - Conduit connectors for OpenClaw/Hermes/Codex/Claude Code.
-- Sanctum agent secret vault implementation.
+- Encrypted/keyring-backed Sanctum secret vault implementation.
 - Android companion app.
 
 ## Setup
