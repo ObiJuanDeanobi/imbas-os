@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { ConduitRecordStore } from './localApi.js';
+import { ConduitRecordStore, ConduitSanctumAuditEntry } from './localApi.js';
 import { createDefaultModuleRegistry } from '../../shared/imbas/modules.js';
 import { ImbasContextEventDraft, ImbasRunSummaryDraft } from '../../shared/imbas/protocol.js';
 
@@ -13,13 +13,16 @@ export async function createDurableConduitRecordStore(options: DurableConduitSto
   await mkdir(options.dir, { recursive: true });
   const eventsPath = path.join(options.dir, 'events.jsonl');
   const runsPath = path.join(options.dir, 'runs.jsonl');
+  const auditPath = path.join(options.dir, 'sanctum-audit.jsonl');
   const store: ConduitRecordStore = {
     events: await readJsonl<ImbasContextEventDraft>(eventsPath),
     runs: await readJsonl<ImbasRunSummaryDraft>(runsPath),
+    sanctumAudit: await readJsonl<ConduitSanctumAuditEntry>(auditPath),
     modules: createDefaultModuleRegistry(),
     persist: async () => {
       await writeJsonl(eventsPath, store.events);
       await writeJsonl(runsPath, store.runs);
+      await writeJsonl(auditPath, store.sanctumAudit);
     }
   };
   return store;

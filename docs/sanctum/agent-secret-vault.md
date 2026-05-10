@@ -90,3 +90,23 @@ Runledger records action + capability handle + outcome, never raw token
 - Should Android be able to approve secret-backed actions?
 - Should local keyring be required on desktop, or optional?
 - How should secret rotation reminders surface?
+
+## Private-preview implementation status
+
+Sprint 3 adds an encrypted local Sanctum vault foundation in `src/main/sanctum/vault.ts`.
+
+Implemented now:
+
+- AES-256-GCM encrypted local JSON vault file.
+- Passphrase-derived key via `scrypt`.
+- Secret metadata remains visible; raw secret values are encrypted and not stored in plaintext.
+- Secret resolution is policy checked by connector, tool, purpose, and approval state.
+- Resolution attempts are audited without logging raw secret values.
+- Conduit records a Sanctum redaction audit entry when incoming event/run text contains handles or raw secret-like content that gets redacted before storage/search/Memsocket.
+
+Private-preview limitations:
+
+- Passphrase/key source is not finalized; OS keyring integration remains future work.
+- Approval UX is not implemented yet; callers pass explicit approval state at trusted execution boundaries.
+- Audit entries are local JSONL/private-preview records, not full Runledger yet.
+- Secrets should still not be pasted into chats/prompts/logs. Handles/capabilities remain the intended agent-facing interface.

@@ -189,6 +189,7 @@ function App() {
         <section className="graph-panel ai-world-panel">
           <h2>AI world</h2>
           <p className="muted">Conduit sees {conduitStatus?.counts?.events ?? 0} events · {conduitStatus?.counts?.runs ?? 0} runs</p>
+          <p className="muted">Sanctum redactions: {conduitStatus?.sanctumAudit?.length ?? 0}</p>
           <p className="muted">Memsocket: <code>{conduitStatus?.modules?.memsocket?.health ?? 'loading'}</code></p>
           <input placeholder="Search the agent world…" value={aiWorldQuery} onChange={(event) => setAiWorldQuery(event.target.value)} />
           <button className="secondary" onClick={searchAiWorld}>Search Conduit</button>
@@ -196,6 +197,7 @@ function App() {
           <div className="bridge-report">
             {(conduitStatus?.recentRuns ?? []).slice(0, 3).map((run: any) => <em key={run.runId}>{run.outcome}: {run.task}</em>)}
             {(conduitStatus?.recentEvents ?? []).slice(0, 3).map((event: any, index: number) => <em key={`${event.createdAt}-${index}`}>{event.type}: {event.text.slice(0, 90)}</em>)}
+            {(conduitStatus?.sanctumAudit ?? []).slice(0, 3).map((entry: any, index: number) => <em key={`${entry.createdAt}-${index}`}>Sanctum {entry.action}: {entry.recordKind} from {entry.connector}</em>)}
             {aiWorldResult && <pre>{JSON.stringify(aiWorldResult, null, 2).slice(0, 1200)}</pre>}
           </div>
         </section>

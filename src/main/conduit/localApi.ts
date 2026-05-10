@@ -1,11 +1,22 @@
-import { redactSensitiveText } from '../sanctum/secretHandles.js';
+import { extractSensitiveHandles, redactSensitiveText } from '../sanctum/secretHandles.js';
 import { ImbasContextEventDraft, ImbasRunSummaryDraft, validateContextEventDraft } from '../../shared/imbas/protocol.js';
 import { createDefaultModuleRegistry, ImbasModuleRegistry } from '../../shared/imbas/modules.js';
 import { MemsocketCliClient } from '../memsocket/cliClient.js';
 
+export interface ConduitSanctumAuditEntry {
+  createdAt: string;
+  action: 'redacted_input';
+  recordKind: 'event' | 'run';
+  connector: string;
+  agent: string;
+  handles: string[];
+  rawSecretLikeContent: boolean;
+}
+
 export interface ConduitRecordStore {
   events: ImbasContextEventDraft[];
   runs: ImbasRunSummaryDraft[];
+  sanctumAudit: ConduitSanctumAuditEntry[];
   modules: ImbasModuleRegistry;
   memsocket?: MemsocketCliClient;
   persist?: () => Promise<void>;
@@ -17,7 +28,7 @@ export interface ConduitResponse {
 }
 
 export function createConduitRecordStore(): ConduitRecordStore {
-  return { events: [], runs: [], modules: createDefaultModuleRegistry() };
+  return { events: [], runs: [], sanctumAudit: [], modules: createDefaultModuleRegistry() };
 }
 
 export async function handleConduitRequest(request: Request, store: ConduitRecordStore): Promise<ConduitResponse> {
@@ -35,7 +46,8 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
         pending: ['POST /v0/artifacts', 'POST /v0/wiki/proposals', 'POST /v0/snapshots'],
         counts: { events: store.events.length, runs: store.runs.length },
         recentEvents: store.events.slice(-5).reverse(),
-        recentRuns: store.runs.slice(-5).reverse()
+        recentRuns: store.runs.slice(-5).reverse(),
+        sanctumAudit: store.sanctumAudit.slice(-10).reverse()
       }
     };
   }
@@ -75,7 +87,9 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
     const event = await readJson<ImbasContextEventDraft>(request);
     const errors = validateContextEventDraft(event);
     if (errors.length) return { status: 400, body: { errors } };
-    const safeEvent = { ...event, text: redactSensitiveText(event.text), createdAt: event.createdAt ?? new Date().toISOString() };
+    const redactedText = redactSensitiveText(event.text);
+    const safeEvent = { ...event, text: redactedText, createdAt: event.createdAt ?? new Date().toISOString() };
+    recordRedactionAudit(store, 'event', event.connector, event.agent, event.text, redactedText);
     store.events.push(safeEvent);
     await store.persist?.();
     let memsocketWrite: unknown = null;
@@ -90,6 +104,7 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
     const run = await readJson<ImbasRunSummaryDraft>(request);
     const errors = validateRunSummaryDraft(run);
     if (errors.length) return { status: 400, body: { errors } };
+    const originalRunText = [run.task, run.summary, ...(run.verification ?? []), ...(run.followUps ?? [])].join('\n');
     const safeRun = {
       ...run,
       task: redactSensitiveText(run.task),
@@ -98,6 +113,8 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       followUps: run.followUps?.map(redactSensitiveText),
       createdAt: run.createdAt ?? new Date().toISOString()
     };
+    const redactedRunText = [safeRun.task, safeRun.summary, ...(safeRun.verification ?? []), ...(safeRun.followUps ?? [])].join('\n');
+    recordRedactionAudit(store, 'run', run.connector, run.agent, originalRunText, redactedRunText);
     store.runs.push(safeRun);
     await store.persist?.();
     return { status: 202, body: { accepted: true, index: store.runs.length - 1, run: safeRun } };
@@ -106,6 +123,20 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
   return { status: 404, body: { error: 'not_found', path, method: request.method } };
 }
 
+
+
+function recordRedactionAudit(store: ConduitRecordStore, recordKind: 'event' | 'run', connector: string, agent: string, original: string, redacted: string): void {
+  if (original === redacted) return;
+  store.sanctumAudit.push({
+    createdAt: new Date().toISOString(),
+    action: 'redacted_input',
+    recordKind,
+    connector,
+    agent,
+    handles: extractSensitiveHandles(original),
+    rawSecretLikeContent: extractSensitiveHandles(original).length === 0
+  });
+}
 
 function parseLimit(value: string | null): number {
   const parsed = Number(value ?? 10);
