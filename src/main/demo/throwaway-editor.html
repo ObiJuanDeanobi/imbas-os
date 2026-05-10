@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <title>Throwaway Brief Editor</title>
+  <style>
+    body{font-family:system-ui;margin:0;background:#f8fafc;color:#0f172a}main{max-width:900px;margin:0 auto;padding:28px}.panel{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:20px;box-shadow:0 20px 60px #0f172a18}label{display:block;font-weight:700;margin-top:14px}input,textarea{width:100%;box-sizing:border-box;margin-top:6px;border:1px solid #cbd5e1;border-radius:12px;padding:10px;font:inherit}textarea{min-height:110px}button{margin-top:16px;border:0;border-radius:999px;background:#111827;color:white;padding:10px 16px;font-weight:800}.output{white-space:pre-wrap;background:#0f172a;color:#e2e8f0;border-radius:16px;padding:16px;margin-top:18px}</style>
+</head>
+<body>
+<main>
+  <h1>Throwaway Brief Editor</h1>
+  <p>This kind of single-use generated interface should not disappear in chat history. Save it, annotate it, snapshot it, then export the result.</p>
+  <section class="panel">
+    <label>Project<input id="project" value="HTML Artifact Vault"></label>
+    <label>Decision<textarea id="decision">Start as a local-first desktop vault before hosted sharing.</textarea></label>
+    <label>Risks<textarea id="risks">Packaging complexity; sandbox compatibility; incumbents adding artifact galleries.</textarea></label>
+    <button onclick="exportBrief()">Generate Markdown export</button>
+    <pre class="output" id="output">Click export to produce durable Markdown.</pre>
+  </section>
+</main>
+<script>
+function exportBrief(){
+  const project=document.getElementById('project').value;
+  const decision=document.getElementById('decision').value;
+  const risks=document.getElementById('risks').value;
+  document.getElementById('output').textContent=`# ${project} decision\n\n## Decision\n\n${decision}\n\n## Risks\n\n${risks}\n\n## Next pass\n\nTurn this into tasks, tests, and a release checklist.`;
+}
+</script>
+</body>
+</html>

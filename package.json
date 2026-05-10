@@ -1,0 +1,48 @@
+{
+  "name": "imbas-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first operating layer for AI memory, context, artifacts, living wiki, and agent handoffs.",
+  "type": "module",
+  "main": "dist/main/app.js",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:electron\"",
+    "dev:renderer": "vite --host 127.0.0.1",
+    "dev:electron": "wait-on tcp:5173 && tsc -p tsconfig.main.json --watch --preserveWatchOutput & wait-on dist/main/app.js dist/preload/api.js && IMBAS_OS_DEV_SERVER_URL=http://127.0.0.1:5173 ARTIFACT_VAULT_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
+    "build": "tsc -p tsconfig.main.json && node scripts/copy-demo-assets.mjs && vite build",
+    "start": "npm run build && electron .",
+    "test": "node --test --import tsx test/*.test.ts",
+    "smoke": "IMBAS_OS_SMOKE=1 ARTIFACT_VAULT_SMOKE=1 xvfb-run -a electron --no-sandbox .",
+    "smoke:security": "IMBAS_OS_SECURITY_SMOKE=1 ARTIFACT_VAULT_SECURITY_SMOKE=1 xvfb-run -a electron --no-sandbox .",
+    "verify": "npm test && npm run build && npm run smoke && npm run smoke:security",
+    "check": "npm test && npm run build",
+    "package:dev": "npm run verify && node scripts/package-dev-preview.mjs"
+  },
+  "keywords": [
+    "imbas-os",
+    "local-first",
+    "ai-memory",
+    "ai-artifacts",
+    "agent-connectors",
+    "context-pack",
+    "electron"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "concurrently": "latest",
+    "electron": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "wait-on": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "tsx": "latest"
+  }
+}

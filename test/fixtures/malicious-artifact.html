@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head><title>Malicious fixture</title></head>
+<body>
+  <h1>Malicious fixture</h1>
+  <ul id="results"></ul>
+  <script>
+    const results = document.getElementById('results');
+    function report(label, value) {
+      const li = document.createElement('li');
+      li.textContent = `${label}: ${value}`;
+      results.appendChild(li);
+    }
+    report('typeof process', typeof window.process);
+    report('typeof require', typeof window.require);
+    report('typeof artifactVault bridge', typeof window.artifactVault);
+    fetch('https://example.com/should-be-blocked').then(
+      () => report('network fetch', 'unexpected success'),
+      () => report('network fetch', 'blocked')
+    );
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <title>Artifact Vault Architecture Map</title>
+  <style>
+    body{font-family:Inter,system-ui;margin:0;background:#0f172a;color:#e2e8f0}main{padding:28px}h1{margin:0 0 8px}.lede{color:#cbd5e1}.map{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px}.node{border:1px solid #334155;border-radius:18px;padding:16px;background:#111827;min-height:160px}.node strong{display:block;color:#a7f3d0;margin-bottom:8px}.node ul{padding-left:18px}.edge{align-self:center;text-align:center;color:#93c5fd;font-size:26px}.risk{border-color:#f59e0b;background:#1f1a0b}.source{border-color:#22c55e}.sandbox{border-color:#38bdf8}.export{border-color:#c084fc}@media(max-width:900px){.map{grid-template-columns:1fr}.edge{transform:rotate(90deg)}}</style>
+</head>
+<body>
+<main>
+  <h1>Architecture Map: Local-first Artifact Vault</h1>
+  <p class="lede">A generated system map showing how untrusted HTML becomes durable, searchable, exportable work without inheriting app privileges.</p>
+  <section class="map">
+    <article class="node source"><strong>1. Capture</strong><ul><li>Paste HTML</li><li>Import .html file</li><li>Future: bundle/zip/importers</li></ul></article>
+    <div class="edge">→</div>
+    <article class="node sandbox"><strong>2. Replay safely</strong><ul><li><code>artifact://</code> protocol</li><li>CSP wrapper</li><li>No Node bridge</li><li>Network denied</li></ul></article>
+    <div class="edge">→</div>
+    <article class="node"><strong>3. Vault bundle</strong><ul><li>artifact.html</li><li>metadata.json</li><li>notes.md</li><li>snapshots/</li></ul></article>
+    <div class="edge">→</div>
+    <article class="node"><strong>4. Index + graph</strong><ul><li>Rebuildable SQLite FTS</li><li>Explicit artifact links</li><li>Project filters</li></ul></article>
+    <div class="edge">→</div>
+    <article class="node export"><strong>5. Export loop</strong><ul><li>Markdown summary</li><li>JSON bundle</li><li>Prompt package</li><li>Future: portable zip</li></ul></article>
+    <article class="node risk"><strong>Key invariant</strong><p>Generated HTML is active content. Treat it as untrusted unless reviewed, and keep the filesystem bundle as the source of truth.</p></article>
+  </section>
+</main>
+</body>
+</html>
