@@ -2,6 +2,8 @@ import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { ConduitRecordStore, ConduitSanctumAuditEntry } from './localApi.js';
+import { RunledgerEntry } from '../runledger/store.js';
+import { LorekeeperProposal } from '../lorekeeper/proposals.js';
 import { createDefaultModuleRegistry } from '../../shared/imbas/modules.js';
 import { ImbasContextEventDraft, ImbasRunSummaryDraft } from '../../shared/imbas/protocol.js';
 
@@ -14,15 +16,21 @@ export async function createDurableConduitRecordStore(options: DurableConduitSto
   const eventsPath = path.join(options.dir, 'events.jsonl');
   const runsPath = path.join(options.dir, 'runs.jsonl');
   const auditPath = path.join(options.dir, 'sanctum-audit.jsonl');
+  const runledgerPath = path.join(options.dir, 'runledger.jsonl');
+  const lorekeeperPath = path.join(options.dir, 'lorekeeper-proposals.jsonl');
   const store: ConduitRecordStore = {
     events: await readJsonl<ImbasContextEventDraft>(eventsPath),
     runs: await readJsonl<ImbasRunSummaryDraft>(runsPath),
     sanctumAudit: await readJsonl<ConduitSanctumAuditEntry>(auditPath),
+    runledger: await readJsonl<RunledgerEntry>(runledgerPath),
+    lorekeeperProposals: await readJsonl<LorekeeperProposal>(lorekeeperPath),
     modules: createDefaultModuleRegistry(),
     persist: async () => {
       await writeJsonl(eventsPath, store.events);
       await writeJsonl(runsPath, store.runs);
       await writeJsonl(auditPath, store.sanctumAudit);
+      await writeJsonl(runledgerPath, store.runledger);
+      await writeJsonl(lorekeeperPath, store.lorekeeperProposals);
     }
   };
   return store;

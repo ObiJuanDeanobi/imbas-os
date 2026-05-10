@@ -140,3 +140,15 @@ This connector is intentionally one-way and shadow-only. It does not change Open
 ## Durable private-preview store
 
 Conduit now has a durable JSONL-backed private-preview store under the Imbas vault directory (`conduit/events.jsonl` and `conduit/runs.jsonl`). JSONL is deliberately simple and recoverable for this phase; public 1.0 can move to a richer store once Memsocket integration and SyncCore semantics are firmer.
+
+## Runledger and Lorekeeper private-preview endpoints
+
+Sprint 4 adds the first durable AI-world timeline and proposal surfaces:
+
+- `GET /v0/runledger?query=&limit=` — searchable timeline of notable agent actions, runs, Lorekeeper proposals, and later audits.
+- `GET /v0/wiki/proposals?query=&limit=` — searchable Lorekeeper managed-wiki proposals.
+- `POST /v0/wiki/proposals` — create a redacted proposal for a wiki/Markdown update without mutating wiki files.
+- `POST /v0/wiki/proposals/:id/approve` — mark a proposal approved, but does not yet apply it to a page.
+- `POST /v0/wiki/proposals/:id/reject` — mark a proposal rejected.
+
+Lorekeeper is proposal-first by design. Agents can suggest durable wiki knowledge, but Imbas OS does not silently rewrite human-readable notes or external vaults. Applying approved proposals to managed blocks/pages is a later guarded slice.

@@ -20,8 +20,8 @@ test('Sprint 2 dogfood loop stores OpenClaw event, searches it, and builds conte
 
   const search = await handleConduitRequest(new Request('http://127.0.0.1/v0/search', { method: 'POST', body: JSON.stringify({ query: 'dogfood loop' }) }), store);
   assert.equal((search.body as { backend: string }).backend, 'conduit-local');
-  assert.equal((search.body as { results: unknown[] }).results.length, 2);
+  assert.equal((search.body as { results: unknown[] }).results.length, 3);
 
   const pack = await handleConduitRequest(new Request('http://127.0.0.1/v0/context-packs', { method: 'POST', body: JSON.stringify({ task: 'dogfood loop' }) }), store);
-  assert.equal((pack.body as { totalItems: number }).totalItems, 2);
+  assert.equal((pack.body as { totalItems: number }).totalItems, 3);
 });

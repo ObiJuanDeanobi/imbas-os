@@ -2,6 +2,8 @@ import { extractSensitiveHandles, redactSensitiveText } from '../sanctum/secretH
 import { ImbasContextEventDraft, ImbasRunSummaryDraft, validateContextEventDraft } from '../../shared/imbas/protocol.js';
 import { createDefaultModuleRegistry, ImbasModuleRegistry } from '../../shared/imbas/modules.js';
 import { MemsocketCliClient } from '../memsocket/cliClient.js';
+import { createRunledgerEntry, RunledgerEntry, searchRunledger } from '../runledger/store.js';
+import { createLorekeeperProposal, LorekeeperProposal, searchLorekeeperProposals, transitionLorekeeperProposal } from '../lorekeeper/proposals.js';
 
 export interface ConduitSanctumAuditEntry {
   createdAt: string;
@@ -17,6 +19,8 @@ export interface ConduitRecordStore {
   events: ImbasContextEventDraft[];
   runs: ImbasRunSummaryDraft[];
   sanctumAudit: ConduitSanctumAuditEntry[];
+  runledger: RunledgerEntry[];
+  lorekeeperProposals: LorekeeperProposal[];
   modules: ImbasModuleRegistry;
   memsocket?: MemsocketCliClient;
   persist?: () => Promise<void>;
@@ -28,7 +32,7 @@ export interface ConduitResponse {
 }
 
 export function createConduitRecordStore(): ConduitRecordStore {
-  return { events: [], runs: [], sanctumAudit: [], modules: createDefaultModuleRegistry() };
+  return { events: [], runs: [], sanctumAudit: [], runledger: [], lorekeeperProposals: [], modules: createDefaultModuleRegistry() };
 }
 
 export async function handleConduitRequest(request: Request, store: ConduitRecordStore): Promise<ConduitResponse> {
@@ -41,13 +45,15 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       body: {
         service: 'imbas-os-conduit',
         status: 'ok',
-        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/search', 'POST /v0/context-packs'],
+        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals'],
         modules: store.modules,
-        pending: ['POST /v0/artifacts', 'POST /v0/wiki/proposals', 'POST /v0/snapshots'],
-        counts: { events: store.events.length, runs: store.runs.length },
+        pending: ['POST /v0/artifacts', 'POST /v0/snapshots', 'POST /v0/wiki/proposals/:id/approve-apply'],
+        counts: { events: store.events.length, runs: store.runs.length, runledger: store.runledger.length, lorekeeperProposals: store.lorekeeperProposals.length },
         recentEvents: store.events.slice(-5).reverse(),
         recentRuns: store.runs.slice(-5).reverse(),
-        sanctumAudit: store.sanctumAudit.slice(-10).reverse()
+        sanctumAudit: store.sanctumAudit.slice(-10).reverse(),
+        recentRunledger: store.runledger.slice(-5).reverse(),
+        recentLorekeeperProposals: store.lorekeeperProposals.slice(-5).reverse()
       }
     };
   }
@@ -60,6 +66,40 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
   if (request.method === 'GET' && path === '/v0/runs') {
     const limit = parseLimit(url.searchParams.get('limit'));
     return { status: 200, body: { runs: store.runs.slice(-limit).reverse(), count: store.runs.length } };
+  }
+
+  if (request.method === 'GET' && path === '/v0/runledger') {
+    const limit = parseLimit(url.searchParams.get('limit'));
+    return { status: 200, body: { entries: searchRunledger(store.runledger, url.searchParams.get('query') ?? '', limit), count: store.runledger.length } };
+  }
+
+  if (request.method === 'GET' && path === '/v0/wiki/proposals') {
+    const limit = parseLimit(url.searchParams.get('limit'));
+    return { status: 200, body: { proposals: searchLorekeeperProposals(store.lorekeeperProposals, url.searchParams.get('query') ?? '', limit), count: store.lorekeeperProposals.length } };
+  }
+
+  if (request.method === 'POST' && path === '/v0/wiki/proposals') {
+    try {
+      const proposal = createLorekeeperProposal(await readJson(request));
+      store.lorekeeperProposals.push(proposal);
+      store.runledger.push(createRunledgerEntry({ kind: 'lorekeeper', connector: proposal.connector, agent: proposal.agent, title: proposal.title, outcome: 'proposed', summary: proposal.rationale, refs: [proposal.id, ...(proposal.sources ?? [])], createdAt: proposal.createdAt }));
+      store.modules.lorekeeper = { ...store.modules.lorekeeper, enabled: true, available: true, configured: true, health: 'limited' };
+      store.modules.runledger = { ...store.modules.runledger, enabled: true, available: true, configured: true, health: 'limited' };
+      await store.persist?.();
+      return { status: 202, body: { accepted: true, proposal } };
+    } catch (error) {
+      return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
+  }
+
+  const proposalTransitionMatch = path.match(/^\/v0\/wiki\/proposals\/([^/]+)\/(approve|reject)$/);
+  if (request.method === 'POST' && proposalTransitionMatch) {
+    const proposal = store.lorekeeperProposals.find((item) => item.id === proposalTransitionMatch[1]);
+    if (!proposal) return { status: 404, body: { error: 'proposal_not_found' } };
+    const next = transitionLorekeeperProposal(proposal, proposalTransitionMatch[2] === 'approve' ? 'approved' : 'rejected');
+    store.lorekeeperProposals[store.lorekeeperProposals.indexOf(proposal)] = next;
+    await store.persist?.();
+    return { status: 200, body: { proposal: next } };
   }
 
   if (request.method === 'POST' && path === '/v0/search') {
@@ -116,6 +156,8 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
     const redactedRunText = [safeRun.task, safeRun.summary, ...(safeRun.verification ?? []), ...(safeRun.followUps ?? [])].join('\n');
     recordRedactionAudit(store, 'run', run.connector, run.agent, originalRunText, redactedRunText);
     store.runs.push(safeRun);
+    store.runledger.push(createRunledgerEntry({ kind: 'run', connector: safeRun.connector, agent: safeRun.agent, title: safeRun.task, outcome: safeRun.outcome, summary: safeRun.summary, refs: [safeRun.runId, ...(safeRun.artifacts ?? [])], createdAt: safeRun.createdAt }));
+    store.modules.runledger = { ...store.modules.runledger, enabled: true, available: true, configured: true, health: 'limited' };
     await store.persist?.();
     return { status: 202, body: { accepted: true, index: store.runs.length - 1, run: safeRun } };
   }
@@ -152,7 +194,13 @@ function localSearch(store: ConduitRecordStore, query: string, limit: number): u
   const runs = store.runs
     .map((run, index) => ({ kind: 'run', index, createdAt: run.createdAt, connector: run.connector, agent: run.agent, runId: run.runId, task: run.task, summary: run.summary, outcome: run.outcome }))
     .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
-  return [...events, ...runs].slice(-limit).reverse();
+  const ledger = store.runledger
+    .map((entry, index) => ({ kind: 'runledger', index, createdAt: entry.createdAt, title: entry.title, summary: entry.summary, outcome: entry.outcome }))
+    .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
+  const proposals = store.lorekeeperProposals
+    .map((proposal, index) => ({ kind: 'lorekeeper_proposal', index, createdAt: proposal.createdAt, title: proposal.title, rationale: proposal.rationale, status: proposal.status }))
+    .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
+  return [...events, ...runs, ...ledger, ...proposals].slice(-limit).reverse();
 }
 
 async function readJson<T>(request: Request): Promise<T> {

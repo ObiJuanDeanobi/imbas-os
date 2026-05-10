@@ -6,7 +6,7 @@ test('Conduit local API status reports implemented private-preview endpoints', a
   const store = createConduitRecordStore();
   const response = await handleConduitRequest(new Request('http://127.0.0.1:0/v0/status'), store);
   assert.equal(response.status, 200);
-  assert.deepEqual((response.body as { counts: unknown }).counts, { events: 0, runs: 0 });
+  assert.deepEqual((response.body as { counts: unknown }).counts, { events: 0, runs: 0, runledger: 0, lorekeeperProposals: 0 });
 });
 
 test('Conduit local API accepts and redacts context events', async () => {

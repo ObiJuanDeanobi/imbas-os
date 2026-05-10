@@ -75,3 +75,12 @@ Public Imbas OS 1.0 should demonstrate this principle end-to-end:
 - secrets and high-trust facts are guarded;
 - Memsocket is integrated as the first-class memory/context module;
 - the UI is a coherent view into the AI operating layer, not a separate app state silo.
+
+## Sprint 4 consequence: proposal-first knowledge
+
+The AI-first world needs a durable memory of what agents did and what knowledge they want to promote. Sprint 4 introduces this as:
+
+- **Runledger** — a searchable timeline of notable runs/actions.
+- **Lorekeeper proposals** — redacted Markdown/wiki update proposals that can be reviewed before being applied.
+
+This keeps agents autonomous enough to prepare useful durable knowledge, while preserving human oversight before wiki mutation.
