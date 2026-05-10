@@ -16,6 +16,10 @@ Sanctum = trust, redaction, approvals, agent secret vault
 Conduit = agent connector/API layer
 ```
 
+## Public 1.0 rule
+
+Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit Johnathan approval.
+
 ## Current repo state
 
 This private-preview repo is seeded from the working Artifact Vault desktop app.

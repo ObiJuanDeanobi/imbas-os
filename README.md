@@ -113,6 +113,19 @@ Imbas OS
 └─ CLI              terminal + automation interface
 ```
 
+## Public 1.0 release rule
+
+Before Imbas OS is released publicly as 1.0, **Memsocket must be fully integrated, merged into the Imbas OS release story, and tested as a first-class module**. Users may still choose whether to enable Memsocket at runtime, but public 1.0 should not ship as a loosely related Artifact Vault app plus an external memory repo.
+
+Required before public 1.0:
+
+- Memsocket included in supported install/profile story.
+- End-to-end events/search/context-pack flow.
+- OpenClaw/Hermes connector dogfood.
+- Sanctum redaction/secret-handle safety across memory/context packs.
+- Backup/restore/export/delete/forget behavior tested across memory, artifacts, and wiki.
+- Explicit Johnathan approval.
+
 ## Private release boundary
 
 This repository is private preview only. No public release, package publishing, hosted service, or public announcement should happen without explicit Johnathan approval.

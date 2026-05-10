@@ -65,13 +65,29 @@ Memsocket itself can remain a sibling repo/package initially, then become one of
 
 For private preview, keep Memsocket as a **separate engine repo** and make it an **optional Imbas module integration** through Conduit plus a Memsocket adapter.
 
+For public **Imbas OS 1.0**, Memsocket should be **fully merged/integrated/tested under the Imbas OS umbrella** before release. That does not mean users must enable Memsocket at runtime; it means the public distribution, docs, tests, installer/profile story, and support matrix treat Memsocket as a first-class Imbas OS module rather than a loosely related sibling project.
+
+Private preview posture:
+
+- Memsocket can remain a separate repo while boundaries harden.
+- Imbas OS should integrate through stable adapters/service boundaries first.
+- OpenClaw/Hermes dogfood should prove the memory/context loop before consolidation.
+
+Public 1.0 release posture:
+
+- Memsocket code/package/service is included in the Imbas OS release plan.
+- Imbas OS docs explain Memsocket as the built-in memory/context module.
+- Users can choose whether to enable/configure Memsocket, but it is installed/tested as part of supported profiles.
+- End-to-end tests prove events, search, context packs, artifacts, wiki links, connectors, redaction, export/delete/forget, backup/restore, and upgrade paths work together.
+- Public release is blocked until this integration passes and Johnathan explicitly approves.
+
 Reasons:
 
-- Preserves Memsocket as a reusable local-first memory/context engine.
+- Preserves Memsocket as a reusable local-first memory/context engine during private development.
 - Avoids making Imbas OS a forced monolith too early.
-- Lets users adopt Artifact Vault without Memsocket, or Memsocket without the desktop workbench.
+- Lets users adopt Artifact Vault without enabling Memsocket, or Memsocket-focused profiles without the full desktop workbench.
 - Makes Android/CLI/connectors depend on stable APIs rather than internal storage.
-- Keeps public/open-source release options cleaner later.
+- Ensures public 1.0 feels like one coherent Imbas OS product, not a bundle of half-integrated repos.
 
 ## Module capability registry target
 
