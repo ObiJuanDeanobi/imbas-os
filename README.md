@@ -92,6 +92,7 @@ Start here:
 - [`docs/imbas/human-readme.md`](docs/imbas/human-readme.md) — human product overview.
 - [`docs/imbas/agent-readme.md`](docs/imbas/agent-readme.md) — agent-facing operating guide.
 - [`docs/architecture/subsystems.md`](docs/architecture/subsystems.md) — subsystem map.
+- [`docs/architecture/module-selection.md`](docs/architecture/module-selection.md) — optional module/install-profile direction.
 - [`docs/sanctum/agent-secret-vault.md`](docs/sanctum/agent-secret-vault.md) — Sanctum secret/capability design.
 - [`docs/connectors/protocol.md`](docs/connectors/protocol.md) — connector/API target.
 

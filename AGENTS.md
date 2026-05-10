@@ -111,6 +111,7 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/imbas/human-readme.md` — product overview.
 - `docs/imbas/agent-readme.md` — agent operating guide.
 - `docs/architecture/subsystems.md` — subsystem map.
+- `docs/architecture/module-selection.md` — optional module/install-profile direction.
 - `docs/connectors/protocol.md` — connector/API design target.
 - `docs/sanctum/agent-secret-vault.md` — secret/capability boundary.
 - `docs/file-format.md` — current artifact/wiki storage format.

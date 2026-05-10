@@ -44,3 +44,7 @@ Not implemented yet:
 2. Add write/read integration against a fixture Memsocket state directory.
 3. Add `context_pack` retrieval through Memsocket `brief` once the storage boundary is selected.
 4. Keep OpenClaw/MemPalace fallback until private dogfood validates quality and safety.
+
+## Module packaging note
+
+See [`module-selection.md`](module-selection.md). Memsocket is currently a separate engine repo with an Imbas adapter, not vendored into this repo. The intended private-preview direction is optional integration through stable boundaries.

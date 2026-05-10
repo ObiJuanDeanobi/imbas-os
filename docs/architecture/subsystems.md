@@ -119,3 +119,7 @@ Android companion for secure pairing, search, capture, approvals, notifications,
 ## CLI
 
 Terminal/admin and automation interface for humans, scripts, and agents.
+
+## Module selection
+
+See [`module-selection.md`](module-selection.md). Imbas OS should be modular: users should be able to enable Artifact Vault, Memsocket, Sanctum, Conduit, Lorekeeper, Runledger, Atlas, SyncCore, Desktop, Mobile, and CLI according to their needs rather than being forced into a monolith.
