@@ -1,11 +1,14 @@
 import { redactSensitiveText } from '../sanctum/secretHandles.js';
 import { ImbasContextEventDraft, ImbasRunSummaryDraft, validateContextEventDraft } from '../../shared/imbas/protocol.js';
 import { createDefaultModuleRegistry, ImbasModuleRegistry } from '../../shared/imbas/modules.js';
+import { MemsocketCliClient } from '../memsocket/cliClient.js';
 
 export interface ConduitRecordStore {
   events: ImbasContextEventDraft[];
   runs: ImbasRunSummaryDraft[];
   modules: ImbasModuleRegistry;
+  memsocket?: MemsocketCliClient;
+  persist?: () => Promise<void>;
 }
 
 export interface ConduitResponse {
@@ -27,12 +30,45 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       body: {
         service: 'imbas-os-conduit',
         status: 'ok',
-        implemented: ['GET /v0/status', 'POST /v0/events', 'POST /v0/runs'],
+        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/search', 'POST /v0/context-packs'],
         modules: store.modules,
-        pending: ['POST /v0/artifacts', 'GET /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/snapshots'],
-        counts: { events: store.events.length, runs: store.runs.length }
+        pending: ['POST /v0/artifacts', 'POST /v0/wiki/proposals', 'POST /v0/snapshots'],
+        counts: { events: store.events.length, runs: store.runs.length },
+        recentEvents: store.events.slice(-5).reverse(),
+        recentRuns: store.runs.slice(-5).reverse()
       }
     };
+  }
+
+  if (request.method === 'GET' && path === '/v0/events') {
+    const limit = parseLimit(url.searchParams.get('limit'));
+    return { status: 200, body: { events: store.events.slice(-limit).reverse(), count: store.events.length } };
+  }
+
+  if (request.method === 'GET' && path === '/v0/runs') {
+    const limit = parseLimit(url.searchParams.get('limit'));
+    return { status: 200, body: { runs: store.runs.slice(-limit).reverse(), count: store.runs.length } };
+  }
+
+  if (request.method === 'POST' && path === '/v0/search') {
+    const body = await readJson<{ query: string; limit?: number; namespace?: string; sessionId?: string }>(request);
+    if (!body.query?.trim()) return { status: 400, body: { errors: ['query is required'] } };
+    if (store.memsocket && store.modules.memsocket.enabled) {
+      const result = await store.memsocket.search(body.query, { namespace: body.namespace, limit: body.limit, sessionId: body.sessionId });
+      if (result.status === 'ok') return { status: 200, body: { backend: 'memsocket', result: result.json ?? result.stdout } };
+    }
+    return { status: 200, body: { backend: 'conduit-local', results: localSearch(store, body.query, body.limit ?? 10) } };
+  }
+
+  if (request.method === 'POST' && path === '/v0/context-packs') {
+    const body = await readJson<{ task: string; projectId?: string; maxTokens?: number }>(request);
+    if (!body.task?.trim()) return { status: 400, body: { errors: ['task is required'] } };
+    if (store.memsocket && store.modules.memsocket.enabled) {
+      const result = await store.memsocket.contextPack(body);
+      if (result.status === 'ok') return { status: 200, body: { backend: 'memsocket', result: result.json ?? result.stdout } };
+    }
+    const results = localSearch(store, body.task, 8);
+    return { status: 200, body: { backend: 'conduit-local', task: body.task, items: results, totalItems: results.length } };
   }
 
   if (request.method === 'POST' && path === '/v0/events') {
@@ -41,7 +77,13 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
     if (errors.length) return { status: 400, body: { errors } };
     const safeEvent = { ...event, text: redactSensitiveText(event.text), createdAt: event.createdAt ?? new Date().toISOString() };
     store.events.push(safeEvent);
-    return { status: 202, body: { accepted: true, index: store.events.length - 1, event: safeEvent } };
+    await store.persist?.();
+    let memsocketWrite: unknown = null;
+    if (store.memsocket && store.modules.memsocket.enabled) {
+      memsocketWrite = await store.memsocket.writeEvent(safeEvent);
+      if ((memsocketWrite as { status?: string }).status === 'error') store.modules.memsocket.health = 'error';
+    }
+    return { status: 202, body: { accepted: true, index: store.events.length - 1, event: safeEvent, memsocketWrite } };
   }
 
   if (request.method === 'POST' && path === '/v0/runs') {
@@ -57,10 +99,29 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       createdAt: run.createdAt ?? new Date().toISOString()
     };
     store.runs.push(safeRun);
+    await store.persist?.();
     return { status: 202, body: { accepted: true, index: store.runs.length - 1, run: safeRun } };
   }
 
   return { status: 404, body: { error: 'not_found', path, method: request.method } };
+}
+
+
+function parseLimit(value: string | null): number {
+  const parsed = Number(value ?? 10);
+  if (!Number.isFinite(parsed)) return 10;
+  return Math.max(1, Math.min(100, Math.trunc(parsed)));
+}
+
+function localSearch(store: ConduitRecordStore, query: string, limit: number): unknown[] {
+  const needle = query.toLowerCase();
+  const events = store.events
+    .map((event, index) => ({ kind: 'event', index, createdAt: event.createdAt, connector: event.connector, agent: event.agent, text: event.text, type: event.type, projectId: event.projectId }))
+    .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
+  const runs = store.runs
+    .map((run, index) => ({ kind: 'run', index, createdAt: run.createdAt, connector: run.connector, agent: run.agent, runId: run.runId, task: run.task, summary: run.summary, outcome: run.outcome }))
+    .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
+  return [...events, ...runs].slice(-limit).reverse();
 }
 
 async function readJson<T>(request: Request): Promise<T> {

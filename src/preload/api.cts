@@ -31,7 +31,10 @@ const api = {
   exportMixedPromptPackage: (input: MixedPromptPackageInput) => ipcRenderer.invoke('vault:export-mixed-prompt-package', input) as Promise<string>,
   exportBundleDirectory: (id: string) => ipcRenderer.invoke('artifacts:export-bundle-directory', id) as Promise<string | null>,
   seedDemoVault: () => ipcRenderer.invoke('demo:seed') as Promise<ArtifactSummary[]>,
-  loadMaliciousSample: () => ipcRenderer.invoke('sample:malicious') as Promise<string>
+  loadMaliciousSample: () => ipcRenderer.invoke('sample:malicious') as Promise<string>,
+  conduitStatus: () => ipcRenderer.invoke('conduit:status') as Promise<any>,
+  conduitSearch: (query: string) => ipcRenderer.invoke('conduit:search', query) as Promise<any>,
+  conduitContextPack: (task: string) => ipcRenderer.invoke('conduit:context-pack', task) as Promise<any>
 };
 
 contextBridge.exposeInMainWorld('artifactVault', api);

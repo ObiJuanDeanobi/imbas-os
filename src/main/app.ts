@@ -11,6 +11,9 @@ import { buildWikiBridgeReport, indexMarkdownVault, mergeArtifactAndWikiGraphs, 
 import { getSyncStatus, rebuildSyncManifest } from './sync/syncManifest.js';
 import { createMarkdownPage, getMarkdownGraph, readMarkdownPageFromVault, searchMarkdownPagesInVault, updateMarkdownPage } from './markdown/markdownStore.js';
 import { startConduitLoopbackService, ConduitLoopbackService } from './conduit/server.js';
+import { createDurableConduitRecordStore } from './conduit/durableStore.js';
+import { createConduitRecordStore, ConduitRecordStore, handleConduitRequest } from './conduit/localApi.js';
+import { createMemsocketCliClient } from './memsocket/cliClient.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const devServerUrl = process.env.IMBAS_OS_DEV_SERVER_URL ?? process.env.ARTIFACT_VAULT_DEV_SERVER_URL;
@@ -18,10 +21,13 @@ const capturePath = process.env.IMBAS_OS_CAPTURE_PATH ?? process.env.ARTIFACT_VA
 let vaultRoot = '';
 let wikiBridgeRoot = '';
 let conduitService: ConduitLoopbackService | null = null;
+let conduitStore: ConduitRecordStore = createConduitRecordStore();
 
 async function prepareRuntime() {
   vaultRoot = defaultVaultRoot(app.getPath('userData'));
   await initVault(vaultRoot);
+  conduitStore = await createDurableConduitRecordStore({ dir: path.join(vaultRoot, 'conduit') });
+  configureMemsocketModule();
   installArtifactProtocol();
   installNetworkBlocker();
   await maybeStartConduitLoopback();
@@ -31,8 +37,27 @@ async function maybeStartConduitLoopback() {
   if (process.env.IMBAS_OS_CONDUIT_LOOPBACK !== '1') return;
   if (conduitService) return;
   const port = process.env.IMBAS_OS_CONDUIT_PORT ? Number(process.env.IMBAS_OS_CONDUIT_PORT) : 0;
-  conduitService = await startConduitLoopbackService({ port });
+  conduitService = await startConduitLoopbackService({ port, store: conduitStore });
   console.log(`Imbas OS Conduit loopback listening on ${conduitService.url}`);
+}
+
+
+function configureMemsocketModule() {
+  const configPath = process.env.IMBAS_OS_MEMSOCKET_CONFIG;
+  if (!configPath) return;
+  conduitStore.memsocket = createMemsocketCliClient({
+    configPath,
+    cwd: process.env.IMBAS_OS_MEMSOCKET_CWD,
+    namespace: process.env.IMBAS_OS_MEMSOCKET_NAMESPACE ?? 'imbas-os'
+  });
+  conduitStore.modules.memsocket = {
+    ...conduitStore.modules.memsocket,
+    enabled: true,
+    available: true,
+    configured: true,
+    health: 'ok',
+    notes: `Configured with ${configPath}`
+  };
 }
 
 async function createWindow() {
@@ -90,6 +115,9 @@ function installNetworkBlocker() {
   });
 }
 
+ipcMain.handle('conduit:status', async () => (await handleConduitRequest(new Request('http://127.0.0.1/v0/status'), conduitStore)).body);
+ipcMain.handle('conduit:search', async (_event, query: string) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/search', { method: 'POST', body: JSON.stringify({ query }) }), conduitStore)).body);
+ipcMain.handle('conduit:context-pack', async (_event, task: string) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/context-packs', { method: 'POST', body: JSON.stringify({ task, projectId: 'imbas-os', maxTokens: 1200 }) }), conduitStore)).body);
 ipcMain.handle('vault:info', async () => initVault(vaultRoot));
 ipcMain.handle('sync:status', async () => getSyncStatus(vaultRoot));
 ipcMain.handle('sync:rebuild-manifest', async () => rebuildSyncManifest(vaultRoot));

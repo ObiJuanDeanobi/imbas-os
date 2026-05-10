@@ -116,3 +116,27 @@ Current implemented endpoints:
 - `POST /v0/runs` — redacted agent run summaries.
 
 The status response includes module capability state so UI, CLI, Android, and agents can all see the same AI operating-layer world rather than maintaining hidden UI-only state.
+
+## OpenClaw shadow connector
+
+Sprint 2 adds `scripts/openclaw-shadow-connector.mjs`, a private-preview shadow connector that emits sanitized OpenClaw run summaries and context events to Conduit.
+
+Default mode is dry-run:
+
+```bash
+npm run shadow:openclaw:dry-run -- --task="Smoke" --summary="Generated payload only"
+```
+
+Posting requires an explicit mode and a Conduit URL:
+
+```bash
+IMBAS_OS_CONDUIT_URL=http://127.0.0.1:39777 \
+IMBAS_OS_SHADOW_CONNECTOR_MODE=post \
+node scripts/openclaw-shadow-connector.mjs --task="Smoke" --summary="Posted to Conduit"
+```
+
+This connector is intentionally one-way and shadow-only. It does not change OpenClaw behavior or replace OpenClaw memory; it feeds Imbas OS so the AI-first world can be inspected, searched, and eventually evaluated.
+
+## Durable private-preview store
+
+Conduit now has a durable JSONL-backed private-preview store under the Imbas vault directory (`conduit/events.jsonl` and `conduit/runs.jsonl`). JSONL is deliberately simple and recoverable for this phase; public 1.0 can move to a richer store once Memsocket integration and SyncCore semantics are firmer.

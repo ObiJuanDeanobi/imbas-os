@@ -26,6 +26,9 @@ function App() {
   const [indexStats, setIndexStats] = useState<SearchIndexStats | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [lastAction, setLastAction] = useState('Seed the demo vault or import an HTML artifact to begin.');
+  const [conduitStatus, setConduitStatus] = useState<any>(null);
+  const [aiWorldQuery, setAiWorldQuery] = useState('Imbas OS');
+  const [aiWorldResult, setAiWorldResult] = useState<any>(null);
   const projectOptions = useMemo(() => [...new Set(graph.nodes.map((node) => node.project).filter(Boolean))].sort(), [graph.nodes]);
   const selected = useMemo(() => artifacts.find((artifact) => artifact.id === selectedId) ?? artifacts[0], [artifacts, selectedId]);
   const selectedWikiNode = useMemo(() => selectedWikiId ? graph.nodes.find((node) => node.id === selectedWikiId && node.kind === 'wiki') : null, [graph.nodes, selectedWikiId]);
@@ -45,6 +48,7 @@ function App() {
     setArtifacts(filtered);
     setUnifiedResults(filteredMixed);
     setSyncStatus(await window.artifactVault.syncStatus());
+    setConduitStatus(await window.artifactVault.conduitStatus());
     if (!selectedId && filtered[0]) setSelectedId(filtered[0].id);
   }
 
@@ -99,6 +103,7 @@ function App() {
   async function rebuildSyncManifest() {
     const manifest = await window.artifactVault.rebuildSyncManifest();
     setSyncStatus(await window.artifactVault.syncStatus());
+    setConduitStatus(await window.artifactVault.conduitStatus());
     setLastAction(`Rebuilt sync manifest with ${manifest.entries.length} source files. Index caches were not treated as source of truth.`);
   }
 
@@ -110,6 +115,15 @@ function App() {
     setUnifiedResults(await window.artifactVault.searchUnified(query));
     const wikiCount = nextGraph.nodes.filter((node) => node.kind === 'wiki').length;
     setLastAction(`Indexed ${wikiCount} Markdown/wiki pages in read-only bridge mode. Source files were not rewritten.`);
+  }
+
+
+  async function searchAiWorld() {
+    setAiWorldResult(await window.artifactVault.conduitSearch(aiWorldQuery));
+  }
+
+  async function buildAiWorldContextPack() {
+    setAiWorldResult(await window.artifactVault.conduitContextPack(aiWorldQuery));
   }
 
   async function createVaultMarkdownPage() {
@@ -171,6 +185,21 @@ function App() {
           <WikiBridgeReportCard report={wikiReport} />
           {graph.edges.slice(0, 5).map((edge) => <p key={`${edge.from}-${edge.to}`}><code>{labelFor(graph, edge.from)}</code> → <code>{labelFor(graph, edge.to)}</code></p>)}
         </section>
+
+        <section className="graph-panel ai-world-panel">
+          <h2>AI world</h2>
+          <p className="muted">Conduit sees {conduitStatus?.counts?.events ?? 0} events · {conduitStatus?.counts?.runs ?? 0} runs</p>
+          <p className="muted">Memsocket: <code>{conduitStatus?.modules?.memsocket?.health ?? 'loading'}</code></p>
+          <input placeholder="Search the agent world…" value={aiWorldQuery} onChange={(event) => setAiWorldQuery(event.target.value)} />
+          <button className="secondary" onClick={searchAiWorld}>Search Conduit</button>
+          <button className="secondary" onClick={buildAiWorldContextPack}>Context pack</button>
+          <div className="bridge-report">
+            {(conduitStatus?.recentRuns ?? []).slice(0, 3).map((run: any) => <em key={run.runId}>{run.outcome}: {run.task}</em>)}
+            {(conduitStatus?.recentEvents ?? []).slice(0, 3).map((event: any, index: number) => <em key={`${event.createdAt}-${index}`}>{event.type}: {event.text.slice(0, 90)}</em>)}
+            {aiWorldResult && <pre>{JSON.stringify(aiWorldResult, null, 2).slice(0, 1200)}</pre>}
+          </div>
+        </section>
+
         <section className="graph-panel">
           <h2>Sync foundation</h2>
           <p className="muted">Node <code>{syncStatus?.localNode.id.slice(0, 8) ?? 'loading'}</code> · {syncStatus?.trackedFiles ?? 0} tracked files</p>
