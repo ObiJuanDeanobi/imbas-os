@@ -16,7 +16,6 @@ export interface OpenClawDispatchResult {
   sessionId?: string;
   runId?: string;
   transport?: string;
-  raw?: unknown;
 }
 
 export interface OpenClawDispatcher {
@@ -44,10 +43,9 @@ export function createOpenClawCliDispatcher(options: { command?: string; default
         return {
           status: 'completed',
           reply: extractReply(parsed) || 'OpenClaw completed the run without a textual reply.',
-          sessionId: extractString(parsed, ['sessionId', 'session_id', 'sessionKey', 'session_key']),
-          runId: extractString(parsed, ['runId', 'run_id', 'id']),
-          transport: extractString(parsed, ['transport']) ?? extractNestedString(parsed, ['meta', 'transport']),
-          raw: parsed
+          sessionId: extractString(parsed, ['sessionId', 'session_id', 'sessionKey', 'session_key']) ?? extractNestedString(parsed, ['meta', 'agentMeta', 'sessionId']),
+          runId: extractString(parsed, ['runId', 'run_id', 'id']) ?? extractNestedString(parsed, ['meta', 'agentMeta', 'runId']),
+          transport: extractString(parsed, ['transport']) ?? extractNestedString(parsed, ['meta', 'transport'])
         };
       } catch (error) {
         const anyError = error as { code?: string; signal?: string; stdout?: string; stderr?: string; message?: string };
@@ -98,6 +96,12 @@ function extractReply(value: unknown): string | null {
   const record = value as Record<string, unknown>;
   for (const key of ['reply', 'message', 'text', 'content', 'output']) {
     if (typeof record[key] === 'string' && record[key].trim()) return record[key] as string;
+  }
+  if (Array.isArray(record.payloads)) {
+    for (const payload of record.payloads) {
+      const nested = extractReply(payload);
+      if (nested) return nested;
+    }
   }
   for (const key of ['result', 'response', 'data']) {
     const nested = extractReply(record[key]);
