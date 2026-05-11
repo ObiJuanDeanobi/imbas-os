@@ -24,7 +24,7 @@ For a local/private preview package, run:
 npm run package:dev
 ```
 
-This runs the full verification gate first, copies built demo HTML assets, and writes:
+This runs the full verification gate first, including the Android scaffold check, copies built demo HTML assets, verifies the package contents/restorability, and writes:
 
 ```text
 release/imbas-os-dev-preview.tgz
@@ -35,8 +35,10 @@ This expands to:
 ```bash
 npm test
 npm run build
+npm run android:check
 npm run smoke
 npm run smoke:security
+npm run verify:preview
 ```
 
 Expected result:
@@ -72,3 +74,10 @@ The smoke scripts currently use Electron with `--no-sandbox` under `xvfb-run` be
 - Source rollback: use git commits.
 - Vault data rollback: artifact bundles are plain directories; snapshots preserve prior artifact HTML/metadata states.
 - Index rollback: delete `.vault/index.sqlite` and rebuild from the app.
+
+
+## Private preview restore verifier
+
+`npm run verify:preview` lists and extracts `release/imbas-os-dev-preview.tgz`, checks required built assets/docs/package metadata, and rejects forbidden entries such as `node_modules/`, `release/`, `.git/`, `.env*`, and rebuildable `.vault/index.sqlite` caches.
+
+See [`private-preview-restore.md`](private-preview-restore.md).

@@ -69,13 +69,19 @@ Or run the full local preview gate:
 npm run verify
 ```
 
-Create a private dev preview tarball after the full gate:
+Create and verify a private dev preview tarball after the full gate:
 
 ```bash
 npm run package:dev
 ```
 
-This writes `release/imbas-os-dev-preview.tgz`. It is private/internal only; do not publish externally without an explicit release decision.
+Check Android companion scaffold files without requiring local Android build tooling:
+
+```bash
+npm run android:check
+```
+
+This writes `release/imbas-os-dev-preview.tgz` and runs `npm run verify:preview` to check package contents/restorability. It is private/internal only; do not publish externally without an explicit release decision.
 
 On headless Linux CI/VPS environments, Electron may require `--no-sandbox` unless the Chromium `chrome-sandbox` helper is root-owned and mode `4755`. The app still configures renderer security controls; the flag is only a host-level smoke-test workaround.
 

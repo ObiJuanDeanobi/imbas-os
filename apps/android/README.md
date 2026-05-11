@@ -28,3 +28,13 @@ Key endpoints:
 - `GET /v0/wiki/proposals`
 - `POST /v0/search`
 - `POST /v0/context-packs`
+
+## Verification
+
+The VPS currently does not have Java/Gradle installed, so the checked private-preview gate is structural rather than a full Android compile:
+
+```bash
+npm run android:check
+```
+
+Run a real Android build from Android Studio or a machine with JDK/Gradle/Android SDK available.

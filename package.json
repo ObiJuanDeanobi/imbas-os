@@ -14,11 +14,13 @@
     "test": "node --test --import tsx test/*.test.ts",
     "smoke": "IMBAS_OS_SMOKE=1 ARTIFACT_VAULT_SMOKE=1 xvfb-run -a electron --no-sandbox .",
     "smoke:security": "IMBAS_OS_SECURITY_SMOKE=1 ARTIFACT_VAULT_SECURITY_SMOKE=1 xvfb-run -a electron --no-sandbox .",
-    "verify": "npm test && npm run build && npm run smoke && npm run smoke:security",
-    "check": "npm test && npm run build",
-    "package:dev": "npm run verify && node scripts/package-dev-preview.mjs",
+    "verify": "npm test && npm run build && npm run android:check && npm run smoke && npm run smoke:security",
+    "check": "npm test && npm run build && npm run android:check",
+    "package:dev": "npm run verify && node scripts/package-dev-preview.mjs && npm run verify:preview",
     "shadow:openclaw:dry-run": "node scripts/openclaw-shadow-connector.mjs",
-    "shadow:openclaw:post": "IMBAS_OS_SHADOW_CONNECTOR_MODE=post node scripts/openclaw-shadow-connector.mjs"
+    "shadow:openclaw:post": "IMBAS_OS_SHADOW_CONNECTOR_MODE=post node scripts/openclaw-shadow-connector.mjs",
+    "verify:preview": "node scripts/verify-dev-preview.mjs",
+    "android:check": "node scripts/check-android-scaffold.mjs"
   },
   "keywords": [
     "imbas-os",
