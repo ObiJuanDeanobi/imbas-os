@@ -35,13 +35,13 @@ Implemented now:
 - Sync manifest foundation.
 - Security smoke tests for generated HTML.
 
-Not implemented yet:
+Implemented as private-preview foundations, but not production complete yet:
 
-- Live Memsocket write/search/context-pack integration.
-- Production-bound Imbas OS local service/API.
-- Conduit connectors for OpenClaw/Hermes/Codex/Claude Code.
-- Encrypted/keyring-backed Sanctum secret vault implementation.
-- Android companion app.
+- Memsocket adapter/CLI boundary and optional Conduit write/search/context-pack integration; public 1.0 requires full first-class integration.
+- Conduit local API/loopback service with durable JSONL private-preview storage.
+- OpenClaw shadow connector; Hermes/Codex/Claude Code connector SDKs remain future work.
+- Encrypted local Sanctum vault, redaction, policy, and audit foundation; OS keyring/passphrase UX remains future work.
+- Android companion Gradle/Compose scaffold and pairing/session contract; real Android compile and secure token storage remain future work.
 
 ## Setup
 
@@ -122,6 +122,7 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/sanctum/agent-secret-vault.md` — secret/capability boundary.
 - `docs/file-format.md` — current artifact/wiki storage format.
 - `docs/threat-model.md` — current artifact security model.
+- `docs/implementation-status.md` — current issue evidence matrix and blockers.
 
 ## Current environment variable note
 

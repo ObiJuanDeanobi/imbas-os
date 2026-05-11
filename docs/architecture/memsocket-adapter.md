@@ -17,12 +17,18 @@ Implemented now:
 - Sanctum redaction before payload creation;
 - validation that `secret_pointer` events use Sanctum handles/capabilities.
 
-Not implemented yet:
+Implemented as a private-preview CLI boundary, but not final public-1.0 integration:
 
-- writing into a live Memsocket `ContextEventStore` from Node/Electron;
-- spawning the Memsocket CLI;
-- context pack retrieval from Memsocket;
-- richer error taxonomy and retry behavior.
+- writing into Memsocket through `python3 -m memsocket.cli` when configured;
+- spawning the Memsocket CLI through `src/main/memsocket/cliClient.ts`;
+- search and context-pack retrieval through the CLI boundary;
+- live module health updates when the CLI write path fails.
+
+Still remaining:
+
+- direct first-class Imbas OS module integration/packaging for public 1.0;
+- richer error taxonomy and retry behavior;
+- broader backup/restore/delete/forget tests across Memsocket + artifact/wiki state.
 
 ## Mapping
 

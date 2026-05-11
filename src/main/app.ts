@@ -27,6 +27,8 @@ async function prepareRuntime() {
   vaultRoot = defaultVaultRoot(app.getPath('userData'));
   await initVault(vaultRoot);
   conduitStore = await createDurableConduitRecordStore({ dir: path.join(vaultRoot, 'conduit') });
+  conduitStore.vaultRoot = vaultRoot;
+  conduitStore.markdownRoot = vaultRoot;
   configureMemsocketModule();
   installArtifactProtocol();
   installNetworkBlocker();

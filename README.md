@@ -29,14 +29,14 @@ This repo is currently seeded from the working Artifact Vault desktop app. It al
 - Demo vault with seven artifacts.
 - Security smoke test for generated HTML boundaries.
 
-Not implemented yet:
+Implemented as private-preview foundations, but not production complete yet:
 
-- Memsocket adapter inside this repo.
-- Local Imbas OS API/daemon.
-- OpenClaw/Hermes/Codex/Claude Code connectors.
-- Sanctum agent secret vault implementation.
-- Android companion app.
-- Production installer.
+- Memsocket adapter/CLI boundary and optional Conduit write-through; public 1.0 still requires full first-class integration.
+- Local Conduit API/loopback service for status, events, runs, artifacts, search, context packs, Lorekeeper proposals/apply, and mobile pairing.
+- OpenClaw shadow connector; Hermes/Codex/Claude Code SDKs remain future work.
+- Sanctum encrypted local vault, handle/capability validation, redaction, policy-checked resolution, and audit foundations.
+- Android Kotlin/Compose scaffold plus pairing/session contract; real Android compile and secure token storage remain future work.
+- Private-preview tarball/package restore gate; production installer remains future work.
 
 ## Quick start for humans
 

@@ -192,3 +192,12 @@ Last reviewed: 2026-05-11T00:00:00.000Z
 Proposal: lore_...
 <!-- IMBAS:LOREKEEPER:END sprint-6-note -->
 ```
+
+
+## Artifact save endpoint
+
+Conduit supports private-preview artifact capture for connectors:
+
+- `POST /v0/artifacts` — saves generated/imported HTML through the vault API as an untrusted artifact and records a Runledger entry.
+
+Connectors must treat generated HTML as untrusted by default. Conduit redacts secret-like content before artifact storage.

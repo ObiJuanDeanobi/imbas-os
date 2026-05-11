@@ -5,6 +5,8 @@ import { MemsocketCliClient } from '../memsocket/cliClient.js';
 import { createRunledgerEntry, RunledgerEntry, searchRunledger } from '../runledger/store.js';
 import { applyLorekeeperProposalToMarkdown, createLorekeeperProposal, LorekeeperProposal, searchLorekeeperProposals, transitionLorekeeperProposal } from '../lorekeeper/proposals.js';
 import { readMarkdownPageFromVault, updateMarkdownPage } from '../markdown/markdownStore.js';
+import { createArtifact } from '../vault/vaultStore.js';
+import type { CreateArtifactInput } from '../../shared/types.js';
 import { completePairingChallenge, createMobilePairingStore, createPairingChallenge, MobilePairingStore, MobileSessionScope, revokeMobileSession } from '../mobile/pairing.js';
 
 export interface ConduitSanctumAuditEntry {
@@ -25,6 +27,7 @@ export interface ConduitRecordStore {
   lorekeeperProposals: LorekeeperProposal[];
   mobile: MobilePairingStore;
   markdownRoot?: string;
+  vaultRoot?: string;
   modules: ImbasModuleRegistry;
   memsocket?: MemsocketCliClient;
   persist?: () => Promise<void>;
@@ -49,9 +52,9 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       body: {
         service: 'imbas-os-conduit',
         status: 'ok',
-        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/apply'],
+        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/artifacts', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/apply'],
         modules: store.modules,
-        pending: ['POST /v0/artifacts', 'POST /v0/snapshots'],
+        pending: ['POST /v0/snapshots'],
         counts: { events: store.events.length, runs: store.runs.length, runledger: store.runledger.length, lorekeeperProposals: store.lorekeeperProposals.length, mobileSessions: store.mobile.sessions.filter((session) => !session.revokedAt).length },
         recentEvents: store.events.slice(-5).reverse(),
         recentRuns: store.runs.slice(-5).reverse(),
@@ -85,6 +88,27 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
     const limit = parseLimit(url.searchParams.get('limit'));
     return { status: 200, body: { proposals: searchLorekeeperProposals(store.lorekeeperProposals, url.searchParams.get('query') ?? '', limit), count: store.lorekeeperProposals.length } };
   }
+
+  if (request.method === 'POST' && path === '/v0/artifacts') {
+    if (!store.vaultRoot) return { status: 400, body: { errors: ['vaultRoot is required for artifact writes'] } };
+    try {
+      const input = await readJson<CreateArtifactInput>(request);
+      if (!input.html?.trim()) return { status: 400, body: { errors: ['html is required'] } };
+      const safeInput = {
+        ...input,
+        html: redactSensitiveText(input.html),
+        prompt: input.prompt ? redactSensitiveText(input.prompt) : input.prompt,
+        sourceType: input.sourceType ?? 'generated'
+      } satisfies CreateArtifactInput;
+      const artifact = await createArtifact(store.vaultRoot, safeInput);
+      store.runledger.push(createRunledgerEntry({ kind: 'event', connector: 'conduit', agent: 'artifact-api', title: `Saved artifact: ${artifact.metadata.title}`, outcome: 'accepted', summary: `Saved untrusted artifact ${artifact.metadata.id} through Conduit`, refs: [artifact.metadata.id] }));
+      await store.persist?.();
+      return { status: 202, body: { accepted: true, artifact } };
+    } catch (error) {
+      return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
+  }
+
 
   if (request.method === 'POST' && path === '/v0/mobile/pairing-challenges') {
     try {
@@ -235,15 +259,18 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
 
 function recordRedactionAudit(store: ConduitRecordStore, recordKind: 'event' | 'run', connector: string, agent: string, original: string, redacted: string): void {
   if (original === redacted) return;
+  const handles = extractSensitiveHandles(original);
+  const createdAt = new Date().toISOString();
   store.sanctumAudit.push({
-    createdAt: new Date().toISOString(),
+    createdAt,
     action: 'redacted_input',
     recordKind,
     connector,
     agent,
-    handles: extractSensitiveHandles(original),
-    rawSecretLikeContent: extractSensitiveHandles(original).length === 0
+    handles,
+    rawSecretLikeContent: handles.length === 0
   });
+  store.runledger.push(createRunledgerEntry({ kind: 'sanctum', connector, agent, title: `Redacted ${recordKind} input`, outcome: 'redacted', summary: handles.length ? `Redacted ${handles.length} Sanctum handle(s)` : 'Redacted raw secret-like content', refs: handles, createdAt }));
 }
 
 function parseLimit(value: string | null): number {
