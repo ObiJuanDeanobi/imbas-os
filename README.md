@@ -38,7 +38,7 @@ Implemented as private-preview foundations, but not production complete yet:
 - Android Kotlin/Compose companion with live pairing, QR prefill, Keystore-encrypted token storage, scoped reads/actions, diagnostics, Runledger filtering, share-sheet capture, and voice-dictation drafts.
 - Private-preview tarball/package restore gate; production installer remains future work.
 
-## Quick start for humans
+## Quick start
 
 ```bash
 git clone https://github.com/ObiJuanDeanobi/imbas-os.git
@@ -85,26 +85,16 @@ This writes `release/imbas-os-dev-preview.tgz` and runs `npm run verify:preview`
 
 On headless Linux CI/VPS environments, Electron may require `--no-sandbox` unless the Chromium `chrome-sandbox` helper is root-owned and mode `4755`. The app still configures renderer security controls; the flag is only a host-level smoke-test workaround.
 
-## Docs for humans and agents
+## Docs and AI-readable context
 
-Imbas OS is designed for both people and AI agents. Every major module should include:
+This root `README.md` is the single canonical GitHub entrypoint. It should stay readable by humans and easy for AI systems to parse. Additional files provide structured context rather than competing README variants:
 
-- human-facing README/docs for product setup and concepts;
-- agent-facing README/docs for commands, boundaries, contracts, and verification gates.
-
-Start here:
-
-- [`docs/README.md`](docs/README.md) — documentation library map and 1.0 documentation standard.
-- [`AGENTS.md`](AGENTS.md) — agent quick-start and safety boundaries.
-- [`docs/imbas/human-readme.md`](docs/imbas/human-readme.md) — human product overview.
-- [`docs/imbas/agent-readme.md`](docs/imbas/agent-readme.md) — agent-facing operating guide.
-- [`docs/architecture/subsystems.md`](docs/architecture/subsystems.md) — subsystem map.
-- [`docs/architecture/module-selection.md`](docs/architecture/module-selection.md) — optional module/install-profile direction.
-- [`docs/architecture/memory-migration.md`](docs/architecture/memory-migration.md) — staged MemPalace → Imbas/Memsocket dogfood and retirement plan.
-- [`docs/architecture/ai-first-os.md`](docs/architecture/ai-first-os.md) — product principle: UI as a window into the AI operating layer.
-- [`docs/mobile/android-companion.md`](docs/mobile/android-companion.md) — Android companion MVP, pairing, scopes, and screen contract.
-- [`docs/sanctum/agent-secret-vault.md`](docs/sanctum/agent-secret-vault.md) — Sanctum secret/capability design.
-- [`docs/connectors/protocol.md`](docs/connectors/protocol.md) — connector/API target.
+- [`llms.txt`](llms.txt) — concise AI sitemap/context map.
+- [`llms-full.txt`](llms-full.txt) — fuller AI context bundle for important pages.
+- [`AGENTS.md`](AGENTS.md) — rules, constraints, and workflows for autonomous agents.
+- [`skill.md`](skill.md) — actionable task workflows for AI agents.
+- [`robots.txt`](robots.txt) — crawler access policy template for website/public-doc deployments.
+- [`docs/index.md`](docs/index.md) — documentation library map and 1.0 documentation standard.
 - [`docs/setup/local-development.md`](docs/setup/local-development.md) — local setup, run, verification, and troubleshooting.
 - [`docs/setup/android-companion.md`](docs/setup/android-companion.md) — APK build/install/pair/diagnostics flow.
 - [`docs/how-to/use-imbas-os.md`](docs/how-to/use-imbas-os.md) — day-to-day desktop and companion workflows.

@@ -1,0 +1,1152 @@
+# Imbas OS full AI context
+
+This file concatenates crucial project context for AI tools. It is generated manually for private-preview docs readiness; update it when the linked source docs materially change.
+
+---
+## Source: README.md
+
+# Imbas OS
+
+Local-first operating layer for AI memory, context, artifacts, living wiki pages, and agent handoffs.
+
+Imbas OS is the combined product direction for what started as **Artifact Vault** plus **Memsocket**:
+
+- **Memsocket** stores memory/context events, projections, search, and context packs.
+- **Artifact Vault** stores generated artifacts, Markdown/wiki knowledge, snapshots, provenance, and safe replay.
+- **Imbas OS** wraps those pieces into one private system for humans and AI agents.
+
+The goal:
+
+> Connect your agents once; Imbas OS captures what they know and make, then feeds the right context back when they work.
+
+## Current private-preview status
+
+This repo is currently seeded from the working Artifact Vault desktop app. It already includes:
+
+- Electron + React + TypeScript desktop shell.
+- Local vault initialization.
+- AI-generated HTML artifact import/paste/file import.
+- Sandboxed artifact replay through `artifact://`.
+- Artifact bundles with metadata, notes, snapshots, provenance, trust levels, and export paths.
+- Vault-owned Markdown pages.
+- Read-only Markdown/wiki bridge.
+- Unified artifact + Markdown search.
+- Mixed graph/backlinks and prompt-package export.
+- Sync manifest foundation.
+- Demo vault with seven artifacts.
+- Security smoke test for generated HTML boundaries.
+
+Implemented as private-preview foundations, but not production complete yet:
+
+- Memsocket adapter/CLI boundary and optional Conduit write-through; public 1.0 still requires full first-class integration.
+- Local Conduit API/loopback service for status, events, runs, artifacts, search, context packs, Lorekeeper proposals/apply, and mobile pairing.
+- OpenClaw shadow connector; Hermes/Codex/Claude Code SDKs remain future work.
+- Sanctum encrypted local vault, handle/capability validation, redaction, policy-checked resolution, and audit foundations.
+- Android Kotlin/Compose companion with live pairing, QR prefill, Keystore-encrypted token storage, scoped reads/actions, diagnostics, Runledger filtering, share-sheet capture, and voice-dictation drafts.
+- Private-preview tarball/package restore gate; production installer remains future work.
+
+## Quick start
+
+```bash
+git clone https://github.com/ObiJuanDeanobi/imbas-os.git
+cd imbas-os
+npm install
+npm run dev
+```
+
+For a production-style local run:
+
+```bash
+npm run build
+npm start
+```
+
+## Verify
+
+```bash
+npm test
+npm run build
+npm run smoke
+npm run smoke:security
+```
+
+Or run the full local preview gate:
+
+```bash
+npm run verify
+```
+
+Create and verify a private dev preview tarball after the full gate:
+
+```bash
+npm run package:dev
+```
+
+Check Android companion scaffold files without requiring local Android build tooling:
+
+```bash
+npm run android:check
+```
+
+This writes `release/imbas-os-dev-preview.tgz` and runs `npm run verify:preview` to check package contents/restorability. It is private/internal only; do not publish externally without an explicit release decision.
+
+On headless Linux CI/VPS environments, Electron may require `--no-sandbox` unless the Chromium `chrome-sandbox` helper is root-owned and mode `4755`. The app still configures renderer security controls; the flag is only a host-level smoke-test workaround.
+
+## Docs and AI-readable context
+
+This root `README.md` is the single canonical GitHub entrypoint. It should stay readable by humans and easy for AI systems to parse. Additional files provide structured context rather than competing README variants:
+
+- [`llms.txt`](llms.txt) — concise AI sitemap/context map.
+- [`llms-full.txt`](llms-full.txt) — fuller AI context bundle for important pages.
+- [`AGENTS.md`](AGENTS.md) — rules, constraints, and workflows for autonomous agents.
+- [`skill.md`](skill.md) — actionable task workflows for AI agents.
+- [`robots.txt`](robots.txt) — crawler access policy template for website/public-doc deployments.
+- [`docs/index.md`](docs/index.md) — documentation library map and 1.0 documentation standard.
+- [`docs/setup/local-development.md`](docs/setup/local-development.md) — local setup, run, verification, and troubleshooting.
+- [`docs/setup/android-companion.md`](docs/setup/android-companion.md) — APK build/install/pair/diagnostics flow.
+- [`docs/how-to/use-imbas-os.md`](docs/how-to/use-imbas-os.md) — day-to-day desktop and companion workflows.
+- [`docs/ops/verification.md`](docs/ops/verification.md) — verification gates and live checks.
+- [`docs/release/documentation-1.0-gate.md`](docs/release/documentation-1.0-gate.md) — required docs bar before public 1.0.
+
+## Subsystems
+
+```text
+Imbas OS
+├─ Memsocket        memory + context engine
+├─ Artifact Vault   generated artifacts + snapshots
+├─ Lorekeeper       living wiki / Markdown knowledge
+├─ Conduit          agent connectors / API / MCP / webhooks
+├─ Runledger        run history + audit trail
+├─ Sanctum          trust, permissions, redaction, approvals, agent secret vault
+├─ Atlas            graph + search + navigation
+├─ SyncCore         sync, backup, import/export
+├─ Desktop          full workbench client
+├─ Mobile           Android companion
+└─ CLI              terminal + automation interface
+```
+
+## Public 1.0 release rule
+
+Before Imbas OS is released publicly as 1.0, **Memsocket must be fully integrated, merged into the Imbas OS release story, and tested as a first-class module**. Users may still choose whether to enable Memsocket at runtime, but public 1.0 should not ship as a loosely related Artifact Vault app plus an external memory repo.
+
+Required before public 1.0:
+
+- Memsocket included in supported install/profile story.
+- End-to-end events/search/context-pack flow.
+- OpenClaw/Hermes connector dogfood.
+- Sanctum redaction/secret-handle safety across memory/context packs.
+- MemPalace retired only after the staged migration criteria pass; until then it remains a working safety net, not the public 1.0 memory dependency.
+- Documentation readiness gate and fresh-system user experience gate pass: clean OpenClaw config connected to Imbas OS with all supported modules, companion app paired, adapters tested, backup/restore tested, and security smoke verified. See [`docs/release/fresh-system-1.0-gate.md`](docs/release/fresh-system-1.0-gate.md).
+- Backup/restore/export/delete/forget behavior tested across memory, artifacts, and wiki.
+- Explicit Johnathan approval.
+
+## Private release boundary
+
+This repository is private preview only. No public release, package publishing, hosted service, or public announcement should happen without explicit Johnathan approval.
+
+---
+## Source: AGENTS.md
+
+# AGENTS.md — Imbas OS
+
+This repo is designed to be worked on by AI agents as well as humans.
+
+## What Imbas OS is
+
+Imbas OS is a local-first operating layer for AI agents: memory, context, generated artifacts, living wiki pages, run history, snapshots, connectors, and safety controls.
+
+Fast mental model:
+
+```text
+Imbas OS = umbrella product
+Memsocket = memory/context engine
+Artifact Vault = artifact/wiki workbench seed
+Sanctum = trust, redaction, approvals, agent secret vault
+Conduit = agent connector/API layer
+```
+
+## Public 1.0 rule
+
+Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit Johnathan approval.
+
+Do not remove MemPalace during early OpenClaw/Imbas dogfood. MemPalace remains the working OpenClaw/Hermes recall safety net until the staged migration criteria in `docs/architecture/memory-migration.md` pass and Johnathan explicitly approves retirement.
+
+Public 1.0 also requires a fresh-system user experience gate: clean OpenClaw config, Imbas OS with all supported modules, companion app pairing, adapter dogfood, backup/restore, security smoke, and human review loop. See `docs/release/fresh-system-1.0-gate.md`.
+
+## Current repo state
+
+This private-preview repo is seeded from the working Artifact Vault desktop app.
+
+Implemented now:
+
+- Electron + React + TypeScript desktop workbench.
+- HTML artifact import/storage/sandboxed replay.
+- Artifact bundles, notes, metadata, snapshots, exports.
+- Vault-owned Markdown pages.
+- Read-only Markdown/wiki bridge.
+- Unified search/graph/prompt-package export.
+- Sync manifest foundation.
+- Security smoke tests for generated HTML.
+
+Implemented as private-preview foundations, but not production complete yet:
+
+- Memsocket adapter/CLI boundary and optional Conduit write/search/context-pack integration; public 1.0 requires full first-class integration.
+- Conduit local API/loopback service with durable JSONL private-preview storage.
+- OpenClaw shadow connector; Hermes/Codex/Claude Code connector SDKs remain future work.
+- Encrypted local Sanctum vault, redaction, policy, and audit foundation; OS keyring/passphrase UX remains future work.
+- Android companion Gradle/Compose scaffold and pairing/session contract; real Android compile and secure token storage remain future work.
+
+## Setup
+
+```bash
+npm install
+npm run dev
+```
+
+## Verification gates
+
+Before claiming code changes are done, run the smallest meaningful gate. For product changes, prefer:
+
+```bash
+npm test
+npm run build
+```
+
+Before packaging or pushing larger changes, run:
+
+```bash
+npm run verify
+```
+
+`npm run verify` includes tests, build, Electron smoke, and Electron security smoke.
+
+## Important safety rules
+
+- Do not publish this repo/package publicly without explicit Johnathan approval.
+- Do not remove sandboxing or network-block defaults for generated HTML artifacts.
+- Do not store raw secrets in artifacts, Markdown pages, Memsocket events, logs, or context packs.
+- Use Sanctum-style secret handles/capabilities for future sensitive operations.
+- Preserve local-first behavior: no hosted AI/cloud dependency should be required for core flows.
+- Keep external Markdown/wiki bridges read-only unless explicit import/ownership is implemented.
+- Do not directly couple future connectors to internal SQLite/file details; use stable APIs/protocols.
+
+## Agent documentation convention
+
+Every major Imbas OS module should include both human and agent docs:
+
+- `README.md` or `README.human.md` for humans.
+- `AGENTS.md` or `README.agent.md` for agents.
+
+Agent docs should include:
+
+- setup commands;
+- verification gates;
+- file layout;
+- API/contracts;
+- safety boundaries;
+- canonical context links;
+- current implementation status.
+
+Use explicit searchable phrases so retrieval works well:
+
+- Imbas OS
+- local-first AI memory
+- AI artifact vault
+- agent connector
+- context pack
+- Memsocket
+- Artifact Vault
+- OpenClaw
+- Hermes
+- Codex
+- Claude Code
+- Sanctum agent secret vault
+
+## Current useful docs
+
+- `README.md` — single canonical human+AI-readable project entrypoint.
+- `llms.txt` / `llms-full.txt` — AI sitemap and context bundle.
+- `skill.md` — actionable workflow guide for agents.
+- `docs/index.md` — documentation library map and 1.0 documentation gate.
+- `docs/architecture/subsystems.md` — subsystem map.
+- `docs/architecture/module-selection.md` — optional module/install-profile direction.
+- `docs/architecture/memory-migration.md` — MemPalace → Imbas/Memsocket migration and retirement criteria.
+- `docs/architecture/ai-first-os.md` — product principle: UI as a window into the AI operating layer.
+- `docs/release/fresh-system-1.0-gate.md` — mandatory clean-system public 1.0 gate.
+- `docs/setup/local-development.md` — local setup/run/verification/troubleshooting.
+- `docs/setup/android-companion.md` — Android build/install/pair/diagnostics.
+- `docs/how-to/use-imbas-os.md` — human desktop/mobile workflows.
+- `docs/how-to/lorekeeper-review.md` — proposal/diff/apply/snapshot/restore workflow.
+- `docs/mobile/android-companion.md` — Android companion MVP, pairing, scopes, and screen contract.
+- `docs/connectors/protocol.md` — connector/API design target.
+- `docs/sanctum/agent-secret-vault.md` — secret/capability boundary.
+- `docs/file-format.md` — current artifact/wiki storage format.
+- `docs/threat-model.md` — current artifact security model.
+- `docs/implementation-status.md` — current issue evidence matrix and blockers.
+- `docs/ops/verification.md` — verification gates.
+- `docs/ops/backup-restore-delete-forget.md` — resilience/privacy lifecycle plan.
+- `docs/release/documentation-1.0-gate.md` — docs readiness gate before public 1.0.
+
+## Current environment variable note
+
+Some implementation env vars still use the historical `ARTIFACT_VAULT_*` prefix. Do not rename them mechanically without updating tests/smoke scripts and verifying the full gate.
+
+---
+## Source: skill.md
+
+# Imbas OS skill
+
+Actionable workflows for AI agents working with Imbas OS.
+
+## Prime directive
+
+Preserve local-first ownership, generated-artifact sandboxing, human review, and private-preview release boundaries.
+
+## Before changing code
+
+1. Read `README.md`, `AGENTS.md`, and this `skill.md`.
+2. Check `docs/implementation-status.md` and relevant setup/how-to docs.
+3. Inspect current repo state with `git status --short`.
+4. Choose the smallest coherent slice.
+5. Avoid public/external/destructive actions without explicit approval.
+
+## Standard implementation loop
+
+1. Identify the module boundary: Desktop, Android, Conduit, Lorekeeper, Runledger, Sanctum, Memsocket, docs, or release.
+2. Make a small change.
+3. Run the smallest meaningful verification gate.
+4. Update docs when behavior changes.
+5. Run stronger gates before committing larger slices.
+6. Commit with a clear message.
+7. Record artifact paths/SHA256 when APKs or packages change.
+
+## Verification gates
+
+Small gate:
+
+```bash
+npm test
+npm run build
+```
+
+Private-preview gate:
+
+```bash
+npm run verify
+```
+
+Package gate:
+
+```bash
+npm run package:dev
+```
+
+Android touched:
+
+```bash
+./apps/android/gradlew -p apps/android assembleDebug
+```
+
+Markdown docs touched:
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+import re, sys
+root=Path('.').resolve(); missing=[]
+for path in Path('docs').rglob('*.md'):
+    for m in re.finditer(r'\[[^\]]+\]\(([^)]+)\)', path.read_text()):
+        link=m.group(1); target=link.split('#',1)[0]
+        if not target or link.startswith(('http://','https://','mailto:','#')): continue
+        p=(path.parent/target).resolve()
+        if root in p.parents or p == root:
+            if not p.exists(): missing.append((str(path), link))
+if missing:
+    print(missing); sys.exit(1)
+print('markdown links ok')
+PY
+```
+
+## Lorekeeper workflow
+
+- Propose before mutating durable wiki knowledge.
+- Preserve human-owned Markdown outside managed blocks.
+- Require sources for apply.
+- Snapshot before apply/restore.
+- Record Runledger audit evidence.
+
+## Android workflow
+
+- Use Conduit only; do not read Imbas files directly.
+- Store mobile token with Android Keystore; Imbas stores token hash only.
+- Keep apply/restore desktop-guarded.
+- Build APK and record SHA256 after Android changes.
+
+## Connector workflow
+
+- Use stable Conduit/API boundaries.
+- Do not persist raw runtime JSON or raw secrets.
+- Record enough Runledger evidence to reconstruct request, context, outcome, and refs.
+- Keep non-OpenClaw connector SDKs blocked/stubbed until implemented deliberately.
+
+## Release boundaries
+
+- Public 1.0 requires `docs/release/fresh-system-1.0-gate.md` and `docs/release/documentation-1.0-gate.md`.
+- Memsocket must be first-class before public 1.0.
+- MemPalace remains a safety net until migration exit criteria pass and retirement is approved.
+
+---
+## Source: docs/index.md
+
+# Imbas OS documentation library
+
+This is the canonical documentation index for Imbas OS private preview and future public 1.0 readiness.
+
+Imbas OS documentation has three jobs:
+
+1. Help a human install, use, and trust the system.
+2. Help AI agents work safely in the repo without hidden context.
+3. Provide release evidence: setup, verification, rollback, security, and known limitations.
+
+## Start here
+
+- [Root README](../README.md) — single canonical human+AI-readable project entrypoint.
+- [AGENTS.md](../AGENTS.md) — operational rules for autonomous agents working in this repo.
+- [llms.txt](../llms.txt) — concise AI sitemap/context map.
+- [llms-full.txt](../llms-full.txt) — fuller AI context bundle for important docs.
+- [skill.md](../skill.md) — actionable workflow instructions for AI agents.
+- [Private-preview implementation status](implementation-status.md) — current reality, evidence, and blockers.
+- [Fresh-system public 1.0 gate](release/fresh-system-1.0-gate.md) — mandatory release gate before public 1.0.
+
+## Setup and onboarding
+
+- [Local development setup](setup/local-development.md) — install, run, verify, and troubleshoot locally.
+- [Private-preview package restore](private-preview-restore.md) — create and verify the dev preview tarball.
+- [Android companion setup](setup/android-companion.md) — build/install APK, pair, run diagnostics, and test mobile flows.
+- [OpenClaw integration setup](setup/openclaw-integration.md) — connect OpenClaw through Conduit/private-preview dispatch.
+- [Clean install checklist](setup/clean-install-checklist.md) — fresh-system validation checklist.
+
+## How to use Imbas OS
+
+- [User guide](how-to/use-imbas-os.md) — day-to-day desktop, Agent Console, artifacts, wiki, and Runledger flows.
+- [Lorekeeper review workflow](how-to/lorekeeper-review.md) — propose, preview, approve, apply, snapshot, restore.
+- [Android companion guide](mobile/android-companion.md) — mobile concepts, scopes, endpoints, diagnostics, and current screen contract.
+- [Troubleshooting](troubleshooting.md) — common private-preview problems and expected behavior.
+- [Known limitations](known-limitations.md) — explicit not-public-ready gaps.
+- [Glossary](glossary.md) — subsystem and release terminology.
+
+## Architecture and subsystem docs
+
+- [Subsystem map](architecture/subsystems.md)
+- [AI-first OS principle](architecture/ai-first-os.md)
+- [Module selection and install profiles](architecture/module-selection.md)
+- [MemPalace → Imbas/Memsocket migration](architecture/memory-migration.md)
+- [Memsocket adapter](architecture/memsocket-adapter.md)
+- [Memsocket/agentmemory patterns](architecture/memsocket-agentmemory-patterns.md)
+- [Connector protocol](connectors/protocol.md)
+- [Sanctum agent secret vault](sanctum/agent-secret-vault.md)
+- [Threat model](threat-model.md)
+- [File format](file-format.md)
+
+## Strategy and go-to-market
+
+- [Business model strategy](strategy/business-model.md) — free/open-source core, Patreon supporter tiers, and future paid cloud/workspace product boundaries.
+- [Pitch](pitch.md) — current product pitch and wedge.
+- [Positioning](marketing/positioning.md) — audience, category, messaging pillars, and narrative.
+- [Landing page copy draft](marketing/landing-page-copy.md) — draft website sections.
+- [Early access and Patreon copy](marketing/early-access.md) — draft supporter messaging in USD.
+- [Demo script](marketing/demo-script.md) — 3-minute private-preview demo flow.
+
+## Operations and release readiness
+
+- [Verification and test gates](ops/verification.md)
+- [Backup, restore, delete, and forget plan](ops/backup-restore-delete-forget.md)
+- [Release plan](release-plan.md)
+- [Documentation readiness for 1.0](release/documentation-1.0-gate.md)
+
+## Documentation standards for 1.0
+
+Before public 1.0, every supported module/profile needs:
+
+- a human-facing overview;
+- setup steps from a clean machine;
+- common workflows;
+- verification commands;
+- rollback/recovery notes;
+- security/privacy boundaries;
+- troubleshooting notes;
+- agent-facing contract docs where agents will operate it.
+
+Docs must be tested against a fresh environment during the [fresh-system public 1.0 gate](release/fresh-system-1.0-gate.md). If a setup step relies on hidden VPS state, shell history, private secrets, or undocumented OpenClaw configuration, the gate fails.
+
+---
+## Source: docs/implementation-status.md
+
+# Imbas OS private-preview implementation status
+
+This page tracks the current private-preview reality against the initial issue set. It is not a public roadmap or release promise.
+
+## Issue evidence matrix
+
+| Issue | Area | Current evidence | Remaining / blocker |
+|---|---|---|---|
+| #1 | Naming/repo migration | Repo/package/docs now use Imbas OS as umbrella; Artifact Vault remains intentional subsystem/module terminology. Historical `ARTIFACT_VAULT_*` env aliases remain supported for smoke compatibility. | Final cleanup only where references are not historical/module terminology. |
+| #4 | Conduit/OpenClaw connector | Conduit loopback, durable JSONL store, OpenClaw shadow connector, events/runs/search/provenance-rich context-packs, run replay timeline, artifact save endpoint, optional Memsocket write-through, and Agent Console v0.1 live OpenClaw dispatch through a constrained local CLI adapter are implemented with Runledger request/reply capture. | Full connector SDKs for Hermes/Codex/Claude Code, richer approval UX, and production auth/capability model. |
+| #5 | Sanctum secret vault | Encrypted private-preview vault, handle/capability validation, redaction, policy-checked resolution, Conduit redaction audit, and Sanctum Runledger entries exist. | OS keyring/passphrase UX, approval UI, and real connector execution-boundary secret resolution. |
+| #6 | Android companion | Kotlin/Compose Gradle project, VPS Android SDK/JDK/Gradle wrapper, tabbed private-preview APK, live HTTP status/runledger/proposal fetch with offline demo fallback, desktop-created pairing challenge UI with QR payload, Android QR scan prefill, live pairing completion, Android Keystore-encrypted mobile token storage, authenticated session revoke, proposal approve/reject POSTs, proposal rationale/markdown/source preview, private note capture/voice draft POSTs, companion diagnostics, and server-side loopback guards for mobile-scoped reads/actions are implemented. | Photo capture, richer restore UX, and biometric/keychain polish remain. |
+| #7 | Lorekeeper | Proposal-first workflow plus guarded managed-block apply with source citations, non-mutating before/after preview, desktop visual line diff, approve-before-apply action guard, on-disk markdown snapshot before apply, desktop snapshot listing/preview, Runledger audit, Command Center proposal summary, and Agent Console transcript-to-artifact/proposal path exist. | Tiered Lorekeeper automation policy implementation for safe auto-apply lanes versus approval-required lanes, plus guarded restore UI for saved markdown snapshots with safety snapshots before rollback. |
+| #8 | Installer/restore | Private-preview tarball, `npm run verify:preview`, restore/package docs, verification ops guide, and backup/restore/delete/forget readiness plan exist. | Real installer/signing/notarization require release decisions; clean-machine restore evidence still needed. |
+| #9 | Memsocket public 1.0 gate | Adapter, CLI client, optional write-through, status module, live smoke path, agentmemory pattern-harvest note, and explicit MemPalace→Imbas migration plan exist. | Public 1.0 still blocked until Memsocket is merged/integrated/tested under Imbas OS as first-class release module and Johnathan approves. MemPalace must remain active as a safety net until Imbas/Memsocket meets the migration exit criteria. Near-term design slices: deeper memory governance proposals, retrieval eval fixtures, and policy-controlled auto-maintenance for low-risk wiki/artifact updates. |
+
+## Current verification gates
+
+- `npm test`
+- `npm run build`
+- `npm run android:check`
+- `npm run verify`
+- `npm run package:dev`
+- `npm run verify:preview`
+
+## Explicit blockers
+
+- No public release, publishing, or announcement without Johnathan's explicit approval.
+- No public 1.0 until the fresh-system gate in [`docs/release/fresh-system-1.0-gate.md`](release/fresh-system-1.0-gate.md) passes: brand-new OpenClaw config, Imbas OS with all supported modules, agent adapters, Android companion pairing, backup/restore, security smoke, and human review loop.
+- Do not remove/disable MemPalace until the staged migration criteria in [`docs/architecture/memory-migration.md`](architecture/memory-migration.md) pass and Johnathan approves retirement.
+- No production installer/signing/notarization decision has been made.
+
+## Documentation library / 1.0 readiness
+
+- `docs/index.md` is the canonical documentation map; root `README.md` is the single GitHub README.
+- Setup guides now cover local development, Android companion, and OpenClaw integration.
+- How-to guides cover day-to-day Imbas OS usage and Lorekeeper review.
+- Ops/release docs cover verification, backup/restore/delete/forget, documentation readiness, and the fresh-system public 1.0 gate.
+- Remaining doc work before public 1.0: validate every setup/use guide in a fresh environment and turn any missing step into a docs bug or product bug.
+
+---
+## Source: docs/setup/local-development.md
+
+# Local development setup
+
+This guide is for running Imbas OS from a source checkout.
+
+## Prerequisites
+
+- Node.js 22+ recommended.
+- npm.
+- A Linux/macOS/Windows desktop capable of running Electron.
+- On headless Linux/VPS environments, Xvfb is useful for smoke tests.
+
+For Android companion builds, see [Android companion setup](android-companion.md).
+
+## Clone and install
+
+```bash
+git clone https://github.com/ObiJuanDeanobi/imbas-os.git
+cd imbas-os
+npm install
+```
+
+The repo is private preview. Do not publish packages, make the repo public, or announce releases without explicit approval.
+
+## Run the desktop app
+
+Development mode:
+
+```bash
+npm run dev
+```
+
+Production-style local run:
+
+```bash
+npm run build
+npm start
+```
+
+## Run with Conduit exposed for phone testing
+
+Bind Conduit to a tailnet/private IP, not a public interface:
+
+```bash
+IMBAS_OS_CONDUIT_LOOPBACK=1 \
+IMBAS_OS_CONDUIT_HOST=100.81.12.30 \
+IMBAS_OS_CONDUIT_PORT=3077 \
+npm run dev
+```
+
+Android debug builds currently default to `http://100.81.12.30:3077`, and the URL is editable in-app.
+
+## Verification gates
+
+Small code gate:
+
+```bash
+npm test
+npm run build
+```
+
+Standard private-preview gate:
+
+```bash
+npm run verify
+```
+
+Package/restore gate:
+
+```bash
+npm run package:dev
+```
+
+Android scaffold check:
+
+```bash
+npm run android:check
+```
+
+Full Android APK build, if Android SDK/JDK/Gradle wrapper are available:
+
+```bash
+./apps/android/gradlew -p apps/android assembleDebug
+```
+
+## Headless Linux notes
+
+Electron smoke tests may need `xvfb-run` and may use `--no-sandbox` on hosts where Chromium's `chrome-sandbox` helper is not root-owned mode `4755`. This is a host test workaround; generated artifact renderers still need to preserve app-level sandbox/security controls.
+
+## Common troubleshooting
+
+### Electron sandbox helper error
+
+If Electron fails with a Chromium sandbox helper error after install, fix the helper ownership/mode on the host:
+
+```bash
+sudo chown root:root node_modules/electron/dist/chrome-sandbox
+sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
+```
+
+### OpenClaw dispatch cannot find `openclaw`
+
+GUI environments may have a sparse `PATH`. The dispatcher resolves `/home/ubuntu/.npm-global/bin/openclaw` when available and supports `IMBAS_OS_OPENCLAW_COMMAND` for overrides. Prefer absolute paths in service/GUI environments.
+
+### Protected Conduit routes return 401
+
+That is expected without a scoped mobile session token. Pair Android first or use desktop IPC/Agent Console paths where appropriate.
+
+### Restore/apply routes return 403 over HTTP
+
+That is expected. Sensitive desktop-only actions such as Lorekeeper apply/restore and Agent Console dispatch are blocked over tailnet HTTP in private preview.
+
+---
+## Source: docs/setup/android-companion.md
+
+# Android companion setup
+
+The Android companion is a pocket control surface for a local/private Imbas OS instance. It is not the source of truth; it talks to Conduit over HTTP using scoped mobile sessions.
+
+## Prerequisites
+
+- Android phone with Tailscale/tailnet access to the Imbas host for private testing.
+- Imbas OS desktop running with Conduit bound to the tailnet IP.
+- Debug APK built from this repo or supplied as a Mattermost attachment.
+
+## Build APK
+
+From repo root:
+
+```bash
+./apps/android/gradlew -p apps/android assembleDebug
+```
+
+The raw debug APK is written to:
+
+```text
+apps/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Private-preview builds are usually copied into `dist/android/` with a dated filename and SHA256.
+
+## Start Imbas OS for phone testing
+
+Use tailnet/private binding only:
+
+```bash
+IMBAS_OS_CONDUIT_LOOPBACK=1 \
+IMBAS_OS_CONDUIT_HOST=100.81.12.30 \
+IMBAS_OS_CONDUIT_PORT=3077 \
+npm run dev
+```
+
+Confirm status from the host:
+
+```bash
+curl http://100.81.12.30:3077/v0/status
+```
+
+Protected routes such as `/v0/runledger` should return `401` without a paired token.
+
+## Install APK
+
+Install the APK on the phone through a trusted private path, such as:
+
+- Mattermost attachment;
+- a temporary tailnet-only download link;
+- `adb install` if available.
+
+Do not publish APKs publicly during private preview.
+
+## Pair the companion
+
+1. Open Imbas OS Command Center on desktop.
+2. Create an Android pairing challenge.
+3. On Android, open the Pair tab.
+4. Scan the QR code or manually enter challenge ID + 6-digit code.
+5. Tap **Complete pairing**.
+6. Confirm the app reports a paired session and scopes.
+
+The Android app stores the returned `imbas_mobile_*` token encrypted with Android Keystore. Imbas OS stores only the token hash.
+
+## Run diagnostics
+
+Open the Android Diagnostics tab and run checks. Expected results:
+
+- Status should work without pairing.
+- Runledger, Lorekeeper proposals, and Events need a paired scoped session.
+- After pairing, scoped reads should report OK.
+
+## Test core mobile flows
+
+- Status tab shows live Conduit counts.
+- Runs tab shows live Runledger entries and local filtering works.
+- Wiki tab shows Lorekeeper proposals with rationale/markdown/source previews.
+- Approve/reject proposal actions work after pairing.
+- Capture tab sends private text observations after pairing.
+- Share-sheet text opens Capture as a draft.
+- Dictate action opens Android speech recognition and inserts a transcript draft.
+
+## Current limits
+
+- Actual camera QR scan, Android speech recognition, and install/update behavior require phone testing.
+- Photo capture is not implemented yet.
+- Apply/restore remains desktop-guarded; Android can approve/reject proposals but should not directly mutate wiki pages.
+- Public/mobile distribution and signing are not decided.
+
+---
+## Source: docs/how-to/use-imbas-os.md
+
+# How to use Imbas OS
+
+This guide describes the intended private-preview workflow for humans using the desktop app and Android companion.
+
+## Mental model
+
+Imbas OS is the home base. Agents and apps connect to it through stable APIs. It stores artifacts, wiki knowledge, context events, Runledger history, snapshots, and safety audit trails.
+
+## Start the desktop app
+
+```bash
+npm run dev
+```
+
+For phone testing, start with Conduit bound to a tailnet IP:
+
+```bash
+IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=100.81.12.30 IMBAS_OS_CONDUIT_PORT=3077 npm run dev
+```
+
+## Command Center
+
+Use Command Center to inspect:
+
+- module health;
+- artifact/wiki/run/proposal/mobile/sync metrics;
+- recent Runledger and Lorekeeper activity;
+- Android pairing challenges;
+- MemPalace → Imbas/Memsocket migration posture.
+
+## Agent Console
+
+Use Agent Console to stage chat/task messages for OpenClaw private-preview dispatch.
+
+Typical loop:
+
+1. Pick OpenClaw as target.
+2. Write a bounded request.
+3. Dispatch.
+4. Review the reply action card.
+5. Replay the Runledger entry, save an artifact, create a Lorekeeper proposal, or build a context pack.
+
+Do not use Agent Console for destructive/external actions without explicit approval.
+
+## Artifacts
+
+Artifacts are generated/imported HTML mini-tools or documents. They are replayed through the app's sandboxed artifact protocol.
+
+Use artifacts for:
+
+- generated UI mockups;
+- analysis reports;
+- compliance packs;
+- decision matrices;
+- prompt packages.
+
+## Lorekeeper wiki
+
+Lorekeeper handles durable Markdown knowledge through proposal-first review.
+
+Use it for:
+
+- project decisions;
+- implementation status;
+- runbooks;
+- architecture notes;
+- source-backed memory/wiki updates.
+
+Human-owned Markdown outside managed blocks should stay preserved.
+
+## Runledger
+
+Runledger is the timeline of what happened: runs, proposals, redactions, applies/restores, and other audit-relevant events.
+
+Use it to answer:
+
+- what was requested;
+- which connector/agent acted;
+- what changed;
+- what evidence or refs exist;
+- what still needs review.
+
+## Android companion
+
+Use Android for pocket review/capture:
+
+- pair with desktop-created QR/challenge;
+- check diagnostics;
+- inspect status and Runledger;
+- approve/reject Lorekeeper proposals;
+- capture text/share-sheet/voice-dictation notes.
+
+Android should not directly apply wiki changes; apply/restore remains desktop-guarded.
+
+---
+## Source: docs/how-to/lorekeeper-review.md
+
+# Lorekeeper review workflow
+
+Lorekeeper is the living wiki review loop. It should make durable knowledge changes inspectable, reversible, and auditable.
+
+## Core rule
+
+Do not silently mutate human-owned wiki content. Propose first, preview/diff, approve, then apply only inside managed blocks or explicitly owned pages.
+
+## Proposal flow
+
+1. Create a proposal with title, markdown, rationale, target page, and sources.
+2. Review rationale, markdown preview, and sources.
+3. Approve or reject the proposal.
+4. Preview before/after diff.
+5. Apply only after approval.
+6. Write Runledger audit entry.
+
+## Apply behavior
+
+Apply requires:
+
+- approved proposal status;
+- `wiki:pages/*.md` target page;
+- at least one source citation;
+- managed block boundaries.
+
+Lorekeeper writes only inside markers like:
+
+```markdown
+<!-- IMBAS:LOREKEEPER:BEGIN proposal-slug -->
+Managed content here.
+<!-- IMBAS:LOREKEEPER:END proposal-slug -->
+```
+
+Human-owned content outside managed blocks should be preserved.
+
+## Snapshot behavior
+
+Before applying a managed block change, Lorekeeper writes an on-disk Markdown snapshot under `.snapshots/...`.
+
+Desktop review can:
+
+- list snapshots;
+- preview snapshot markdown;
+- restore a snapshot with explicit `RESTORE` confirmation;
+- create a safety snapshot before restore;
+- record Runledger audit entries.
+
+## Android role
+
+Android can approve/reject proposals through scoped mobile actions. Android does not apply or restore pages directly.
+
+## Future tiered automation lanes
+
+Planned policy lanes:
+
+- **Auto-propose**: agent can create proposals for review.
+- **Low-risk auto-apply**: only for explicitly managed blocks and policy-approved sources.
+- **Approval-required**: changes touching durable project knowledge, migration state, security, release notes, or cross-module decisions.
+- **Blocked**: destructive, external, secret-bearing, or trust-boundary changes without explicit human approval.
+
+---
+## Source: docs/release/fresh-system-1.0-gate.md
+
+# Fresh-system public 1.0 gate
+
+Imbas OS must not be pushed as public 1.0 until the full user experience has been tested from scratch on a clean system.
+
+This is stricter than package verification. It is a human/product gate: can a new user set up OpenClaw + Imbas OS + all supported modules + mobile companion and have the system work smoothly end-to-end?
+
+## Release rule
+
+No public 1.0 release, package publish, public repo launch, hosted service, or public announcement without explicit Johnathan approval after this gate passes.
+
+## Test environment requirement
+
+Run the gate on a fresh environment, not the development VPS state.
+
+Acceptable environments:
+
+- a disposable VPS;
+- a clean VM;
+- a clean container/desktop test image where GUI/mobile constraints are represented honestly;
+- a fresh user account only if it avoids inherited OpenClaw/Imbas/MemPalace config and secrets.
+
+The test must not depend on hidden local state from `/home/ubuntu/.openclaw`, existing MemPalace, existing Mattermost/Hermes setup, or developer-only shell history.
+
+## Required end-to-end scenario
+
+### 0. Documentation readiness
+
+- Follow the [documentation readiness gate](documentation-1.0-gate.md).
+- Confirm setup/use/security/backup docs are sufficient without private chat history or hidden VPS state.
+- Record every undocumented step as a docs bug or product bug.
+
+### 1. Install/setup
+
+- Install or restore Imbas OS from the intended private/public package path.
+- Start the desktop app.
+- Confirm the user sees a coherent Imbas OS onboarding/home experience, not only Artifact Vault internals.
+- Enable the full-supported module profile:
+  - Memsocket;
+  - Artifact Vault;
+  - Lorekeeper;
+  - Conduit;
+  - Runledger;
+  - Sanctum;
+  - Atlas/search;
+  - SyncCore/backup where supported;
+  - Desktop;
+  - Mobile companion;
+  - CLI/admin tools where supported.
+
+### 2. Fresh OpenClaw connection
+
+- Start from a brand-new OpenClaw config/profile.
+- Connect OpenClaw to Imbas OS through the supported connector path.
+- Verify OpenClaw can:
+  - discover Imbas capabilities;
+  - append a run/event;
+  - save an artifact;
+  - request/retrieve a context pack;
+  - propose a Lorekeeper/wiki update;
+  - respect Sanctum redaction/secret boundaries.
+
+### 3. Agent/system adapters
+
+For each supported public 1.0 adapter/profile, verify the documented happy path and one failure path:
+
+- OpenClaw;
+- Hermes if included in 1.0;
+- Codex if included in 1.0;
+- Claude Code or other agents only if they are explicitly in scope.
+
+Each adapter must record enough Runledger evidence to answer:
+
+- what was requested;
+- which context was used;
+- what changed;
+- what was verified;
+- what needs approval.
+
+### 4. Memory migration posture
+
+- Confirm Memsocket is first-class in the Imbas OS profile.
+- Confirm no required 1.0 path depends on MemPalace.
+- If MemPalace import/compatibility exists, test it as migration/import/fallback, not as the core memory requirement.
+
+### 5. Android companion
+
+- Install companion APK from the intended distribution path.
+- Pair with the fresh Imbas OS instance.
+- Verify live, non-demo data for:
+  - status;
+  - Runledger;
+  - Lorekeeper proposals;
+  - approval/reject flow where supported;
+  - token/session persistence using secure storage.
+
+### 6. Human review loop
+
+- Start a real task from chat/Agent Console.
+- Save at least one artifact.
+- Create at least one Lorekeeper proposal.
+- Approve/apply one safe proposal.
+- Reject one proposal.
+- Confirm snapshots/audit trail exist.
+
+### 7. Backup/restore/delete
+
+- Create a backup/export.
+- Restore into a clean target.
+- Verify artifacts, memory/context events, wiki pages, Runledger, approvals, and module config survive correctly.
+- Test delete/forget behavior for at least one memory/artifact path.
+
+### 8. Security/safety checks
+
+- Generated HTML remains sandboxed.
+- Network-block/security smoke fixture passes.
+- Secrets do not appear in artifacts, wiki pages, logs, memory events, context packs, or Runledger.
+- Risky/external actions require approval.
+- Public routes are not exposed without authentication and release approval.
+
+## Evidence required
+
+The release candidate needs a completion report containing:
+
+- environment description;
+- exact install steps;
+- documentation pages followed and any doc gaps found;
+- module profile used;
+- adapter versions/configs;
+- screenshots or logs for desktop and Android pairing;
+- test results;
+- backup/restore proof;
+- security smoke proof;
+- known issues;
+- rollback/recovery notes;
+- Johnathan approval record.
+
+## Current status
+
+This gate has **not** passed yet.
+
+Current private-preview work is allowed to continue, but it must not be represented as public-ready until this fresh-system gate passes.
+
+---
+## Source: docs/release/documentation-1.0-gate.md
+
+# Documentation readiness for public 1.0
+
+Public 1.0 requires a docs library that a new human and a new AI agent can use without private chat history, hidden VPS state, or tribal knowledge.
+
+## Gate rule
+
+Do not mark Imbas OS public-ready until the documentation library has been tested during the fresh-system gate.
+
+## Required doc set
+
+### Canonical README and AI context docs
+
+- Root `README.md` as the single GitHub entrypoint, readable by humans and parseable by AI.
+- `llms.txt` as a concise AI sitemap/context map.
+- `llms-full.txt` as a fuller context bundle of crucial docs.
+- `AGENTS.md` as operational rules for autonomous coding agents.
+- `skill.md` as actionable workflow instructions.
+- Local install/setup.
+- Desktop user guide.
+- Android companion setup/use guide.
+- Backup/restore/delete/forget guide.
+- Troubleshooting guide.
+- Security/privacy model.
+- Release notes/known limitations.
+- Connector protocol/API reference.
+- Context pack and memory governance docs.
+- Module-specific contracts for Memsocket, Lorekeeper, Conduit, Runledger, Sanctum, Artifact Vault, Android, and Desktop.
+
+### Operator/release docs
+
+- Verification gates.
+- Fresh-system gate checklist.
+- Rollback/recovery plan.
+- Private-preview package restore procedure.
+- Public release approval checklist.
+
+## Quality bar
+
+Docs must be:
+
+- source-backed by current repo behavior;
+- explicit about private-preview versus public-ready;
+- runnable from a clean checkout where possible;
+- clear about required approvals and dangerous actions;
+- searchable with stable terms like Imbas OS, Memsocket, Conduit, Lorekeeper, Runledger, Sanctum, Artifact Vault, OpenClaw, Hermes, Codex, Claude Code, context pack, and local-first AI memory.
+
+## Fresh-system doc test
+
+During the fresh-system gate, a tester should be able to follow docs to:
+
+1. install/run Imbas OS;
+2. run verification;
+3. pair Android;
+4. connect a fresh OpenClaw profile;
+5. create/save an artifact;
+6. propose/apply/reject Lorekeeper changes;
+7. inspect Runledger evidence;
+8. backup/restore into a clean target;
+9. understand what remains private-preview only.
+
+Any undocumented step becomes either a doc bug or a product bug.
+
+---
+## Source: docs/known-limitations.md
+
+# Known limitations
+
+This page is intentionally blunt. Imbas OS is private-preview software, not public 1.0.
+
+## Release/distribution
+
+- No public release approval yet.
+- No production installer, signing, notarization, or app-store distribution.
+- Dev preview package exists, but public distribution is blocked by the fresh-system gate.
+
+## Memsocket and memory migration
+
+- Memsocket is not yet fully merged/integrated/tested as the first-class Imbas OS public 1.0 memory module.
+- MemPalace remains the working OpenClaw/Hermes recall safety net.
+- MemPalace must not be removed until migration criteria pass and Johnathan explicitly approves.
+
+## Connectors
+
+- OpenClaw private-preview dispatch works through a constrained local CLI adapter.
+- Direct Gateway integration still needs deliberate auth/scope hardening.
+- Hermes, Codex, Claude Code, and other connector SDKs are not production-ready yet.
+
+## Android companion
+
+- Real phone validation is still required for QR camera scan, speech recognition/dictation, install/update flow, and long-lived session persistence.
+- Photo capture is not implemented yet.
+- Android can approve/reject proposals but does not directly apply/restore wiki pages.
+- Public mobile distribution/signing is not decided.
+
+## Cloud/team/business
+
+- Hosted cloud workspace does not exist yet.
+- Team/org workspaces, admin controls, SSO, managed backups, and compliance exports are future paid-product surfaces.
+- Patreon/supporter early access is not business/team support.
+
+## Security and ops
+
+- Cloudflare Access for the browser GUI is preferred but not fully automated/configured in the project.
+- Production auth/capability model is not complete.
+- OS keyring/passphrase UX for Sanctum is not complete.
+- Backup/restore/delete/forget behavior needs clean-system evidence before public 1.0.
+
+## Documentation
+
+- Documentation library exists, but the docs must still be tested against a fresh environment.
+- Any undocumented setup step discovered during the fresh-system gate is a docs bug or product bug.

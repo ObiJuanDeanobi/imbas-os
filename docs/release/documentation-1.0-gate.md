@@ -8,9 +8,13 @@ Do not mark Imbas OS public-ready until the documentation library has been teste
 
 ## Required doc set
 
-### Human docs
+### Canonical README and AI context docs
 
-- Product overview.
+- Root `README.md` as the single GitHub entrypoint, readable by humans and parseable by AI.
+- `llms.txt` as a concise AI sitemap/context map.
+- `llms-full.txt` as a fuller context bundle of crucial docs.
+- `AGENTS.md` as operational rules for autonomous coding agents.
+- `skill.md` as actionable workflow instructions.
 - Local install/setup.
 - Desktop user guide.
 - Android companion setup/use guide.
@@ -18,13 +22,7 @@ Do not mark Imbas OS public-ready until the documentation library has been teste
 - Troubleshooting guide.
 - Security/privacy model.
 - Release notes/known limitations.
-
-### Agent docs
-
-- Repo `AGENTS.md`.
-- Agent setup/verification guide.
 - Connector protocol/API reference.
-- Safety boundaries and approval rules.
 - Context pack and memory governance docs.
 - Module-specific contracts for Memsocket, Lorekeeper, Conduit, Runledger, Sanctum, Artifact Vault, Android, and Desktop.
 

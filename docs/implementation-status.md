@@ -32,7 +32,7 @@ This page tracks the current private-preview reality against the initial issue s
 
 ## Documentation library / 1.0 readiness
 
-- `docs/README.md` is the canonical documentation map.
+- `docs/index.md` is the canonical documentation map; root `README.md` is the single GitHub README.
 - Setup guides now cover local development, Android companion, and OpenClaw integration.
 - How-to guides cover day-to-day Imbas OS usage and Lorekeeper review.
 - Ops/release docs cover verification, backup/restore/delete/forget, documentation readiness, and the fresh-system public 1.0 gate.

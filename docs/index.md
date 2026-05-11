@@ -10,8 +10,11 @@ Imbas OS documentation has three jobs:
 
 ## Start here
 
-- [Human product overview](imbas/human-readme.md) — what Imbas OS is and why it exists.
-- [Agent operating guide](imbas/agent-readme.md) — how AI agents should work in this repo.
+- [Root README](../README.md) — single canonical human+AI-readable project entrypoint.
+- [AGENTS.md](../AGENTS.md) — operational rules for autonomous agents working in this repo.
+- [llms.txt](../llms.txt) — concise AI sitemap/context map.
+- [llms-full.txt](../llms-full.txt) — fuller AI context bundle for important docs.
+- [skill.md](../skill.md) — actionable workflow instructions for AI agents.
 - [Private-preview implementation status](implementation-status.md) — current reality, evidence, and blockers.
 - [Fresh-system public 1.0 gate](release/fresh-system-1.0-gate.md) — mandatory release gate before public 1.0.
 

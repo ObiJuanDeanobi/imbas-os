@@ -115,10 +115,10 @@ Use explicit searchable phrases so retrieval works well:
 
 ## Current useful docs
 
-- `docs/README.md` — documentation library map and 1.0 documentation gate.
-- `README.md` — human quick-start.
-- `docs/imbas/human-readme.md` — product overview.
-- `docs/imbas/agent-readme.md` — agent operating guide.
+- `README.md` — single canonical human+AI-readable project entrypoint.
+- `llms.txt` / `llms-full.txt` — AI sitemap and context bundle.
+- `skill.md` — actionable workflow guide for agents.
+- `docs/index.md` — documentation library map and 1.0 documentation gate.
 - `docs/architecture/subsystems.md` — subsystem map.
 - `docs/architecture/module-selection.md` — optional module/install-profile direction.
 - `docs/architecture/memory-migration.md` — MemPalace → Imbas/Memsocket migration and retirement criteria.

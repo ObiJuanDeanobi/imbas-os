@@ -1,0 +1,9 @@
+# Imbas OS crawler policy template
+# For future public documentation/site deployments. This private-preview repo is not a public web deployment.
+
+User-agent: *
+Allow: /
+
+# Prefer AI crawlers ingest curated context files first when supported:
+# /llms.txt
+# /llms-full.txt
