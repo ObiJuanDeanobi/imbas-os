@@ -146,6 +146,7 @@ ipcMain.handle('conduit:lorekeeper-proposal:reject', async (_event, id: string) 
 ipcMain.handle('conduit:lorekeeper-proposal:apply', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/apply`, { method: 'POST' }), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-snapshots:list', async (_event, targetPageId: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/snapshots?targetPageId=${encodeURIComponent(targetPageId)}`), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-snapshot:preview', async (_event, input: { targetPageId: string; snapshotPath: string }) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/snapshots/preview?targetPageId=${encodeURIComponent(input.targetPageId)}&snapshotPath=${encodeURIComponent(input.snapshotPath)}`), conduitStore)).body);
+ipcMain.handle('conduit:lorekeeper-snapshot:restore', async (_event, input: { targetPageId: string; snapshotPath: string; confirm: string }) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/snapshots/restore', { method: 'POST', body: JSON.stringify(input) }), conduitStore)).body);
 ipcMain.handle('vault:info', async () => initVault(vaultRoot));
 ipcMain.handle('sync:status', async () => getSyncStatus(vaultRoot));
 ipcMain.handle('sync:rebuild-manifest', async () => rebuildSyncManifest(vaultRoot));

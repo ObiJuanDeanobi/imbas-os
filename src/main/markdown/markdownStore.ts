@@ -78,6 +78,14 @@ export async function readMarkdownSnapshot(root: string, pageId: string, snapsho
   return { ...snapshot, markdown: await readFile(absolutePath, 'utf8') };
 }
 
+export async function restoreMarkdownSnapshot(root: string, pageId: string, snapshotPath: string): Promise<{ page: WikiPageBundle; restoredSnapshot: MarkdownSnapshotSummary & { markdown: string }; safetySnapshot: Awaited<ReturnType<typeof createMarkdownSnapshot>> }> {
+  const current = await readMarkdownPageFromVault(root, pageId);
+  const restoredSnapshot = await readMarkdownSnapshot(root, pageId, snapshotPath);
+  const safetySnapshot = await createMarkdownSnapshot(root, pageId, current.markdown, 'pre-snapshot-restore');
+  const page = await updateMarkdownPage(root, pageId, restoredSnapshot.markdown);
+  return { page, restoredSnapshot, safetySnapshot };
+}
+
 export async function searchMarkdownPagesInVault(root: string, query: string): Promise<UnifiedSearchResult[]> {
   const normalizedQuery = query.trim().toLowerCase();
   const pages = await listMarkdownPages(root);

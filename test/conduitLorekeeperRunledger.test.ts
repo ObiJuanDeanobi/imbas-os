@@ -48,7 +48,7 @@ test('durable Conduit store reloads Runledger and Lorekeeper proposal state', as
 
 test('Conduit previews Lorekeeper apply with before and after markdown without mutating page', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'imbas-lorekeeper-preview-'));
-  const { createMarkdownPage, readMarkdownPageFromVault } = await import('../src/main/markdown/markdownStore.ts');
+  const { createMarkdownPage, readMarkdownPageFromVault, updateMarkdownPage } = await import('../src/main/markdown/markdownStore.ts');
   const page = await createMarkdownPage(root, { title: 'Preview Page', markdown: '# Preview Page\n\nHuman-owned intro.\n' });
   const store = createConduitRecordStore();
   store.markdownRoot = root;
@@ -70,7 +70,7 @@ test('Conduit previews Lorekeeper apply with before and after markdown without m
 
 test('Conduit applies approved Lorekeeper proposal to managed block and records Runledger audit', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'imbas-lorekeeper-apply-'));
-  const { createMarkdownPage, readMarkdownPageFromVault } = await import('../src/main/markdown/markdownStore.ts');
+  const { createMarkdownPage, readMarkdownPageFromVault, updateMarkdownPage } = await import('../src/main/markdown/markdownStore.ts');
   const page = await createMarkdownPage(root, { title: 'Imbas OS', markdown: '# Imbas OS\n\nHuman-owned intro.\n' });
   const store = createConduitRecordStore();
   store.markdownRoot = root;
@@ -88,6 +88,7 @@ test('Conduit applies approved Lorekeeper proposal to managed block and records 
   const snapshotMarkdown = await readFile(path.join(root, applyBody.snapshot?.snapshotPath ?? ''), 'utf8');
   assert.match(snapshotMarkdown, /Human-owned intro\./);
   assert.doesNotMatch(snapshotMarkdown, /Managed block apply is guarded\./);
+  const updatedMarkdownForAssertions = (await readMarkdownPageFromVault(root, page.node.id)).markdown;
   const snapshotsResponse = await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/snapshots?targetPageId=${encodeURIComponent(page.node.id)}`), store);
   assert.equal(snapshotsResponse.status, 200);
   const snapshots = (snapshotsResponse.body as { snapshots: { snapshotPath: string }[] }).snapshots;
@@ -98,6 +99,15 @@ test('Conduit applies approved Lorekeeper proposal to managed block and records 
   const snapshotPreview = snapshotPreviewResponse.body as { snapshot: { markdown: string } };
   assert.match(snapshotPreview.snapshot.markdown, /Human-owned intro\./);
   assert.doesNotMatch(snapshotPreview.snapshot.markdown, /Managed block apply is guarded\./);
+  const restoreReject = await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/snapshots/restore', { method: 'POST', body: JSON.stringify({ targetPageId: page.node.id, snapshotPath: snapshots[0].snapshotPath, confirm: 'NOPE' }) }), store);
+  assert.equal(restoreReject.status, 400);
+  const restoreResponse = await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/snapshots/restore', { method: 'POST', body: JSON.stringify({ targetPageId: page.node.id, snapshotPath: snapshots[0].snapshotPath, confirm: 'RESTORE' }) }), store);
+  assert.equal(restoreResponse.status, 200);
+  const restored = await readMarkdownPageFromVault(root, page.node.id);
+  assert.match(restored.markdown, /Human-owned intro\./);
+  assert.doesNotMatch(restored.markdown, /Managed block apply is guarded\./);
+  assert.equal(store.runledger.some((entry) => entry.kind === 'lorekeeper' && entry.title === 'Restored markdown snapshot'), true);
+  await updateMarkdownPage(root, page.node.id, updatedMarkdownForAssertions);
   const updated = await readMarkdownPageFromVault(root, page.node.id);
   assert.match(updated.markdown, /Human-owned intro\./);
   assert.match(updated.markdown, /<!-- IMBAS:LOREKEEPER:BEGIN sprint-6-apply -->/);

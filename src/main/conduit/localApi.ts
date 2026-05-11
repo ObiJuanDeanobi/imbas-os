@@ -4,7 +4,7 @@ import { createDefaultModuleRegistry, ImbasModuleRegistry } from '../../shared/i
 import { MemsocketCliClient } from '../memsocket/cliClient.js';
 import { createRunledgerEntry, RunledgerEntry, searchRunledger } from '../runledger/store.js';
 import { applyLorekeeperProposalToMarkdown, createLorekeeperProposal, LorekeeperProposal, searchLorekeeperProposals, transitionLorekeeperProposal } from '../lorekeeper/proposals.js';
-import { createMarkdownSnapshot, listMarkdownSnapshots, readMarkdownPageFromVault, readMarkdownSnapshot, updateMarkdownPage } from '../markdown/markdownStore.js';
+import { createMarkdownSnapshot, listMarkdownSnapshots, readMarkdownPageFromVault, readMarkdownSnapshot, restoreMarkdownSnapshot, updateMarkdownPage } from '../markdown/markdownStore.js';
 import { createArtifact } from '../vault/vaultStore.js';
 import { OpenClawDispatcher } from '../openclaw/dispatcher.js';
 import type { CreateArtifactInput } from '../../shared/types.js';
@@ -54,7 +54,7 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       body: {
         service: 'imbas-os-conduit',
         status: 'ok',
-        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/replay/runs/:id', 'GET /v0/wiki/proposals', 'GET /v0/wiki/snapshots', 'GET /v0/wiki/snapshots/preview', 'POST /v0/agents/openclaw/dispatch', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/artifacts', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/preview', 'POST /v0/wiki/proposals/:id/apply'],
+        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/replay/runs/:id', 'GET /v0/wiki/proposals', 'GET /v0/wiki/snapshots', 'GET /v0/wiki/snapshots/preview', 'POST /v0/wiki/snapshots/restore', 'POST /v0/agents/openclaw/dispatch', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/artifacts', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/preview', 'POST /v0/wiki/proposals/:id/apply'],
         modules: store.modules,
         pending: ['POST /v0/snapshots'],
         counts: { events: store.events.length, runs: store.runs.length, runledger: store.runledger.length, lorekeeperProposals: store.lorekeeperProposals.length, mobileSessions: store.mobile.sessions.filter((session) => !session.revokedAt).length },
@@ -120,6 +120,22 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
     }
   }
 
+
+
+  if (request.method === 'POST' && path === '/v0/wiki/snapshots/restore') {
+    if (!store.markdownRoot) return { status: 400, body: { errors: ['markdownRoot is required for Lorekeeper snapshot restore'] } };
+    const body = await readJson<{ targetPageId: string; snapshotPath: string; confirm: string }>(request);
+    if (body.confirm !== 'RESTORE') return { status: 400, body: { errors: ['confirm must be RESTORE'] } };
+    if (!body.targetPageId || !body.snapshotPath) return { status: 400, body: { errors: ['targetPageId and snapshotPath are required'] } };
+    try {
+      const restored = await restoreMarkdownSnapshot(store.markdownRoot, body.targetPageId, body.snapshotPath);
+      store.runledger.push(createRunledgerEntry({ kind: 'lorekeeper', connector: 'Imbas OS', agent: 'agent-console', title: `Restored markdown snapshot`, outcome: 'completed', summary: `Restored ${body.targetPageId} from ${body.snapshotPath}; safety snapshot ${restored.safetySnapshot.snapshotPath}`, refs: [body.targetPageId, body.snapshotPath, restored.safetySnapshot.snapshotPath] }));
+      await store.persist?.();
+      return { status: 200, body: restored };
+    } catch (error) {
+      return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
+  }
 
   if (request.method === 'POST' && path === '/v0/agents/openclaw/dispatch') {
     try {

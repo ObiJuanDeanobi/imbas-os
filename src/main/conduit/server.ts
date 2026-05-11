@@ -86,7 +86,7 @@ function authorizeLoopbackRequest(request: Request, store: ConduitRecordStore): 
   if (/^\/v0\/mobile\/sessions\/[^/]+\/revoke$/.test(path)) return requireMobileScope(request, store, 'status.read');
 
   if (path === '/v0/agents/openclaw/dispatch') return { status: 403, body: { errors: ['loopback Agent Console dispatch is disabled; use the desktop Agent Console'] } };
-  if (path === '/v0/wiki/proposals' || /^\/v0\/wiki\/proposals\/[^/]+\/(preview|apply)$/.test(path)) return { status: 403, body: { errors: ['loopback Lorekeeper mutation is disabled; use the desktop review path'] } };
+  if (path === '/v0/wiki/proposals' || path === '/v0/wiki/snapshots/restore' || /^\/v0\/wiki\/proposals\/[^/]+\/(preview|apply)$/.test(path)) return { status: 403, body: { errors: ['loopback Lorekeeper mutation is disabled; use the desktop review path'] } };
   if (path === '/v0/runs' || path === '/v0/artifacts') return { status: 403, body: { errors: ['loopback write endpoint is disabled; use desktop or an approved connector boundary'] } };
   return null;
 }
