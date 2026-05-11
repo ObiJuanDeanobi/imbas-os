@@ -52,7 +52,7 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       body: {
         service: 'imbas-os-conduit',
         status: 'ok',
-        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/artifacts', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/apply'],
+        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/replay/runs/:id', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/artifacts', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/preview', 'POST /v0/wiki/proposals/:id/apply'],
         modules: store.modules,
         pending: ['POST /v0/snapshots'],
         counts: { events: store.events.length, runs: store.runs.length, runledger: store.runledger.length, lorekeeperProposals: store.lorekeeperProposals.length, mobileSessions: store.mobile.sessions.filter((session) => !session.revokedAt).length },
@@ -82,6 +82,11 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
   if (request.method === 'GET' && path === '/v0/runledger') {
     const limit = parseLimit(url.searchParams.get('limit'));
     return { status: 200, body: { entries: searchRunledger(store.runledger, url.searchParams.get('query') ?? '', limit), count: store.runledger.length } };
+  }
+
+  const runReplayMatch = path.match(/^\/v0\/replay\/runs\/([^/]+)$/);
+  if (request.method === 'GET' && runReplayMatch) {
+    return { status: 200, body: buildRunReplay(store, decodeURIComponent(runReplayMatch[1])) };
   }
 
   if (request.method === 'GET' && path === '/v0/wiki/proposals') {
@@ -172,6 +177,22 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
   }
 
 
+  const proposalPreviewMatch = path.match(/^\/v0\/wiki\/proposals\/([^/]+)\/preview$/);
+  if (request.method === 'POST' && proposalPreviewMatch) {
+    const proposal = store.lorekeeperProposals.find((item) => item.id === proposalPreviewMatch[1]);
+    if (!proposal) return { status: 404, body: { error: 'proposal_not_found' } };
+    if (!store.markdownRoot) return { status: 400, body: { errors: ['markdownRoot is required for Lorekeeper preview'] } };
+    if (!proposal.targetPageId) return { status: 400, body: { errors: ['proposal targetPageId is required for Lorekeeper preview'] } };
+    try {
+      const page = await readMarkdownPageFromVault(store.markdownRoot, proposal.targetPageId);
+      const approved = proposal.status === 'approved' ? proposal : transitionLorekeeperProposal(proposal, 'approved');
+      const applied = applyLorekeeperProposalToMarkdown(page.markdown, approved);
+      return { status: 200, body: { proposal, targetPage: page.node, blockId: applied.blockId, changed: applied.changed, before: page.markdown, after: applied.markdown } };
+    } catch (error) {
+      return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
+  }
+
   const proposalApplyMatch = path.match(/^\/v0\/wiki\/proposals\/([^/]+)\/apply$/);
   if (request.method === 'POST' && proposalApplyMatch) {
     const proposal = store.lorekeeperProposals.find((item) => item.id === proposalApplyMatch[1]);
@@ -180,13 +201,14 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
     if (!proposal.targetPageId) return { status: 400, body: { errors: ['proposal targetPageId is required for Lorekeeper apply'] } };
     try {
       const page = await readMarkdownPageFromVault(store.markdownRoot, proposal.targetPageId);
-      const applied = applyLorekeeperProposalToMarkdown(page.markdown, proposal);
+      const beforeMarkdown = page.markdown;
+      const applied = applyLorekeeperProposalToMarkdown(beforeMarkdown, proposal);
       const updated = applied.changed ? await updateMarkdownPage(store.markdownRoot, proposal.targetPageId, applied.markdown) : page;
       const next = transitionLorekeeperProposal(proposal, 'applied');
       store.lorekeeperProposals[store.lorekeeperProposals.indexOf(proposal)] = next;
       store.runledger.push(createRunledgerEntry({ kind: 'lorekeeper', connector: proposal.connector, agent: proposal.agent, title: `Applied ${proposal.title}`, outcome: 'applied', summary: `Applied Lorekeeper managed block ${applied.blockId} to ${proposal.targetPageId}`, refs: [proposal.id, proposal.targetPageId, ...(proposal.sources ?? [])] }));
       await store.persist?.();
-      return { status: 200, body: { proposal: next, page: updated.node, blockId: applied.blockId, changed: applied.changed } };
+      return { status: 200, body: { proposal: next, page: updated.node, blockId: applied.blockId, changed: applied.changed, snapshot: { kind: 'markdown-before-apply', markdown: beforeMarkdown, createdAt: new Date().toISOString() } } };
     } catch (error) {
       return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
     }
@@ -210,7 +232,7 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       if (result.status === 'ok') return { status: 200, body: { backend: 'memsocket', result: result.json ?? result.stdout } };
     }
     const results = localSearch(store, body.task, 8);
-    return { status: 200, body: { backend: 'conduit-local', task: body.task, items: results, totalItems: results.length } };
+    return { status: 200, body: { backend: 'conduit-local', task: body.task, items: results, totalItems: results.length, provenanceSummary: summarizeProvenance(results) } };
   }
 
   if (request.method === 'POST' && path === '/v0/events') {
@@ -281,19 +303,65 @@ function parseLimit(value: string | null): number {
 
 function localSearch(store: ConduitRecordStore, query: string, limit: number): unknown[] {
   const needle = query.toLowerCase();
+  const now = Date.now();
+  const withProvenance = <T extends { kind: string; index: number; createdAt?: string }>(item: T) => {
+    const ageMs = item.createdAt ? Math.max(0, now - Date.parse(item.createdAt)) : null;
+    const staleness = ageMs == null ? 'unknown' : ageMs < 1000 * 60 * 60 * 24 ? 'fresh' : ageMs < 1000 * 60 * 60 * 24 * 30 ? 'recent' : 'stale';
+    return {
+      ...item,
+      provenance: [{
+        uri: `conduit://${item.kind === 'lorekeeper_proposal' ? 'wiki/proposals' : item.kind === 'runledger' ? 'runledger' : `${item.kind}s`}/${item.index}`,
+        kind: item.kind,
+        label: item.kind.replaceAll('_', ' '),
+        createdAt: item.createdAt,
+        staleness,
+        confidence: 'local-record'
+      }]
+    };
+  };
   const events = store.events
-    .map((event, index) => ({ kind: 'event', index, createdAt: event.createdAt, connector: event.connector, agent: event.agent, text: event.text, type: event.type, projectId: event.projectId }))
+    .map((event, index) => withProvenance({ kind: 'event', index, createdAt: event.createdAt, connector: event.connector, agent: event.agent, text: event.text, type: event.type, projectId: event.projectId, runId: event.runId }))
     .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
   const runs = store.runs
-    .map((run, index) => ({ kind: 'run', index, createdAt: run.createdAt, connector: run.connector, agent: run.agent, runId: run.runId, task: run.task, summary: run.summary, outcome: run.outcome }))
+    .map((run, index) => withProvenance({ kind: 'run', index, createdAt: run.createdAt, connector: run.connector, agent: run.agent, runId: run.runId, task: run.task, summary: run.summary, outcome: run.outcome }))
     .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
   const ledger = store.runledger
-    .map((entry, index) => ({ kind: 'runledger', index, createdAt: entry.createdAt, title: entry.title, summary: entry.summary, outcome: entry.outcome }))
+    .map((entry, index) => withProvenance({ kind: 'runledger', index, createdAt: entry.createdAt, title: entry.title, summary: entry.summary, outcome: entry.outcome, refs: entry.refs }))
     .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
   const proposals = store.lorekeeperProposals
-    .map((proposal, index) => ({ kind: 'lorekeeper_proposal', index, createdAt: proposal.createdAt, title: proposal.title, rationale: proposal.rationale, status: proposal.status }))
+    .map((proposal, index) => withProvenance({ kind: 'lorekeeper_proposal', index, createdAt: proposal.createdAt, title: proposal.title, rationale: proposal.rationale, status: proposal.status, sources: proposal.sources, targetPageId: proposal.targetPageId }))
     .filter((item) => JSON.stringify(item).toLowerCase().includes(needle));
   return [...events, ...runs, ...ledger, ...proposals].slice(-limit).reverse();
+}
+
+
+function buildRunReplay(store: ConduitRecordStore, runId: string) {
+  const runs = store.runs.filter((run) => run.runId === runId);
+  const events = store.events.filter((event) => event.runId === runId || event.links?.some((link) => link.includes(runId)) || event.source?.uri?.includes(runId));
+  const runledger = store.runledger.filter((entry) => entry.refs?.some((ref) => ref.includes(runId)) || entry.title.includes(runId) || entry.summary.includes(runId));
+  const lorekeeperProposals = store.lorekeeperProposals.filter((proposal) => proposal.sources?.some((source) => source.includes(runId)) || proposal.rationale.includes(runId) || proposal.markdown.includes(runId));
+  const sanctumAudit = store.sanctumAudit.filter((entry) => entry.connector === runs[0]?.connector || entry.agent === runs[0]?.agent || events.some((event) => event.connector === entry.connector && event.agent === entry.agent));
+  const timeline = [
+    ...runs.map((run) => ({ kind: 'run', createdAt: run.createdAt, title: run.task, outcome: run.outcome, summary: run.summary, record: run })),
+    ...events.map((event, index) => ({ kind: 'event', createdAt: event.createdAt, title: event.type, outcome: event.visibility, summary: event.text, record: { ...event, index } })),
+    ...runledger.map((entry) => ({ kind: 'runledger', createdAt: entry.createdAt, title: entry.title, outcome: entry.outcome, summary: entry.summary, record: entry })),
+    ...lorekeeperProposals.map((proposal) => ({ kind: 'lorekeeper_proposal', createdAt: proposal.createdAt, title: proposal.title, outcome: proposal.status, summary: proposal.rationale, record: proposal })),
+    ...sanctumAudit.map((entry) => ({ kind: 'sanctum', createdAt: entry.createdAt, title: entry.action, outcome: entry.recordKind, summary: entry.rawSecretLikeContent ? 'Redacted raw secret-like content' : `Redacted ${entry.handles.length} handle(s)`, record: entry }))
+  ].sort((a, b) => String(a.createdAt ?? '').localeCompare(String(b.createdAt ?? '')));
+  return {
+    runId,
+    counts: { runs: runs.length, events: events.length, runledger: runledger.length, lorekeeperProposals: lorekeeperProposals.length, sanctumAudit: sanctumAudit.length, timeline: timeline.length },
+    run: runs.at(-1) ?? null,
+    timeline
+  };
+}
+
+function summarizeProvenance(results: unknown[]) {
+  const counts = new Map<string, number>();
+  for (const result of results as { provenance?: { kind: string }[] }[]) {
+    for (const item of result.provenance ?? []) counts.set(item.kind, (counts.get(item.kind) ?? 0) + 1);
+  }
+  return [...counts.entries()].map(([kind, count]) => ({ kind, count }));
 }
 
 async function readJson<T>(request: Request): Promise<T> {

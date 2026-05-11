@@ -34,7 +34,13 @@ const api = {
   loadMaliciousSample: () => ipcRenderer.invoke('sample:malicious') as Promise<string>,
   conduitStatus: () => ipcRenderer.invoke('conduit:status') as Promise<any>,
   conduitSearch: (query: string) => ipcRenderer.invoke('conduit:search', query) as Promise<any>,
-  conduitContextPack: (task: string) => ipcRenderer.invoke('conduit:context-pack', task) as Promise<any>
+  conduitContextPack: (task: string) => ipcRenderer.invoke('conduit:context-pack', task) as Promise<any>,
+  conduitRunReplay: (runId: string) => ipcRenderer.invoke('conduit:run-replay', runId) as Promise<any>,
+  conduitCreateLorekeeperProposal: (input: any) => ipcRenderer.invoke('conduit:lorekeeper-proposal:create', input) as Promise<any>,
+  conduitPreviewLorekeeperProposal: (id: string) => ipcRenderer.invoke('conduit:lorekeeper-proposal:preview', id) as Promise<any>,
+  conduitApproveLorekeeperProposal: (id: string) => ipcRenderer.invoke('conduit:lorekeeper-proposal:approve', id) as Promise<any>,
+  conduitRejectLorekeeperProposal: (id: string) => ipcRenderer.invoke('conduit:lorekeeper-proposal:reject', id) as Promise<any>,
+  conduitApplyLorekeeperProposal: (id: string) => ipcRenderer.invoke('conduit:lorekeeper-proposal:apply', id) as Promise<any>
 };
 
 contextBridge.exposeInMainWorld('artifactVault', api);

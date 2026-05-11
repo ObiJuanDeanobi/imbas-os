@@ -91,6 +91,33 @@ test('Conduit local API searches events and builds local context packs', async (
   assert.equal(pack.status, 200);
   assert.equal((pack.body as { backend: string }).backend, 'conduit-local');
   assert.equal((pack.body as { totalItems: number }).totalItems, 1);
+  const packBody = pack.body as { items: { provenance: { uri: string; kind: string; confidence: string }[] }[] };
+  assert.equal(packBody.items[0].provenance[0].uri, 'conduit://events/0');
+  assert.equal(packBody.items[0].provenance[0].kind, 'event');
+});
+
+test('Conduit local API builds a run replay timeline across runs, events, ledger, proposals, and audit', async () => {
+  const store = createConduitRecordStore();
+  await handleConduitRequest(new Request('http://127.0.0.1:0/v0/events', {
+    method: 'POST',
+    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', runId: 'run-replay-1', type: 'observation', layer: 'episodic', visibility: 'private', text: 'Replay event with token=ghp_abcdefghijklmnopqrstuvwxyz123456.' })
+  }), store);
+  await handleConduitRequest(new Request('http://127.0.0.1:0/v0/runs', {
+    method: 'POST',
+    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', runId: 'run-replay-1', task: 'Replay slice', outcome: 'completed', summary: 'Added replay timeline.' })
+  }), store);
+  await handleConduitRequest(new Request('http://127.0.0.1:0/v0/wiki/proposals', {
+    method: 'POST',
+    body: JSON.stringify({ title: 'Replay note', markdown: 'Replay timeline exists.', rationale: 'Durable run review.', connector: 'OpenClaw', agent: 'main', sources: ['openclaw://runs/run-replay-1'] })
+  }), store);
+
+  const replay = await handleConduitRequest(new Request('http://127.0.0.1:0/v0/replay/runs/run-replay-1'), store);
+  assert.equal(replay.status, 200);
+  const body = replay.body as { runId: string; timeline: { kind: string }[]; counts: Record<string, number> };
+  assert.equal(body.runId, 'run-replay-1');
+  assert.equal(body.counts.runs, 1);
+  assert.equal(body.timeline.some((item) => item.kind === 'sanctum'), true);
+  assert.equal(body.timeline.some((item) => item.kind === 'lorekeeper_proposal'), true);
 });
 
 test('Conduit writes accepted events to Memsocket when enabled', async () => {

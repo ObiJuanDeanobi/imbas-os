@@ -45,6 +45,29 @@ test('durable Conduit store reloads Runledger and Lorekeeper proposal state', as
   assert.equal(reloaded.runledger.length, 1);
 });
 
+
+test('Conduit previews Lorekeeper apply with before and after markdown without mutating page', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'imbas-lorekeeper-preview-'));
+  const { createMarkdownPage, readMarkdownPageFromVault } = await import('../src/main/markdown/markdownStore.ts');
+  const page = await createMarkdownPage(root, { title: 'Preview Page', markdown: '# Preview Page\n\nHuman-owned intro.\n' });
+  const store = createConduitRecordStore();
+  store.markdownRoot = root;
+
+  const proposalResponse = await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/proposals', {
+    method: 'POST',
+    body: JSON.stringify({ title: 'Preview block', markdown: 'Previewed block content.', rationale: 'Show diff before apply.', connector: 'OpenClaw', agent: 'main', targetPageId: page.node.id, sources: ['openclaw://runs/preview'] })
+  }), store);
+  const proposal = (proposalResponse.body as { proposal: { id: string } }).proposal;
+  const previewResponse = await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${proposal.id}/preview`, { method: 'POST' }), store);
+  assert.equal(previewResponse.status, 200);
+  const preview = previewResponse.body as { before: string; after: string; changed: boolean };
+  assert.equal(preview.changed, true);
+  assert.match(preview.before, /Human-owned intro\./);
+  assert.match(preview.after, /Previewed block content\./);
+  const unchanged = await readMarkdownPageFromVault(root, page.node.id);
+  assert.doesNotMatch(unchanged.markdown, /Previewed block content\./);
+});
+
 test('Conduit applies approved Lorekeeper proposal to managed block and records Runledger audit', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'imbas-lorekeeper-apply-'));
   const { createMarkdownPage, readMarkdownPageFromVault } = await import('../src/main/markdown/markdownStore.ts');

@@ -19,14 +19,17 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 enum class CompanionTab(val label: String) {
     Pair("Pair"),
@@ -41,20 +44,44 @@ fun ImbasCompanionApp() {
     var serviceUrl by remember { mutableStateOf("http://100.81.12.30:3077") }
     var lastPairingMessage by remember { mutableStateOf("Not paired yet") }
 
-    val status = ImbasStatus(
-        service = "imbas-os-conduit",
-        status = "private-preview scaffold",
-        counts = ImbasCounts(runs = 3, runledger = 3, lorekeeperProposals = 2, mobileSessions = 0)
-    )
-    val runledgerItems = listOf(
-        RunledgerItem("run-001", "Android private-preview APK installed", "success", "today"),
-        RunledgerItem("run-002", "Conduit mobile endpoints scaffolded", "draft", "private preview"),
-        RunledgerItem("run-003", "Secure token storage pending", "next", "upcoming")
-    )
-    val proposals = listOf(
-        LorekeeperProposalItem("prop-001", "Android companion install notes", "draft", "AI_OS/Imbas/mobile"),
-        LorekeeperProposalItem("prop-002", "Pairing flow hardening", "planned", "AI_OS/Imbas/security")
-    )
+    var status by remember { mutableStateOf<ImbasStatus?>(null) }
+    var runledgerItems by remember { mutableStateOf<List<RunledgerItem>>(emptyList()) }
+    var proposals by remember { mutableStateOf<List<LorekeeperProposalItem>>(emptyList()) }
+    var connectionMessage by remember { mutableStateOf("Not connected yet") }
+    val scope = rememberCoroutineScope()
+
+    fun refreshLiveStatus() {
+        scope.launch {
+            connectionMessage = "Connecting to Conduit…"
+            try {
+                val client = ImbasApiClient(serviceUrl)
+                status = client.fetchStatus()
+                runledgerItems = client.fetchRunledger()
+                proposals = client.fetchLorekeeperProposals()
+                connectionMessage = "Live Conduit read succeeded"
+            } catch (error: Exception) {
+                connectionMessage = "Live Conduit read failed: ${error.message ?: error.javaClass.simpleName}"
+                if (status == null) {
+                    status = ImbasStatus(
+                        service = "imbas-os-conduit",
+                        status = "offline demo fallback",
+                        counts = ImbasCounts(runs = 3, runledger = 3, lorekeeperProposals = 2, mobileSessions = 0)
+                    )
+                    runledgerItems = listOf(
+                        RunledgerItem("run-001", "Android private-preview APK installed", "success", "today"),
+                        RunledgerItem("run-002", "Conduit mobile endpoints scaffolded", "draft", "private preview"),
+                        RunledgerItem("run-003", "Secure token storage pending", "next", "upcoming")
+                    )
+                    proposals = listOf(
+                        LorekeeperProposalItem("prop-001", "Android companion install notes", "draft", "AI_OS/Imbas/mobile"),
+                        LorekeeperProposalItem("prop-002", "Pairing flow hardening", "planned", "AI_OS/Imbas/security")
+                    )
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) { refreshLiveStatus() }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
@@ -79,7 +106,7 @@ fun ImbasCompanionApp() {
                             lastPairingMessage = "Pairing request staged for ${request.deviceLabel} (${request.code.ifBlank { "no code entered" }})"
                         }
                     )
-                    CompanionTab.Status -> AiWorldScreen(status = status, serviceUrl = serviceUrl)
+                    CompanionTab.Status -> AiWorldScreen(status = status, serviceUrl = serviceUrl, connectionMessage = connectionMessage, onRefresh = { refreshLiveStatus() })
                     CompanionTab.Runledger -> RunledgerScreen(items = runledgerItems)
                     CompanionTab.Lorekeeper -> LorekeeperReviewScreen(
                         proposals = proposals,
@@ -90,7 +117,7 @@ fun ImbasCompanionApp() {
             }
 
             Text(
-                "Private preview build — local demo data until live Conduit HTTP is wired in.",
+                "Private preview build — live read-only Conduit status with offline demo fallback.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -157,11 +184,13 @@ fun PairingScreen(lastPairingMessage: String, onPair: (ImbasPairingRequest) -> U
 }
 
 @Composable
-fun AiWorldScreen(status: ImbasStatus?, serviceUrl: String) {
+fun AiWorldScreen(status: ImbasStatus?, serviceUrl: String, connectionMessage: String, onRefresh: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("AI world status", style = MaterialTheme.typography.titleLarge)
         StatusCard("Service", status?.service ?: "not connected")
         StatusCard("Conduit URL", serviceUrl)
+        StatusCard("Connection", connectionMessage)
+        Button(onClick = onRefresh) { Text("Refresh live status") }
         Card {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Current scaffold counts", fontWeight = FontWeight.Bold)

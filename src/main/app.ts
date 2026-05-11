@@ -120,6 +120,12 @@ function installNetworkBlocker() {
 ipcMain.handle('conduit:status', async () => (await handleConduitRequest(new Request('http://127.0.0.1/v0/status'), conduitStore)).body);
 ipcMain.handle('conduit:search', async (_event, query: string) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/search', { method: 'POST', body: JSON.stringify({ query }) }), conduitStore)).body);
 ipcMain.handle('conduit:context-pack', async (_event, task: string) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/context-packs', { method: 'POST', body: JSON.stringify({ task, projectId: 'imbas-os', maxTokens: 1200 }) }), conduitStore)).body);
+ipcMain.handle('conduit:run-replay', async (_event, runId: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/replay/runs/${encodeURIComponent(runId)}`), conduitStore)).body);
+ipcMain.handle('conduit:lorekeeper-proposal:create', async (_event, input) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/proposals', { method: 'POST', body: JSON.stringify(input) }), conduitStore)).body);
+ipcMain.handle('conduit:lorekeeper-proposal:preview', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/preview`, { method: 'POST' }), conduitStore)).body);
+ipcMain.handle('conduit:lorekeeper-proposal:approve', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/approve`, { method: 'POST' }), conduitStore)).body);
+ipcMain.handle('conduit:lorekeeper-proposal:reject', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/reject`, { method: 'POST' }), conduitStore)).body);
+ipcMain.handle('conduit:lorekeeper-proposal:apply', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/apply`, { method: 'POST' }), conduitStore)).body);
 ipcMain.handle('vault:info', async () => initVault(vaultRoot));
 ipcMain.handle('sync:status', async () => getSyncStatus(vaultRoot));
 ipcMain.handle('sync:rebuild-manifest', async () => rebuildSyncManifest(vaultRoot));

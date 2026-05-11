@@ -224,7 +224,7 @@ function App() {
         {activeView === 'command'
           ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
           : activeView === 'agent'
-            ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
+            ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onRunReplay={window.artifactVault.conduitRunReplay} onCreateLorekeeperProposal={window.artifactVault.conduitCreateLorekeeperProposal} onPreviewLorekeeperProposal={window.artifactVault.conduitPreviewLorekeeperProposal} onApproveLorekeeperProposal={window.artifactVault.conduitApproveLorekeeperProposal} onRejectLorekeeperProposal={window.artifactVault.conduitRejectLorekeeperProposal} onApplyLorekeeperProposal={window.artifactVault.conduitApplyLorekeeperProposal} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
             : selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
       </section>
     </main>
@@ -306,7 +306,7 @@ function Panel({ title, eyebrow, children }: { title: string; eyebrow: string; c
   return <section className="command-panel"><p className="eyebrow">{eyebrow}</p><h3>{title}</h3>{children}</section>;
 }
 
-function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onCreateArtifact }: { conduitStatus: any; onSearchConduit: (query: string) => Promise<any>; onBuildContextPack: (task: string) => Promise<any>; onCreateArtifact: (input: CreateArtifactInput) => Promise<void> }) {
+function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onRunReplay, onCreateLorekeeperProposal, onPreviewLorekeeperProposal, onApproveLorekeeperProposal, onRejectLorekeeperProposal, onApplyLorekeeperProposal, onCreateArtifact }: { conduitStatus: any; onSearchConduit: (query: string) => Promise<any>; onBuildContextPack: (task: string) => Promise<any>; onRunReplay: (runId: string) => Promise<any>; onCreateLorekeeperProposal: (input: any) => Promise<any>; onPreviewLorekeeperProposal: (id: string) => Promise<any>; onApproveLorekeeperProposal: (id: string) => Promise<any>; onRejectLorekeeperProposal: (id: string) => Promise<any>; onApplyLorekeeperProposal: (id: string) => Promise<any>; onCreateArtifact: (input: CreateArtifactInput) => Promise<void> }) {
   const [agent, setAgent] = useState('OpenClaw');
   const [mode, setMode] = useState<'chat' | 'task'>('chat');
   const [message, setMessage] = useState('Summarize the current Imbas OS state and suggest the next safe task.');
@@ -314,6 +314,9 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onCr
     { role: 'system', text: 'Agent Console v0 is a steering surface. Live agent dispatch is next; today it can build context packs, search Conduit, and save transcript artifacts.', createdAt: new Date().toISOString() }
   ]);
   const [result, setResult] = useState<any>(null);
+  const [runReplayId, setRunReplayId] = useState('');
+  const [proposalTargetPageId, setProposalTargetPageId] = useState('');
+  const [proposalPreview, setProposalPreview] = useState<any>(null);
 
   async function sendMessage() {
     const createdAt = new Date().toISOString();
@@ -332,6 +335,36 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onCr
     await onCreateArtifact({ html: transcriptHtml, title: `Agent Console transcript — ${agent}`, sourceType: 'generated', provider: 'Imbas OS', model: 'agent-console-v0', project: 'Imbas OS', tags: ['agent-console', 'transcript'] });
   }
 
+  async function createLorekeeperProposalFromTranscript() {
+    const markdown = messages.map((item) => `- **${item.role}** (${item.createdAt}): ${item.text}`).join('\n');
+    const response = await onCreateLorekeeperProposal({
+      title: `Agent Console note — ${agent}`,
+      markdown,
+      rationale: 'User-staged Agent Console transcript should be reviewed before durable wiki apply.',
+      connector: 'Imbas OS',
+      agent: 'agent-console',
+      targetPageId: proposalTargetPageId.trim() || undefined,
+      sources: ['imbas://agent-console/transcript']
+    });
+    setResult(response);
+  }
+
+  async function replayRun() {
+    if (!runReplayId.trim()) return;
+    setResult(await onRunReplay(runReplayId.trim()));
+  }
+
+  async function previewProposal(id: string) {
+    const preview = await onPreviewLorekeeperProposal(id);
+    setProposalPreview(preview);
+    setResult(preview);
+  }
+
+  async function transitionProposal(id: string, action: 'approve' | 'reject' | 'apply') {
+    const response = action === 'approve' ? await onApproveLorekeeperProposal(id) : action === 'reject' ? await onRejectLorekeeperProposal(id) : await onApplyLorekeeperProposal(id);
+    setResult(response);
+  }
+
   return <div className="agent-console">
     <header className="hero-card compact">
       <p className="eyebrow">agent console v0</p>
@@ -348,15 +381,22 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onCr
           {messages.map((item, index) => <article className={`message ${item.role}`} key={`${item.createdAt}-${index}`}><strong>{item.role}</strong><p>{item.text}</p><span>{new Date(item.createdAt).toLocaleTimeString()}</span></article>)}
         </div>
         <label>Message<textarea className="prompt-editor console-input" value={message} onChange={(event) => setMessage(event.target.value)} /></label>
-        <div className="button-row"><button onClick={sendMessage}>Send to {agent}</button><button className="secondary" onClick={saveTranscriptArtifact}>Save transcript artifact</button></div>
+        <div className="button-row"><button onClick={sendMessage}>Send to {agent}</button><button className="secondary" onClick={saveTranscriptArtifact}>Save transcript artifact</button><button className="secondary" onClick={createLorekeeperProposalFromTranscript}>Propose wiki note</button></div>
       </section>
       <aside className="metadata-panel console-side">
         <details open><summary>Connector readiness</summary>
           <p className="muted">OpenClaw is first dogfood target. Hermes and Codex adapters should follow once Runledger + context-pack evidence is solid.</p>
           <dl><dt>Conduit status</dt><dd>{conduitStatus?.status ?? 'loading'}</dd><dt>Runs</dt><dd>{conduitStatus?.counts?.runs ?? 0}</dd><dt>Events</dt><dd>{conduitStatus?.counts?.events ?? 0}</dd><dt>Lorekeeper proposals</dt><dd>{conduitStatus?.counts?.lorekeeperProposals ?? 0}</dd></dl>
         </details>
+        <details open><summary>Action cards</summary>
+          <label>Run replay ID<input value={runReplayId} onChange={(event) => setRunReplayId(event.target.value)} placeholder="runId from Conduit" /></label>
+          <button className="secondary" onClick={replayRun}>Replay run timeline</button>
+          <label>Lorekeeper target page<input value={proposalTargetPageId} onChange={(event) => setProposalTargetPageId(event.target.value)} placeholder="optional wiki:pages/name.md" /></label>
+          {(conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 4).map((proposal: any) => <div className="action-card" key={proposal.id}><strong>{proposal.title}</strong><span>{proposal.status}{proposal.targetPageId ? ` → ${proposal.targetPageId}` : ''}</span><div className="button-row"><button className="secondary" onClick={() => previewProposal(proposal.id)}>Preview diff</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'approve')}>Approve</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'reject')}>Reject</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'apply')}>Apply</button></div></div>)}
+        </details>
         <details open><summary>Last Conduit result</summary>{result ? <pre>{JSON.stringify(result, null, 2).slice(0, 5000)}</pre> : <p className="muted">No query yet.</p>}</details>
-        <details><summary>Next connector slice</summary><ol><li>Send message to OpenClaw session.</li><li>Record request/reply in Runledger.</li><li>Allow replies to become artifacts or Lorekeeper proposals.</li><li>Add approval cards for risky actions.</li></ol></details>
+        <details><summary>Lorekeeper preview</summary>{proposalPreview ? <pre>{JSON.stringify({ blockId: proposalPreview.blockId, changed: proposalPreview.changed, before: proposalPreview.before, after: proposalPreview.after }, null, 2).slice(0, 5000)}</pre> : <p className="muted">Preview a proposal to see before/after markdown without applying it.</p>}</details>
+        <details><summary>Next connector slice</summary><ol><li>Send message to OpenClaw session.</li><li>Record request/reply in Runledger.</li><li>Harden live transport and approval cards for real connector execution.</li><li>Add approval cards for risky actions.</li></ol></details>
       </aside>
     </div>
   </div>;
