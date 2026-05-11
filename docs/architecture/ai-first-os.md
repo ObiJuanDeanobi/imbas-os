@@ -19,6 +19,11 @@ This means the product should center the AI's working environment:
 - permissions, secrets, approvals, and policy decisions;
 - sync, backup, restore, and forgetting.
 
+
+## Dual-surface information principle
+
+The AI-first operating layer should expose every important object through two complementary projections: a human-readable surface and an AI-operable surface. The source of truth should be shared, while UI/docs/context/API views are projections over it. See [`dual-surface-information.md`](dual-surface-information.md).
+
 ## UI implication
 
 Every UI view should answer one or more of these questions:

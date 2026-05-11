@@ -39,6 +39,7 @@ Imbas OS documentation has three jobs:
 
 - [Subsystem map](architecture/subsystems.md)
 - [AI-first OS principle](architecture/ai-first-os.md)
+- [Dual-surface information architecture](architecture/dual-surface-information.md)
 - [Module selection and install profiles](architecture/module-selection.md)
 - [MemPalace → Imbas/Memsocket migration](architecture/memory-migration.md)
 - [Memsocket adapter](architecture/memsocket-adapter.md)

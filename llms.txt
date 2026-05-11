@@ -30,6 +30,7 @@ Imbas OS is private-preview software. Do not represent it as public-ready until 
 
 - [Subsystem map](docs/architecture/subsystems.md): Memsocket, Artifact Vault, Lorekeeper, Conduit, Runledger, Sanctum, Atlas, SyncCore, Desktop, Mobile, CLI.
 - [AI-first OS principle](docs/architecture/ai-first-os.md): UI/CLI/mobile/agents use stable module contracts.
+- [Dual-surface information](docs/architecture/dual-surface-information.md): human-readable and AI-operable projections over one source of truth.
 - [Module selection](docs/architecture/module-selection.md): optional install profiles and module enablement.
 - [Memory migration](docs/architecture/memory-migration.md): MemPalace to Imbas/Memsocket staged migration.
 - [Connector protocol](docs/connectors/protocol.md): Conduit connector/API design.

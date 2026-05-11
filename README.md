@@ -12,6 +12,8 @@ The goal:
 
 > Connect your agents once; Imbas OS captures what they know and make, then feeds the right context back when they work.
 
+Imbas OS uses a **dual-surface information architecture**: humans get readable UI/docs/review flows, while AI agents get compact structured context, stable IDs, provenance, and action contracts over the same source of truth.
+
 ## Current private-preview status
 
 This repo is currently seeded from the working Artifact Vault desktop app. It already includes:

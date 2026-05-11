@@ -127,3 +127,7 @@ See [`module-selection.md`](module-selection.md). Imbas OS should be modular: us
 ## AI-first OS principle
 
 See [`ai-first-os.md`](ai-first-os.md). Imbas OS should be treated as an AI-first operating layer: the durable agent world is the source of truth, and the UI is how humans see into, correct, approve, and steer that world.
+
+## Dual-surface information architecture
+
+See [`dual-surface-information.md`](dual-surface-information.md). Imbas OS should expose human-readable and AI-operable surfaces over the same durable local state.
