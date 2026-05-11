@@ -88,3 +88,18 @@ This keeps agents autonomous enough to prepare useful durable knowledge, while p
 ## Sprint 6 consequence: guarded knowledge promotion
 
 Lorekeeper can now close the loop from agent proposal to durable wiki update without giving agents unconstrained write access. Approved proposals apply only to Imbas-managed Markdown blocks with source citations, and Runledger records the apply event. This makes durable knowledge promotion visible, reversible through normal file history/snapshots, and auditable.
+
+
+## Automation policy direction
+
+The long-term goal is not to make Johnathan approve every routine wiki or artifact update. Imbas OS should become self-maintaining inside explicit policy lanes: agents should be able to create, ingest, classify, link, summarize, and update low-risk knowledge automatically while keeping high-impact changes reviewable and dangerous changes gated.
+
+Automation should be tiered:
+
+1. **Suggest only** — create a Lorekeeper proposal or action draft, then wait for human review.
+2. **Auto-apply low-risk reversible changes** — examples: backlinks, formatting, status rollups, daily notes, artifact indexes, generated summaries, and routine project-log updates. These still require source refs, Runledger audit, and rollback/snapshot support.
+3. **Auto-apply trusted lanes** — per-project or per-module policies may allow agents to maintain specific managed blocks/pages/artifact collections without interrupting the human, provided changes stay inside declared scope.
+4. **Require approval** — architecture decisions, release gates, security/safety policy, compliance-sensitive claims, secrets/permissions, canonical memory migration, public-facing copy, and any action Sanctum marks sensitive.
+5. **Never silently execute** — destructive deletes/forget operations, public publishing, external communications, spending money, weakening sandbox/security controls, retiring MemPalace, or irreversible trust-boundary changes require explicit approval and durable evidence.
+
+Human review is therefore a **risk control**, not the default interaction model forever. Lorekeeper starts proposal-first during private preview, but mature Imbas OS should use Sanctum policy, managed-block scopes, snapshots, citations, Runledger evidence, and easy rollback to let safe maintenance happen automatically.
