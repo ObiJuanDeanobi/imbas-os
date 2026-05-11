@@ -19,6 +19,8 @@ npm install
 npm run dev
 ```
 
+Use [local development setup](../setup/local-development.md) for detailed run/troubleshooting notes and [verification gates](../ops/verification.md) before claiming completion.
+
 ## Verification
 
 Small gate:
@@ -58,3 +60,7 @@ Use and preserve these exact phrases in docs where relevant:
 - No raw secret storage in memory/wiki/artifacts/logs/context packs.
 - No direct connector writes to internal database/files once the API exists.
 - Existing `ARTIFACT_VAULT_*` env vars are historical implementation details; rename only with full verification.
+
+## Documentation discipline
+
+If implementation behavior changes, update the docs library index or the relevant setup/how-to/ops page in the same slice. Public 1.0 requires the [documentation readiness gate](../release/documentation-1.0-gate.md) and [fresh-system gate](../release/fresh-system-1.0-gate.md).

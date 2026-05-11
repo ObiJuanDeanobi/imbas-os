@@ -23,6 +23,12 @@ The test must not depend on hidden local state from `/home/ubuntu/.openclaw`, ex
 
 ## Required end-to-end scenario
 
+### 0. Documentation readiness
+
+- Follow the [documentation readiness gate](documentation-1.0-gate.md).
+- Confirm setup/use/security/backup docs are sufficient without private chat history or hidden VPS state.
+- Record every undocumented step as a docs bug or product bug.
+
 ### 1. Install/setup
 
 - Install or restore Imbas OS from the intended private/public package path.
@@ -117,6 +123,7 @@ The release candidate needs a completion report containing:
 
 - environment description;
 - exact install steps;
+- documentation pages followed and any doc gaps found;
 - module profile used;
 - adapter versions/configs;
 - screenshots or logs for desktop and Android pairing;

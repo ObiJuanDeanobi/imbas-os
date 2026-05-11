@@ -18,7 +18,7 @@ The goal:
 
 This repo currently runs as a desktop artifact/wiki workbench seeded from Artifact Vault.
 
-Memsocket, Conduit connectors, Sanctum secret vault, and Android companion are documented as the next systems to integrate.
+Conduit, Runledger, Lorekeeper apply/snapshot flows, Sanctum foundations, OpenClaw private-preview dispatch, and the Android companion are now implemented as private-preview foundations. Memsocket is still the key public 1.0 integration gate.
 
 ## Main pieces
 
@@ -41,11 +41,15 @@ npm install
 npm run dev
 ```
 
+For complete setup and troubleshooting, see [local development setup](../setup/local-development.md). For day-to-day usage, see [how to use Imbas OS](../how-to/use-imbas-os.md).
+
 ## Verify
 
 ```bash
 npm run verify
 ```
+
+For the full private-preview package gate, run `npm run package:dev`. See [verification gates](../ops/verification.md).
 
 ## Boundary
 

@@ -115,6 +115,7 @@ Use explicit searchable phrases so retrieval works well:
 
 ## Current useful docs
 
+- `docs/README.md` — documentation library map and 1.0 documentation gate.
 - `README.md` — human quick-start.
 - `docs/imbas/human-readme.md` — product overview.
 - `docs/imbas/agent-readme.md` — agent operating guide.
@@ -123,12 +124,19 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/architecture/memory-migration.md` — MemPalace → Imbas/Memsocket migration and retirement criteria.
 - `docs/architecture/ai-first-os.md` — product principle: UI as a window into the AI operating layer.
 - `docs/release/fresh-system-1.0-gate.md` — mandatory clean-system public 1.0 gate.
+- `docs/setup/local-development.md` — local setup/run/verification/troubleshooting.
+- `docs/setup/android-companion.md` — Android build/install/pair/diagnostics.
+- `docs/how-to/use-imbas-os.md` — human desktop/mobile workflows.
+- `docs/how-to/lorekeeper-review.md` — proposal/diff/apply/snapshot/restore workflow.
 - `docs/mobile/android-companion.md` — Android companion MVP, pairing, scopes, and screen contract.
 - `docs/connectors/protocol.md` — connector/API design target.
 - `docs/sanctum/agent-secret-vault.md` — secret/capability boundary.
 - `docs/file-format.md` — current artifact/wiki storage format.
 - `docs/threat-model.md` — current artifact security model.
 - `docs/implementation-status.md` — current issue evidence matrix and blockers.
+- `docs/ops/verification.md` — verification gates.
+- `docs/ops/backup-restore-delete-forget.md` — resilience/privacy lifecycle plan.
+- `docs/release/documentation-1.0-gate.md` — docs readiness gate before public 1.0.
 
 ## Current environment variable note
 

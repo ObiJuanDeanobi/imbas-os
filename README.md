@@ -35,7 +35,7 @@ Implemented as private-preview foundations, but not production complete yet:
 - Local Conduit API/loopback service for status, events, runs, artifacts, search, context packs, Lorekeeper proposals/apply, and mobile pairing.
 - OpenClaw shadow connector; Hermes/Codex/Claude Code SDKs remain future work.
 - Sanctum encrypted local vault, handle/capability validation, redaction, policy-checked resolution, and audit foundations.
-- Android Kotlin/Compose scaffold plus pairing/session contract; real Android compile and secure token storage remain future work.
+- Android Kotlin/Compose companion with live pairing, QR prefill, Keystore-encrypted token storage, scoped reads/actions, diagnostics, Runledger filtering, share-sheet capture, and voice-dictation drafts.
 - Private-preview tarball/package restore gate; production installer remains future work.
 
 ## Quick start for humans
@@ -94,6 +94,7 @@ Imbas OS is designed for both people and AI agents. Every major module should in
 
 Start here:
 
+- [`docs/README.md`](docs/README.md) — documentation library map and 1.0 documentation standard.
 - [`AGENTS.md`](AGENTS.md) — agent quick-start and safety boundaries.
 - [`docs/imbas/human-readme.md`](docs/imbas/human-readme.md) — human product overview.
 - [`docs/imbas/agent-readme.md`](docs/imbas/agent-readme.md) — agent-facing operating guide.
@@ -104,6 +105,11 @@ Start here:
 - [`docs/mobile/android-companion.md`](docs/mobile/android-companion.md) — Android companion MVP, pairing, scopes, and screen contract.
 - [`docs/sanctum/agent-secret-vault.md`](docs/sanctum/agent-secret-vault.md) — Sanctum secret/capability design.
 - [`docs/connectors/protocol.md`](docs/connectors/protocol.md) — connector/API target.
+- [`docs/setup/local-development.md`](docs/setup/local-development.md) — local setup, run, verification, and troubleshooting.
+- [`docs/setup/android-companion.md`](docs/setup/android-companion.md) — APK build/install/pair/diagnostics flow.
+- [`docs/how-to/use-imbas-os.md`](docs/how-to/use-imbas-os.md) — day-to-day desktop and companion workflows.
+- [`docs/ops/verification.md`](docs/ops/verification.md) — verification gates and live checks.
+- [`docs/release/documentation-1.0-gate.md`](docs/release/documentation-1.0-gate.md) — required docs bar before public 1.0.
 
 ## Subsystems
 
@@ -133,7 +139,7 @@ Required before public 1.0:
 - OpenClaw/Hermes connector dogfood.
 - Sanctum redaction/secret-handle safety across memory/context packs.
 - MemPalace retired only after the staged migration criteria pass; until then it remains a working safety net, not the public 1.0 memory dependency.
-- Fresh-system user experience gate passes: clean OpenClaw config connected to Imbas OS with all supported modules, companion app paired, adapters tested, backup/restore tested, and security smoke verified. See [`docs/release/fresh-system-1.0-gate.md`](docs/release/fresh-system-1.0-gate.md).
+- Documentation readiness gate and fresh-system user experience gate pass: clean OpenClaw config connected to Imbas OS with all supported modules, companion app paired, adapters tested, backup/restore tested, and security smoke verified. See [`docs/release/fresh-system-1.0-gate.md`](docs/release/fresh-system-1.0-gate.md).
 - Backup/restore/export/delete/forget behavior tested across memory, artifacts, and wiki.
 - Explicit Johnathan approval.
 
