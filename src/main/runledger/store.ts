@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 export type RunledgerEntryKind = 'run' | 'event' | 'sanctum' | 'lorekeeper';
-export type RunledgerOutcome = 'completed' | 'blocked' | 'failed' | 'cancelled' | 'accepted' | 'proposed' | 'redacted';
+export type RunledgerOutcome = 'completed' | 'blocked' | 'failed' | 'cancelled' | 'accepted' | 'proposed' | 'applied' | 'redacted';
 
 export interface RunledgerEntryInput {
   kind: RunledgerEntryKind;

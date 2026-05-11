@@ -44,3 +44,26 @@ test('durable Conduit store reloads Runledger and Lorekeeper proposal state', as
   assert.equal(reloaded.lorekeeperProposals.length, 1);
   assert.equal(reloaded.runledger.length, 1);
 });
+
+test('Conduit applies approved Lorekeeper proposal to managed block and records Runledger audit', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'imbas-lorekeeper-apply-'));
+  const { createMarkdownPage, readMarkdownPageFromVault } = await import('../src/main/markdown/markdownStore.ts');
+  const page = await createMarkdownPage(root, { title: 'Imbas OS', markdown: '# Imbas OS\n\nHuman-owned intro.\n' });
+  const store = createConduitRecordStore();
+  store.markdownRoot = root;
+
+  const proposalResponse = await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/proposals', {
+    method: 'POST',
+    body: JSON.stringify({ title: 'Sprint 6 apply', markdown: 'Managed block apply is guarded.', rationale: 'Close Lorekeeper loop.', connector: 'OpenClaw', agent: 'main', targetPageId: page.node.id, sources: ['openclaw://runs/sprint-6'] })
+  }), store);
+  const proposal = (proposalResponse.body as { proposal: { id: string } }).proposal;
+  await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${proposal.id}/approve`, { method: 'POST' }), store);
+  const applyResponse = await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${proposal.id}/apply`, { method: 'POST' }), store);
+  assert.equal(applyResponse.status, 200);
+  const updated = await readMarkdownPageFromVault(root, page.node.id);
+  assert.match(updated.markdown, /Human-owned intro\./);
+  assert.match(updated.markdown, /<!-- IMBAS:LOREKEEPER:BEGIN sprint-6-apply -->/);
+  assert.match(updated.markdown, /Managed block apply is guarded\./);
+  assert.equal(store.lorekeeperProposals.find((item) => item.id === proposal.id)?.status, 'applied');
+  assert.equal(store.runledger.some((entry) => entry.kind === 'lorekeeper' && entry.outcome === 'applied'), true);
+});

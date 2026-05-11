@@ -3,7 +3,8 @@ import { ImbasContextEventDraft, ImbasRunSummaryDraft, validateContextEventDraft
 import { createDefaultModuleRegistry, ImbasModuleRegistry } from '../../shared/imbas/modules.js';
 import { MemsocketCliClient } from '../memsocket/cliClient.js';
 import { createRunledgerEntry, RunledgerEntry, searchRunledger } from '../runledger/store.js';
-import { createLorekeeperProposal, LorekeeperProposal, searchLorekeeperProposals, transitionLorekeeperProposal } from '../lorekeeper/proposals.js';
+import { applyLorekeeperProposalToMarkdown, createLorekeeperProposal, LorekeeperProposal, searchLorekeeperProposals, transitionLorekeeperProposal } from '../lorekeeper/proposals.js';
+import { readMarkdownPageFromVault, updateMarkdownPage } from '../markdown/markdownStore.js';
 import { completePairingChallenge, createMobilePairingStore, createPairingChallenge, MobilePairingStore, MobileSessionScope, revokeMobileSession } from '../mobile/pairing.js';
 
 export interface ConduitSanctumAuditEntry {
@@ -23,6 +24,7 @@ export interface ConduitRecordStore {
   runledger: RunledgerEntry[];
   lorekeeperProposals: LorekeeperProposal[];
   mobile: MobilePairingStore;
+  markdownRoot?: string;
   modules: ImbasModuleRegistry;
   memsocket?: MemsocketCliClient;
   persist?: () => Promise<void>;
@@ -47,9 +49,9 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       body: {
         service: 'imbas-os-conduit',
         status: 'ok',
-        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke'],
+        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/apply'],
         modules: store.modules,
-        pending: ['POST /v0/artifacts', 'POST /v0/snapshots', 'POST /v0/wiki/proposals/:id/approve-apply'],
+        pending: ['POST /v0/artifacts', 'POST /v0/snapshots'],
         counts: { events: store.events.length, runs: store.runs.length, runledger: store.runledger.length, lorekeeperProposals: store.lorekeeperProposals.length, mobileSessions: store.mobile.sessions.filter((session) => !session.revokedAt).length },
         recentEvents: store.events.slice(-5).reverse(),
         recentRuns: store.runs.slice(-5).reverse(),
@@ -143,6 +145,27 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
     store.lorekeeperProposals[store.lorekeeperProposals.indexOf(proposal)] = next;
     await store.persist?.();
     return { status: 200, body: { proposal: next } };
+  }
+
+
+  const proposalApplyMatch = path.match(/^\/v0\/wiki\/proposals\/([^/]+)\/apply$/);
+  if (request.method === 'POST' && proposalApplyMatch) {
+    const proposal = store.lorekeeperProposals.find((item) => item.id === proposalApplyMatch[1]);
+    if (!proposal) return { status: 404, body: { error: 'proposal_not_found' } };
+    if (!store.markdownRoot) return { status: 400, body: { errors: ['markdownRoot is required for Lorekeeper apply'] } };
+    if (!proposal.targetPageId) return { status: 400, body: { errors: ['proposal targetPageId is required for Lorekeeper apply'] } };
+    try {
+      const page = await readMarkdownPageFromVault(store.markdownRoot, proposal.targetPageId);
+      const applied = applyLorekeeperProposalToMarkdown(page.markdown, proposal);
+      const updated = applied.changed ? await updateMarkdownPage(store.markdownRoot, proposal.targetPageId, applied.markdown) : page;
+      const next = transitionLorekeeperProposal(proposal, 'applied');
+      store.lorekeeperProposals[store.lorekeeperProposals.indexOf(proposal)] = next;
+      store.runledger.push(createRunledgerEntry({ kind: 'lorekeeper', connector: proposal.connector, agent: proposal.agent, title: `Applied ${proposal.title}`, outcome: 'applied', summary: `Applied Lorekeeper managed block ${applied.blockId} to ${proposal.targetPageId}`, refs: [proposal.id, proposal.targetPageId, ...(proposal.sources ?? [])] }));
+      await store.persist?.();
+      return { status: 200, body: { proposal: next, page: updated.node, blockId: applied.blockId, changed: applied.changed } };
+    } catch (error) {
+      return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
   }
 
   if (request.method === 'POST' && path === '/v0/search') {

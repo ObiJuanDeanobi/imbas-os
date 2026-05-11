@@ -163,3 +163,32 @@ Sprint 5 adds a private-preview Android/mobile pairing foundation:
 - `POST /v0/mobile/sessions/:id/revoke` — revoke a mobile session.
 
 Imbas OS stores session token hashes, not raw tokens. Android/mobile clients should use Conduit APIs only and must not touch internal files or databases.
+
+### Guarded Lorekeeper apply
+
+Sprint 6 adds the guarded apply step for approved Lorekeeper proposals:
+
+- `POST /v0/wiki/proposals/:id/apply` — apply an approved, sourced proposal to its `targetPageId` as an Imbas-managed Markdown block.
+
+Apply rules:
+
+- proposal status must be `approved`;
+- proposal must target a vault-owned `wiki:pages/*.md` page;
+- proposal must include at least one source citation;
+- Lorekeeper writes only between its managed block markers;
+- human-owned Markdown outside managed blocks is preserved;
+- every apply records a Runledger entry.
+
+Managed block format:
+
+```md
+<!-- IMBAS:LOREKEEPER:BEGIN sprint-6-note -->
+## Sprint 6 note
+
+...proposal markdown...
+
+Sources: openclaw://runs/sprint-6
+Last reviewed: 2026-05-11T00:00:00.000Z
+Proposal: lore_...
+<!-- IMBAS:LOREKEEPER:END sprint-6-note -->
+```

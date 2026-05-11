@@ -198,7 +198,7 @@ function App() {
           <div className="bridge-report">
             {(conduitStatus?.recentRuns ?? []).slice(0, 3).map((run: any) => <em key={run.runId}>{run.outcome}: {run.task}</em>)}
             {(conduitStatus?.recentRunledger ?? []).slice(0, 3).map((entry: any) => <em key={entry.id}>Ledger {entry.outcome}: {entry.title}</em>)}
-            {(conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 3).map((proposal: any) => <em key={proposal.id}>Lorekeeper {proposal.status}: {proposal.title}</em>)}
+            {(conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 3).map((proposal: any) => <em key={proposal.id}>Lorekeeper {proposal.status}: {proposal.title}{proposal.targetPageId ? ` → ${proposal.targetPageId}` : ''}</em>)}
             {(conduitStatus?.recentEvents ?? []).slice(0, 3).map((event: any, index: number) => <em key={`${event.createdAt}-${index}`}>{event.type}: {event.text.slice(0, 90)}</em>)}
             {(conduitStatus?.sanctumAudit ?? []).slice(0, 3).map((entry: any, index: number) => <em key={`${entry.createdAt}-${index}`}>Sanctum {entry.action}: {entry.recordKind} from {entry.connector}</em>)}
             {aiWorldResult && <pre>{JSON.stringify(aiWorldResult, null, 2).slice(0, 1200)}</pre>}

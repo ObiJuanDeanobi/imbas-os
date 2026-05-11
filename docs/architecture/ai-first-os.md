@@ -84,3 +84,7 @@ The AI-first world needs a durable memory of what agents did and what knowledge 
 - **Lorekeeper proposals** — redacted Markdown/wiki update proposals that can be reviewed before being applied.
 
 This keeps agents autonomous enough to prepare useful durable knowledge, while preserving human oversight before wiki mutation.
+
+## Sprint 6 consequence: guarded knowledge promotion
+
+Lorekeeper can now close the loop from agent proposal to durable wiki update without giving agents unconstrained write access. Approved proposals apply only to Imbas-managed Markdown blocks with source citations, and Runledger records the apply event. This makes durable knowledge promotion visible, reversible through normal file history/snapshots, and auditable.
