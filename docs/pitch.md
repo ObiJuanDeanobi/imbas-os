@@ -86,4 +86,6 @@ For Markdown/Obsidian users, the first integration posture is **integrate, not r
 
 ## Commercial wedge
 
-Start with a trustworthy local desktop core. Later paid surfaces could include polished sync/sharing, team policy controls, browser capture/importers, Obsidian/OpenClaw wiki bridge tooling, Markdown/artifact workspace features, companion integrations, and hosted read-only artifact sharing with strict sandboxing.
+Start with a trustworthy free/open-source local core. The first paid-adjacent path can be Patreon/supporter early access in US dollars for development updates, preview builds, and founder feedback — not team/business support. Later paid cloud/workspace surfaces should be a separate product line: hosted sync/backups, browser workspace, team collaboration, admin/compliance controls, managed connectors, and business support.
+
+See [business model strategy](strategy/business-model.md).

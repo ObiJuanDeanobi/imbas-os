@@ -41,6 +41,11 @@ Imbas OS documentation has three jobs:
 - [Threat model](threat-model.md)
 - [File format](file-format.md)
 
+## Strategy and go-to-market
+
+- [Business model strategy](strategy/business-model.md) — free/open-source core, Patreon supporter tiers, and future paid cloud/workspace product boundaries.
+- [Pitch](pitch.md) — current product pitch and wedge.
+
 ## Operations and release readiness
 
 - [Verification and test gates](ops/verification.md)
