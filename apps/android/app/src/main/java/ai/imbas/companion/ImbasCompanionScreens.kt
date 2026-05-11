@@ -382,11 +382,46 @@ fun RunledgerScreen(items: List<RunledgerItem>) {
 
 @Composable
 fun LorekeeperReviewScreen(proposals: List<LorekeeperProposalItem>, actionMessage: String, canReview: Boolean, onApprove: (String) -> Unit, onReject: (String) -> Unit) {
+    var query by remember { mutableStateOf("") }
+    var statusFilter by remember { mutableStateOf("all") }
+    val statuses = remember(proposals) { listOf("all") + proposals.map { it.status.ifBlank { "unknown" } }.distinct().sorted() }
+    val filteredProposals = remember(proposals, query, statusFilter) {
+        val needle = query.trim().lowercase()
+        proposals.filter { proposal ->
+            val statusMatches = statusFilter == "all" || proposal.status == statusFilter
+            val textMatches = needle.isBlank() || listOf(
+                proposal.title,
+                proposal.status,
+                proposal.targetPageId.orEmpty(),
+                proposal.rationale,
+                proposal.markdownPreview,
+                proposal.sources.joinToString(" ")
+            ).any { value -> value.lowercase().contains(needle) }
+            statusMatches && textMatches
+        }
+    }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Lorekeeper review", style = MaterialTheme.typography.titleLarge)
         Text(if (canReview) "Paired session can approve or reject proposals. Apply remains desktop-guarded." else "Pair before sending proposal decisions.")
         StatusCard("Last action", actionMessage)
-        proposals.forEach { proposal ->
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = query,
+            onValueChange = { query = it },
+            label = { Text("Filter proposals") },
+            singleLine = true
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            statuses.forEach { status ->
+                if (status == statusFilter) {
+                    Button(onClick = { statusFilter = status }) { Text(status) }
+                } else {
+                    OutlinedButton(onClick = { statusFilter = status }) { Text(status) }
+                }
+            }
+        }
+        Text("Showing ${filteredProposals.size} of ${proposals.size} proposals", style = MaterialTheme.typography.bodySmall)
+        filteredProposals.forEach { proposal ->
             Card {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(proposal.title, fontWeight = FontWeight.Bold)
@@ -402,6 +437,7 @@ fun LorekeeperReviewScreen(proposals: List<LorekeeperProposalItem>, actionMessag
                 }
             }
         }
+        if (filteredProposals.isEmpty()) StatusCard("No matching proposals", "Try a different status or search term.")
     }
 }
 

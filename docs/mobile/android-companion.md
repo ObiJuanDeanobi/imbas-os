@@ -189,3 +189,8 @@ The Runs tab parses Runledger `summary` and `refs` fields from Conduit and inclu
 ## Companion diagnostics
 
 The Android app includes a Diagnostics tab that reports the active Conduit URL, stored pairing/session metadata, granted scopes, and live endpoint checks for status, Runledger, Lorekeeper proposals, and events. Protected endpoints intentionally report that pairing is required when no scoped session is available.
+
+
+## Proposal filtering
+
+The Lorekeeper tab includes local search and status chips so mobile review can narrow proposals by title, status, target page, rationale, markdown preview, and source refs before approving or rejecting.
