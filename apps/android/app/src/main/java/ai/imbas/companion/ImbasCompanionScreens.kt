@@ -79,8 +79,8 @@ fun ImbasCompanionApp() {
                         RunledgerItem("run-003", "Secure token storage pending", "next", "upcoming")
                     )
                     proposals = listOf(
-                        LorekeeperProposalItem("prop-001", "Android companion install notes", "draft", "AI_OS/Imbas/mobile"),
-                        LorekeeperProposalItem("prop-002", "Pairing flow hardening", "planned", "AI_OS/Imbas/security")
+                        LorekeeperProposalItem("prop-001", "Android companion install notes", "draft", "AI_OS/Imbas/mobile", "Show install evidence on-device", "APK installed and Conduit reads are live.", listOf("demo://android")),
+                        LorekeeperProposalItem("prop-002", "Pairing flow hardening", "planned", "AI_OS/Imbas/security", "Make mobile auth clearer", "Pairing should use scoped revocable tokens.", listOf("demo://security"))
                     )
                 }
             }
@@ -329,6 +329,9 @@ fun LorekeeperReviewScreen(proposals: List<LorekeeperProposalItem>, actionMessag
                     Text(proposal.title, fontWeight = FontWeight.Bold)
                     Text("Status: ${proposal.status}")
                     Text("Target: ${proposal.targetPageId ?: "No target page"}")
+                    if (proposal.rationale.isNotBlank()) Text("Rationale: ${proposal.rationale}")
+                    if (proposal.markdownPreview.isNotBlank()) StatusCard(title = "Preview", body = proposal.markdownPreview)
+                    if (proposal.sources.isNotEmpty()) Text("Sources: ${proposal.sources.joinToString()}")
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(enabled = canReview, onClick = { onApprove(proposal.id) }) { Text("Approve") }
                         OutlinedButton(enabled = canReview, onClick = { onReject(proposal.id) }) { Text("Reject") }

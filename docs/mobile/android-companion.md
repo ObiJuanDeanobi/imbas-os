@@ -130,6 +130,7 @@ Existing read/review endpoints Android will use:
 
 4. **Lorekeeper review**
    - live proposal list;
+   - on-device rationale, markdown preview, and source display;
    - approve/reject proposal buttons via Conduit;
    - apply remains desktop-guarded.
 

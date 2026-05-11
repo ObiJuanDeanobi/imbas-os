@@ -46,5 +46,8 @@ data class LorekeeperProposalItem(
     val id: String,
     val title: String,
     val status: String,
-    val targetPageId: String? = null
+    val targetPageId: String? = null,
+    val rationale: String = "",
+    val markdownPreview: String = "",
+    val sources: List<String> = emptyList()
 )

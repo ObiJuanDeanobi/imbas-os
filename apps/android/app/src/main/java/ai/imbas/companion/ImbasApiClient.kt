@@ -80,11 +80,15 @@ class ImbasApiClient(private val serviceUrl: String) {
         val proposals = json.optJSONArray("proposals") ?: return@withContext emptyList()
         (0 until proposals.length()).mapNotNull { index ->
             proposals.optJSONObject(index)?.let { proposal ->
+                val sourcesJson = proposal.optJSONArray("sources") ?: org.json.JSONArray()
                 LorekeeperProposalItem(
                     id = proposal.optString("id", "proposal-$index"),
                     title = proposal.optString("title", "Untitled proposal"),
                     status = proposal.optString("status", "unknown"),
-                    targetPageId = proposal.optString("targetPageId").ifBlank { null }
+                    targetPageId = proposal.optString("targetPageId").ifBlank { null },
+                    rationale = proposal.optString("rationale"),
+                    markdownPreview = proposal.optString("markdown").lineSequence().take(12).joinToString("\n"),
+                    sources = (0 until sourcesJson.length()).mapNotNull { sourceIndex -> sourcesJson.optString(sourceIndex).ifBlank { null } }
                 )
             }
         }
