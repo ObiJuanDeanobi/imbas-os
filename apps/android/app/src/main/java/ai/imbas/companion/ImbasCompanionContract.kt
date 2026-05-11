@@ -10,7 +10,9 @@ data class ImbasMobileSession(
     val serviceUrl: String,
     val token: String,
     val deviceLabel: String,
-    val scopes: List<String>
+    val scopes: List<String>,
+    val sessionId: String,
+    val createdAt: String
 )
 
 data class ImbasPairingRequest(

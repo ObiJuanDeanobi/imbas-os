@@ -43,9 +43,18 @@ Reasons:
 - easier native share sheet, notifications, biometrics, and QR scanning;
 - avoids coupling mobile to the Electron/React renderer.
 
-This repo currently includes a lightweight scaffold under `apps/android/` instead of a full Gradle project. The next slice can add the Gradle wrapper/project once we are ready to build on Android tooling.
+The repo now includes a buildable Kotlin/Compose Gradle project under `apps/android/`, with a debug APK build gate running through the checked-in Gradle wrapper on the VPS Android SDK.
 
 ## Pairing and session model
+
+For VPS phone testing, run the desktop app with Conduit bound to the tailnet IP, not a public interface, for example:
+
+```bash
+IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=100.81.12.30 IMBAS_OS_CONDUIT_PORT=3077 npm run dev
+```
+
+The Android debug build defaults to `http://100.81.12.30:3077` and lets the tester edit the URL in-app.
+
 
 Implemented private-preview model lives in `src/main/mobile/pairing.ts` and Conduit endpoints.
 
@@ -82,7 +91,7 @@ Current Sprint 5 endpoints:
 
 - `POST /v0/mobile/pairing-challenges`
 - `POST /v0/mobile/pairing-challenges/complete`
-- `POST /v0/mobile/sessions/:id/revoke`
+- `POST /v0/mobile/sessions/:id/revoke` — requires the paired `Authorization: Bearer imbas_mobile_*` token for that session
 
 Existing read/review endpoints Android will use:
 
@@ -99,9 +108,10 @@ Existing read/review endpoints Android will use:
 ## Initial screens
 
 1. **Pairing**
-   - enter code / scan QR later;
-   - show service URL;
-   - store mobile token securely later.
+   - enter desktop-created challenge ID and 6-digit code;
+   - complete live Conduit pairing over HTTP;
+   - persist the returned mobile token encrypted with Android Keystore;
+   - forget/revoke the paired local session.
 
 2. **Home / AI world**
    - module health cards;
@@ -124,7 +134,7 @@ Existing read/review endpoints Android will use:
 
 ## Safety boundaries
 
-- Android token is scoped and revocable.
+- Android token is scoped, revocable, stored only as a hash by Imbas OS, and encrypted locally with Android Keystore on the phone.
 - Raw secrets must never be sent to Android.
 - Secret/capability approvals should show handles/purpose/tool, not raw values.
 - Pairing codes expire quickly.

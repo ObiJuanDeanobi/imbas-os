@@ -22,8 +22,30 @@ class ImbasApiClient(private val serviceUrl: String) {
     fun authorizationHeader(session: ImbasMobileSession): Pair<String, String> =
         "Authorization" to "Bearer ${session.token}"
 
-    suspend fun fetchStatus(): ImbasStatus = withContext(Dispatchers.IO) {
-        val json = getJson(statusEndpoint)
+    suspend fun completePairing(request: ImbasPairingRequest): ImbasMobileSession = withContext(Dispatchers.IO) {
+        val json = postJson(completePairingEndpoint, JSONObject()
+            .put("challengeId", request.challengeId)
+            .put("code", request.code)
+            .put("deviceLabel", request.deviceLabel))
+        val session = json.optJSONObject("session") ?: error("Pairing response did not include a session")
+        val scopesJson = session.optJSONArray("scopes") ?: org.json.JSONArray()
+        ImbasMobileSession(
+            serviceUrl = normalizedServiceUrl,
+            token = json.optString("token"),
+            deviceLabel = session.optString("deviceLabel", request.deviceLabel),
+            scopes = (0 until scopesJson.length()).mapNotNull { index -> scopesJson.optString(index).ifBlank { null } },
+            sessionId = session.optString("id"),
+            createdAt = session.optString("createdAt")
+        )
+    }
+
+    suspend fun revokeSession(session: ImbasMobileSession): Boolean = withContext(Dispatchers.IO) {
+        postJson("$normalizedServiceUrl/v0/mobile/sessions/${session.sessionId}/revoke", JSONObject(), session)
+        true
+    }
+
+    suspend fun fetchStatus(session: ImbasMobileSession? = null): ImbasStatus = withContext(Dispatchers.IO) {
+        val json = getJson(statusEndpoint, session)
         val counts = json.optJSONObject("counts") ?: JSONObject()
         ImbasStatus(
             service = json.optString("service", "imbas-os-conduit"),
@@ -38,8 +60,8 @@ class ImbasApiClient(private val serviceUrl: String) {
         )
     }
 
-    suspend fun fetchRunledger(limit: Int = 10): List<RunledgerItem> = withContext(Dispatchers.IO) {
-        val json = getJson("$runledgerEndpoint?limit=$limit")
+    suspend fun fetchRunledger(limit: Int = 10, session: ImbasMobileSession? = null): List<RunledgerItem> = withContext(Dispatchers.IO) {
+        val json = getJson("$runledgerEndpoint?limit=$limit", session)
         val entries = json.optJSONArray("entries") ?: return@withContext emptyList()
         (0 until entries.length()).mapNotNull { index ->
             entries.optJSONObject(index)?.let { entry ->
@@ -53,8 +75,8 @@ class ImbasApiClient(private val serviceUrl: String) {
         }
     }
 
-    suspend fun fetchLorekeeperProposals(limit: Int = 10): List<LorekeeperProposalItem> = withContext(Dispatchers.IO) {
-        val json = getJson("$lorekeeperProposalsEndpoint?limit=$limit")
+    suspend fun fetchLorekeeperProposals(limit: Int = 10, session: ImbasMobileSession? = null): List<LorekeeperProposalItem> = withContext(Dispatchers.IO) {
+        val json = getJson("$lorekeeperProposalsEndpoint?limit=$limit", session)
         val proposals = json.optJSONArray("proposals") ?: return@withContext emptyList()
         (0 until proposals.length()).mapNotNull { index ->
             proposals.optJSONObject(index)?.let { proposal ->
@@ -68,12 +90,13 @@ class ImbasApiClient(private val serviceUrl: String) {
         }
     }
 
-    private fun getJson(endpoint: String): JSONObject {
+    private fun getJson(endpoint: String, session: ImbasMobileSession? = null): JSONObject {
         val connection = (URL(endpoint).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 5_000
             readTimeout = 5_000
             setRequestProperty("Accept", "application/json")
+            session?.let { setRequestProperty(authorizationHeader(it).first, authorizationHeader(it).second) }
         }
         return try {
             val stream = if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream
@@ -84,4 +107,26 @@ class ImbasApiClient(private val serviceUrl: String) {
             connection.disconnect()
         }
     }
+
+    private fun postJson(endpoint: String, payload: JSONObject, session: ImbasMobileSession? = null): JSONObject {
+        val connection = (URL(endpoint).openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            connectTimeout = 5_000
+            readTimeout = 5_000
+            doOutput = true
+            setRequestProperty("Accept", "application/json")
+            setRequestProperty("Content-Type", "application/json")
+            session?.let { setRequestProperty(authorizationHeader(it).first, authorizationHeader(it).second) }
+        }
+        return try {
+            connection.outputStream.use { it.write(payload.toString().toByteArray(Charsets.UTF_8)) }
+            val stream = if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream
+            val body = stream.bufferedReader().use { it.readText() }
+            if (connection.responseCode !in 200..299) error("HTTP ${connection.responseCode}: $body")
+            JSONObject(body.ifBlank { "{}" })
+        } finally {
+            connection.disconnect()
+        }
+    }
+
 }

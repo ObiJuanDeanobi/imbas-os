@@ -8,7 +8,7 @@ import { readMarkdownPageFromVault, updateMarkdownPage } from '../markdown/markd
 import { createArtifact } from '../vault/vaultStore.js';
 import { OpenClawDispatcher } from '../openclaw/dispatcher.js';
 import type { CreateArtifactInput } from '../../shared/types.js';
-import { completePairingChallenge, createMobilePairingStore, createPairingChallenge, MobilePairingStore, MobileSessionScope, revokeMobileSession } from '../mobile/pairing.js';
+import { authenticateMobileSession, completePairingChallenge, createMobilePairingStore, createPairingChallenge, MobilePairingStore, MobileSessionScope, revokeMobileSession } from '../mobile/pairing.js';
 
 export interface ConduitSanctumAuditEntry {
   createdAt: string;
@@ -195,6 +195,9 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
   const mobileRevokeMatch = path.match(/^\/v0\/mobile\/sessions\/([^/]+)\/revoke$/);
   if (request.method === 'POST' && mobileRevokeMatch) {
     try {
+      const token = readBearerToken(request);
+      const authedSession = token ? authenticateMobileSession(store.mobile, token, 'status.read') : null;
+      if (!authedSession || authedSession.id !== mobileRevokeMatch[1]) return { status: 401, body: { errors: ['valid mobile session token is required to revoke this session'] } };
       const session = await revokeMobileSession(store.mobile, mobileRevokeMatch[1]);
       await store.persist?.();
       return { status: 200, body: { session } };
@@ -425,6 +428,12 @@ async function readJson<T>(request: Request): Promise<T> {
   } catch {
     throw new Error('invalid JSON body');
   }
+}
+
+function readBearerToken(request: Request): string | null {
+  const header = request.headers.get('authorization') ?? '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : null;
 }
 
 function validateRunSummaryDraft(run: ImbasRunSummaryDraft): string[] {

@@ -36,6 +36,7 @@ const api = {
   conduitSearch: (query: string) => ipcRenderer.invoke('conduit:search', query) as Promise<any>,
   conduitContextPack: (task: string) => ipcRenderer.invoke('conduit:context-pack', task) as Promise<any>,
   conduitOpenClawDispatch: (input: { message: string; mode?: 'chat' | 'task'; agent?: string }) => ipcRenderer.invoke('conduit:openclaw-dispatch', input) as Promise<any>,
+  conduitCreateMobilePairingChallenge: (input?: { ttlMs?: number; scopes?: string[] }) => ipcRenderer.invoke('conduit:mobile-pairing-challenge:create', input ?? {}) as Promise<any>,
   conduitRunReplay: (runId: string) => ipcRenderer.invoke('conduit:run-replay', runId) as Promise<any>,
   conduitCreateLorekeeperProposal: (input: any) => ipcRenderer.invoke('conduit:lorekeeper-proposal:create', input) as Promise<any>,
   conduitPreviewLorekeeperProposal: (id: string) => ipcRenderer.invoke('conduit:lorekeeper-proposal:preview', id) as Promise<any>,

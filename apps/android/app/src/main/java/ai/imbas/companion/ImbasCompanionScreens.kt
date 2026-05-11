@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +43,9 @@ enum class CompanionTab(val label: String) {
 fun ImbasCompanionApp() {
     var selectedTab by remember { mutableStateOf(CompanionTab.Status) }
     var serviceUrl by remember { mutableStateOf("http://100.81.12.30:3077") }
+    val context = LocalContext.current
+    val sessionStore = remember { SecureSessionStore(context) }
+    var mobileSession by remember { mutableStateOf<ImbasMobileSession?>(null) }
     var lastPairingMessage by remember { mutableStateOf("Not paired yet") }
 
     var status by remember { mutableStateOf<ImbasStatus?>(null) }
@@ -55,10 +59,10 @@ fun ImbasCompanionApp() {
             connectionMessage = "Connecting to Conduit…"
             try {
                 val client = ImbasApiClient(serviceUrl)
-                status = client.fetchStatus()
-                runledgerItems = client.fetchRunledger()
-                proposals = client.fetchLorekeeperProposals()
-                connectionMessage = "Live Conduit read succeeded"
+                status = client.fetchStatus(mobileSession)
+                runledgerItems = client.fetchRunledger(session = mobileSession)
+                proposals = client.fetchLorekeeperProposals(session = mobileSession)
+                connectionMessage = if (mobileSession == null) "Live Conduit read succeeded without paired session" else "Live Conduit read succeeded with paired session"
             } catch (error: Exception) {
                 connectionMessage = "Live Conduit read failed: ${error.message ?: error.javaClass.simpleName}"
                 if (status == null) {
@@ -81,7 +85,12 @@ fun ImbasCompanionApp() {
         }
     }
 
-    LaunchedEffect(Unit) { refreshLiveStatus() }
+    LaunchedEffect(Unit) {
+        mobileSession = sessionStore.load()
+        mobileSession?.serviceUrl?.takeIf { it.isNotBlank() }?.let { serviceUrl = it }
+        lastPairingMessage = mobileSession?.let { "Paired as ${it.deviceLabel}; token is stored with Android Keystore." } ?: "Not paired yet"
+        refreshLiveStatus()
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
@@ -101,9 +110,31 @@ fun ImbasCompanionApp() {
             ) {
                 when (selectedTab) {
                     CompanionTab.Pair -> PairingScreen(
+                        mobileSession = mobileSession,
                         lastPairingMessage = lastPairingMessage,
                         onPair = { request ->
-                            lastPairingMessage = "Pairing request staged for ${request.deviceLabel} (${request.code.ifBlank { "no code entered" }})"
+                            scope.launch {
+                                lastPairingMessage = "Completing pairing for ${request.deviceLabel}…"
+                                try {
+                                    val session = ImbasApiClient(serviceUrl).completePairing(request)
+                                    sessionStore.save(session)
+                                    mobileSession = session
+                                    lastPairingMessage = "Paired as ${session.deviceLabel}; token stored with Android Keystore."
+                                    refreshLiveStatus()
+                                } catch (error: Exception) {
+                                    lastPairingMessage = "Pairing failed: ${error.message ?: error.javaClass.simpleName}"
+                                }
+                            }
+                        },
+                        onForget = {
+                            scope.launch {
+                                val session = mobileSession
+                                try { if (session != null) ImbasApiClient(serviceUrl).revokeSession(session) } catch (_: Exception) { }
+                                sessionStore.clear()
+                                mobileSession = null
+                                lastPairingMessage = "Local mobile session forgotten."
+                                refreshLiveStatus()
+                            }
                         }
                     )
                     CompanionTab.Status -> AiWorldScreen(status = status, serviceUrl = serviceUrl, connectionMessage = connectionMessage, onRefresh = { refreshLiveStatus() })
@@ -117,7 +148,7 @@ fun ImbasCompanionApp() {
             }
 
             Text(
-                "Private preview build — live read-only Conduit status with offline demo fallback.",
+                "Private preview build — live Conduit reads and Android Keystore-backed pairing token storage.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -156,12 +187,20 @@ private fun TabRow(selectedTab: CompanionTab, onSelect: (CompanionTab) -> Unit) 
 }
 
 @Composable
-fun PairingScreen(lastPairingMessage: String, onPair: (ImbasPairingRequest) -> Unit) {
+fun PairingScreen(mobileSession: ImbasMobileSession?, lastPairingMessage: String, onPair: (ImbasPairingRequest) -> Unit, onForget: () -> Unit) {
+    var challengeId by remember { mutableStateOf("") }
     var serviceCode by remember { mutableStateOf("") }
     var deviceLabel by remember { mutableStateOf("Johnathan's Android") }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Pair with Imbas OS", style = MaterialTheme.typography.titleLarge)
-        Text("This stages the pairing payload locally for now. Next build will POST it to Conduit and store the session token securely.")
+        Text("Enter the challenge ID and 6-digit code from the Imbas OS Command Center. The returned mobile token is encrypted with Android Keystore.")
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = challengeId,
+            onValueChange = { challengeId = it },
+            label = { Text("Challenge ID") },
+            singleLine = true
+        )
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = serviceCode,
@@ -176,8 +215,12 @@ fun PairingScreen(lastPairingMessage: String, onPair: (ImbasPairingRequest) -> U
             label = { Text("Device label") },
             singleLine = true
         )
-        Button(onClick = { onPair(ImbasPairingRequest(challengeId = "manual", code = serviceCode, deviceLabel = deviceLabel)) }) {
-            Text("Stage pairing request")
+        Button(onClick = { onPair(ImbasPairingRequest(challengeId = challengeId, code = serviceCode, deviceLabel = deviceLabel)) }) {
+            Text("Complete pairing")
+        }
+        if (mobileSession != null) {
+            OutlinedButton(onClick = onForget) { Text("Forget/revoke local session") }
+            StatusCard(title = "Stored session", body = "${mobileSession.deviceLabel} · ${mobileSession.sessionId} · ${mobileSession.scopes.joinToString()}")
         }
         StatusCard(title = "Pairing state", body = lastPairingMessage)
     }

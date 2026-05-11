@@ -41,7 +41,8 @@ async function maybeStartConduitLoopback() {
   if (process.env.IMBAS_OS_CONDUIT_LOOPBACK !== '1') return;
   if (conduitService) return;
   const port = process.env.IMBAS_OS_CONDUIT_PORT ? Number(process.env.IMBAS_OS_CONDUIT_PORT) : 0;
-  conduitService = await startConduitLoopbackService({ port, store: conduitStore });
+  const host = process.env.IMBAS_OS_CONDUIT_HOST ?? '127.0.0.1';
+  conduitService = await startConduitLoopbackService({ host, port, store: conduitStore });
   console.log(`Imbas OS Conduit loopback listening on ${conduitService.url}`);
 }
 
@@ -136,6 +137,7 @@ ipcMain.handle('conduit:status', async () => (await handleConduitRequest(new Req
 ipcMain.handle('conduit:search', async (_event, query: string) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/search', { method: 'POST', body: JSON.stringify({ query }) }), conduitStore)).body);
 ipcMain.handle('conduit:context-pack', async (_event, task: string) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/context-packs', { method: 'POST', body: JSON.stringify({ task, projectId: 'imbas-os', maxTokens: 1200 }) }), conduitStore)).body);
 ipcMain.handle('conduit:openclaw-dispatch', async (_event, input) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/agents/openclaw/dispatch', { method: 'POST', body: JSON.stringify(input) }), conduitStore)).body);
+ipcMain.handle('conduit:mobile-pairing-challenge:create', async (_event, input) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/mobile/pairing-challenges', { method: 'POST', body: JSON.stringify(input ?? {}) }), conduitStore)).body);
 ipcMain.handle('conduit:run-replay', async (_event, runId: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/replay/runs/${encodeURIComponent(runId)}`), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-proposal:create', async (_event, input) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/proposals', { method: 'POST', body: JSON.stringify(input) }), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-proposal:preview', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/preview`, { method: 'POST' }), conduitStore)).body);

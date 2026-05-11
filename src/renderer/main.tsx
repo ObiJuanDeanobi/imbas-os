@@ -30,6 +30,7 @@ function App() {
   const [conduitStatus, setConduitStatus] = useState<any>(null);
   const [aiWorldQuery, setAiWorldQuery] = useState('Imbas OS');
   const [aiWorldResult, setAiWorldResult] = useState<any>(null);
+  const [mobilePairingChallenge, setMobilePairingChallenge] = useState<any>(null);
   const projectOptions = useMemo(() => [...new Set(graph.nodes.map((node) => node.project).filter(Boolean))].sort(), [graph.nodes]);
   const selected = useMemo(() => artifacts.find((artifact) => artifact.id === selectedId) ?? artifacts[0], [artifacts, selectedId]);
   const selectedWikiNode = useMemo(() => selectedWikiId ? graph.nodes.find((node) => node.id === selectedWikiId && node.kind === 'wiki') : null, [graph.nodes, selectedWikiId]);
@@ -127,6 +128,13 @@ function App() {
     setAiWorldResult(await window.artifactVault.conduitContextPack(aiWorldQuery));
   }
 
+  async function createMobilePairingChallenge() {
+    const response = await window.artifactVault.conduitCreateMobilePairingChallenge({ ttlMs: 10 * 60 * 1000 });
+    setMobilePairingChallenge(response?.challenge ?? response);
+    setConduitStatus(await window.artifactVault.conduitStatus());
+    setLastAction('Created a short-lived Android pairing challenge. Enter its challenge ID and code in the companion app.');
+  }
+
   async function createVaultMarkdownPage() {
     const page = await window.artifactVault.createMarkdownPage({ title: markdownTitle, markdown: markdownDraft, tags: ['vault-owned'] });
     await refresh();
@@ -222,7 +230,7 @@ function App() {
       </aside>
       <section className="workspace">
         {activeView === 'command'
-          ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
+          ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} mobilePairingChallenge={mobilePairingChallenge} onCreateMobilePairingChallenge={createMobilePairingChallenge} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
           : activeView === 'agent'
             ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onDispatchOpenClaw={window.artifactVault.conduitOpenClawDispatch} onRunReplay={window.artifactVault.conduitRunReplay} onCreateLorekeeperProposal={window.artifactVault.conduitCreateLorekeeperProposal} onPreviewLorekeeperProposal={window.artifactVault.conduitPreviewLorekeeperProposal} onApproveLorekeeperProposal={window.artifactVault.conduitApproveLorekeeperProposal} onRejectLorekeeperProposal={window.artifactVault.conduitRejectLorekeeperProposal} onApplyLorekeeperProposal={window.artifactVault.conduitApplyLorekeeperProposal} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
             : selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
@@ -232,7 +240,7 @@ function App() {
 }
 
 
-function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, onSeedDemoVault, onRebuildSyncManifest, onOpenVault }: { vault: VaultInfo | null; artifacts: ArtifactSummary[]; graph: ArtifactGraph; syncStatus: SyncStatus | null; conduitStatus: any; onSeedDemoVault: () => Promise<void>; onRebuildSyncManifest: () => Promise<void>; onOpenVault: () => void }) {
+function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mobilePairingChallenge, onCreateMobilePairingChallenge, onSeedDemoVault, onRebuildSyncManifest, onOpenVault }: { vault: VaultInfo | null; artifacts: ArtifactSummary[]; graph: ArtifactGraph; syncStatus: SyncStatus | null; conduitStatus: any; mobilePairingChallenge: any; onCreateMobilePairingChallenge: () => Promise<void>; onSeedDemoVault: () => Promise<void>; onRebuildSyncManifest: () => Promise<void>; onOpenVault: () => void }) {
   const moduleEntries = Object.entries(conduitStatus?.modules ?? {}) as [string, any][];
   const recentRuns = (conduitStatus?.recentRunledger ?? conduitStatus?.recentRuns ?? []).slice(0, 5);
   const proposals = (conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 4);
@@ -248,6 +256,7 @@ function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, onS
         <button onClick={onOpenVault}>Open Artifact Vault</button>
         <button className="secondary" onClick={onSeedDemoVault}>Seed demo workbench</button>
         <button className="secondary" onClick={onRebuildSyncManifest}>Rebuild sync manifest</button>
+        <button className="secondary" onClick={onCreateMobilePairingChallenge}>Create Android pairing code</button>
       </div>
     </header>
 
@@ -283,6 +292,19 @@ function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, onS
           <span>{proposal.status}{proposal.targetPageId ? ` → ${proposal.targetPageId}` : ''}</span>
           <p>{proposal.rationale}</p>
         </article>) : <p className="muted">No proposals yet. Agents will propose wiki/memory updates here before durable changes.</p>}
+      </Panel>
+
+
+
+      <Panel title="Android pairing" eyebrow="mobile companion">
+        <p className="muted">Create a 10-minute challenge here, then enter the challenge ID and code in the Android companion Pair tab.</p>
+        {mobilePairingChallenge ? <div className="pairing-challenge-card">
+          <span>Challenge ID</span><code>{mobilePairingChallenge.id}</code>
+          <span>Code</span><strong>{mobilePairingChallenge.code}</strong>
+          <em>Expires {mobilePairingChallenge.expiresAt ? new Date(mobilePairingChallenge.expiresAt).toLocaleTimeString() : 'soon'}</em>
+        </div> : <p className="muted">No active challenge created in this UI session.</p>}
+        <button className="secondary" onClick={onCreateMobilePairingChallenge}>Create new pairing challenge</button>
+        {activeSessions.length ? activeSessions.map((session: any) => <article className="timeline-item" key={session.id}><strong>{session.deviceLabel}</strong><span>{session.scopes?.join(', ')}</span><p>{session.id}</p></article>) : <p className="muted">No active companion sessions yet.</p>}
       </Panel>
 
       <Panel title="Migration posture" eyebrow="memory">

@@ -145,3 +145,15 @@ button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.pairing-challenge-card {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #854d0e;
+  border-radius: 14px;
+  background: #1f1608;
+  padding: 12px;
+}
+.pairing-challenge-card span { color: #a1a1aa; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.pairing-challenge-card strong { color: #fde68a; font-size: 32px; letter-spacing: .08em; }
+.pairing-challenge-card em { color: #d4d4d8; font-style: normal; font-size: 13px; }
