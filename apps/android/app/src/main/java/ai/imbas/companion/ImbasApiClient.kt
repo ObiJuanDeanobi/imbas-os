@@ -69,7 +69,9 @@ class ImbasApiClient(private val serviceUrl: String) {
                     id = entry.optString("id", "runledger-$index"),
                     title = entry.optString("title", "Untitled runledger entry"),
                     outcome = entry.optString("outcome", "unknown"),
-                    createdAt = entry.optString("createdAt", "unknown")
+                    createdAt = entry.optString("createdAt", "unknown"),
+                    summary = entry.optString("summary"),
+                    refs = entry.optJSONArray("refs")?.let { refs -> (0 until refs.length()).mapNotNull { refIndex -> refs.optString(refIndex).ifBlank { null } } } ?: emptyList()
                 )
             }
         }

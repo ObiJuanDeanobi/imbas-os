@@ -75,9 +75,9 @@ fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload
                         counts = ImbasCounts(runs = 3, runledger = 3, lorekeeperProposals = 2, mobileSessions = 0)
                     )
                     runledgerItems = listOf(
-                        RunledgerItem("run-001", "Android private-preview APK installed", "success", "today"),
-                        RunledgerItem("run-002", "Conduit mobile endpoints scaffolded", "draft", "private preview"),
-                        RunledgerItem("run-003", "Secure token storage pending", "next", "upcoming")
+                        RunledgerItem("run-001", "Android private-preview APK installed", "success", "today", "APK installed and first scaffold reviewed."),
+                        RunledgerItem("run-002", "Conduit mobile endpoints scaffolded", "draft", "private preview", "Status and Runledger reads are wired."),
+                        RunledgerItem("run-003", "Secure token storage pending", "next", "upcoming", "Pairing tokens should remain revocable and encrypted.")
                     )
                     proposals = listOf(
                         LorekeeperProposalItem("prop-001", "Android companion install notes", "draft", "AI_OS/Imbas/mobile", "Show install evidence on-device", "APK installed and Conduit reads are live.", listOf("demo://android")),
@@ -336,6 +336,8 @@ fun RunledgerScreen(items: List<RunledgerItem>) {
                     Text(item.title, fontWeight = FontWeight.Bold)
                     Text("Outcome: ${item.outcome}")
                     Text("When: ${item.createdAt}")
+                    if (item.summary.isNotBlank()) Text(item.summary)
+                    if (item.refs.isNotEmpty()) Text("Refs: ${item.refs.joinToString()}")
                 }
             }
         }

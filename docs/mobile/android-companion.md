@@ -179,3 +179,8 @@ When Conduit is exposed over the tailnet for Android testing, server-layer HTTP 
 ## Voice dictation capture
 
 The Capture tab includes a **Dictate** action that opens Android speech recognition and inserts the returned transcript as an editable private-note draft. The draft still goes through the paired `capture.write` Conduit endpoint; no raw audio is persisted by Imbas OS.
+
+
+## Runledger detail cards
+
+The Runs tab parses Runledger `summary` and `refs` fields from Conduit so mobile review shows enough provenance to decide whether to switch back to desktop for deeper replay or Lorekeeper work.

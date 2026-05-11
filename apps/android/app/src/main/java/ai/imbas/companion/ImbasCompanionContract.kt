@@ -39,7 +39,9 @@ data class RunledgerItem(
     val id: String,
     val title: String,
     val outcome: String,
-    val createdAt: String
+    val createdAt: String,
+    val summary: String = "",
+    val refs: List<String> = emptyList()
 )
 
 data class LorekeeperProposalItem(
