@@ -1,4 +1,7 @@
 import { execFile } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
@@ -22,8 +25,36 @@ export interface OpenClawDispatcher {
   dispatch(request: OpenClawDispatchRequest): Promise<OpenClawDispatchResult>;
 }
 
+
+export function resolveOpenClawCommand(env: NodeJS.ProcessEnv = process.env): string {
+  if (env.IMBAS_OS_OPENCLAW_COMMAND?.trim()) return env.IMBAS_OS_OPENCLAW_COMMAND.trim();
+
+  const candidates = [
+    join(homedir(), '.npm-global/bin/openclaw'),
+    '/usr/local/bin/openclaw',
+    '/usr/bin/openclaw'
+  ];
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate;
+  }
+  return 'openclaw';
+}
+
+function buildOpenClawChildEnv(env: NodeJS.ProcessEnv, command: string): NodeJS.ProcessEnv {
+  const pathParts = [
+    dirname(command),
+    join(homedir(), '.npm-global/bin'),
+    env.PATH ?? ''
+  ].filter((part) => part && part !== '.');
+  return {
+    ...env,
+    NO_COLOR: '1',
+    PATH: Array.from(new Set(pathParts.join(':').split(':').filter(Boolean))).join(':')
+  };
+}
+
 export function createOpenClawCliDispatcher(options: { command?: string; defaultAgent?: string; timeoutSeconds?: number } = {}): OpenClawDispatcher {
-  const command = options.command ?? process.env.IMBAS_OS_OPENCLAW_COMMAND ?? 'openclaw';
+  const command = options.command ?? resolveOpenClawCommand(process.env);
   const defaultAgent = options.defaultAgent ?? process.env.IMBAS_OS_OPENCLAW_AGENT ?? 'main';
   const defaultTimeoutSeconds = options.timeoutSeconds ?? Number(process.env.IMBAS_OS_OPENCLAW_TIMEOUT_SECONDS ?? 180);
 
@@ -37,7 +68,7 @@ export function createOpenClawCliDispatcher(options: { command?: string; default
         const { stdout } = await execFileAsync(command, args, {
           timeout: (timeoutSeconds + 15) * 1000,
           maxBuffer: 1024 * 1024 * 4,
-          env: { ...process.env, NO_COLOR: '1' }
+          env: buildOpenClawChildEnv(process.env, command)
         });
         const parsed = parseOpenClawJson(stdout);
         return {
