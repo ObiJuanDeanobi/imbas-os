@@ -10,6 +10,7 @@ const defaultHtml = `<!doctype html>
 </html>`;
 
 function App() {
+  const [activeView, setActiveView] = useState<'command' | 'agent' | 'vault'>('command');
   const [vault, setVault] = useState<VaultInfo | null>(null);
   const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
   const [unifiedResults, setUnifiedResults] = useState<UnifiedSearchResult[]>([]);
@@ -138,6 +139,11 @@ function App() {
     <main className="app-shell">
       <aside className="sidebar">
         <div className="brand"><span>◈</span><div><p>local-first</p><h1>Imbas OS</h1></div></div>
+        <nav className="primary-nav" aria-label="Imbas OS sections">
+          <button className={activeView === 'command' ? 'active' : ''} onClick={() => setActiveView('command')}>Command Center</button>
+          <button className={activeView === 'agent' ? 'active' : ''} onClick={() => setActiveView('agent')}>Agent Console</button>
+          <button className={activeView === 'vault' ? 'active' : ''} onClick={() => setActiveView('vault')}>Artifact Vault</button>
+        </nav>
         <div className="vault-card">
           <strong>Vault</strong>
           <code>{vault?.root ?? 'loading…'}</code>
@@ -215,10 +221,149 @@ function App() {
         </section>
       </aside>
       <section className="workspace">
-        {selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
+        {activeView === 'command'
+          ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
+          : activeView === 'agent'
+            ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
+            : selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
       </section>
     </main>
   );
+}
+
+
+function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, onSeedDemoVault, onRebuildSyncManifest, onOpenVault }: { vault: VaultInfo | null; artifacts: ArtifactSummary[]; graph: ArtifactGraph; syncStatus: SyncStatus | null; conduitStatus: any; onSeedDemoVault: () => Promise<void>; onRebuildSyncManifest: () => Promise<void>; onOpenVault: () => void }) {
+  const moduleEntries = Object.entries(conduitStatus?.modules ?? {}) as [string, any][];
+  const recentRuns = (conduitStatus?.recentRunledger ?? conduitStatus?.recentRuns ?? []).slice(0, 5);
+  const proposals = (conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 4);
+  const activeSessions = conduitStatus?.mobile?.activeSessions ?? [];
+  const totalWikiCount = graph.nodes.filter((node) => node.kind === 'wiki').length;
+
+  return <div className="command-center">
+    <header className="hero-card">
+      <p className="eyebrow">private preview command center</p>
+      <h2>One operating layer for agents, artifacts, memory, approvals, and mobile control.</h2>
+      <p>Use this home screen to see whether Imbas OS is ready for work: modules, runs, proposals, artifacts, sync, and companion pairing all in one place.</p>
+      <div className="hero-actions">
+        <button onClick={onOpenVault}>Open Artifact Vault</button>
+        <button className="secondary" onClick={onSeedDemoVault}>Seed demo workbench</button>
+        <button className="secondary" onClick={onRebuildSyncManifest}>Rebuild sync manifest</button>
+      </div>
+    </header>
+
+    <section className="metric-grid">
+      <MetricCard label="Artifacts" value={String(vault?.artifactCount ?? artifacts.length)} detail={`${artifacts.length} currently shown`} />
+      <MetricCard label="Markdown/wiki" value={String(totalWikiCount)} detail="vault-owned or bridged pages" />
+      <MetricCard label="Runs" value={String(conduitStatus?.counts?.runledger ?? conduitStatus?.counts?.runs ?? 0)} detail="Runledger entries / agent runs" />
+      <MetricCard label="Approvals" value={String(proposals.filter((proposal: any) => proposal.status === 'proposed').length)} detail="Lorekeeper proposals pending" />
+      <MetricCard label="Mobile" value={String(activeSessions.length)} detail={`${conduitStatus?.mobile?.pendingPairingChallenges ?? 0} pending pairing challenge(s)`} />
+      <MetricCard label="Sync" value={String(syncStatus?.trackedFiles ?? 0)} detail={`${syncStatus?.changedFiles.length ?? 0} local changes`} />
+    </section>
+
+    <section className="command-grid">
+      <Panel title="Module health" eyebrow="capabilities">
+        {moduleEntries.length ? moduleEntries.map(([name, module]) => <div className="module-row" key={name}>
+          <span>{name}</span>
+          <strong className={`health health-${module.health ?? 'unknown'}`}>{module.health ?? 'unknown'}</strong>
+          <em>{module.enabled ? 'enabled' : module.available ? 'available' : 'not available'}</em>
+        </div>) : <p className="muted">Conduit module status is loading.</p>}
+      </Panel>
+
+      <Panel title="Recent work" eyebrow="runledger">
+        {recentRuns.length ? recentRuns.map((run: any) => <article className="timeline-item" key={run.id ?? run.runId ?? run.createdAt}>
+          <strong>{run.title ?? run.task}</strong>
+          <span>{run.outcome ?? run.status} · {run.connector ?? 'conduit'} / {run.agent ?? 'agent'}</span>
+          <p>{run.summary ?? run.task}</p>
+        </article>) : <p className="muted">No runs recorded yet. The OpenClaw dogfood connector will start filling this in.</p>}
+      </Panel>
+
+      <Panel title="Lorekeeper proposals" eyebrow="review queue">
+        {proposals.length ? proposals.map((proposal: any) => <article className="timeline-item" key={proposal.id}>
+          <strong>{proposal.title}</strong>
+          <span>{proposal.status}{proposal.targetPageId ? ` → ${proposal.targetPageId}` : ''}</span>
+          <p>{proposal.rationale}</p>
+        </article>) : <p className="muted">No proposals yet. Agents will propose wiki/memory updates here before durable changes.</p>}
+      </Panel>
+
+      <Panel title="Migration posture" eyebrow="memory">
+        <div className="migration-steps">
+          <span className="done">1 Dogfood bridge</span>
+          <span>2 Dual write</span>
+          <span>3 Prefer Imbas packs</span>
+          <span>4 Retire MemPalace after approval</span>
+        </div>
+        <p className="muted">MemPalace remains the working safety net until Imbas/Memsocket passes the documented migration criteria.</p>
+      </Panel>
+    </section>
+  </div>;
+}
+
+function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return <div className="metric-card"><span>{label}</span><strong>{value}</strong><p>{detail}</p></div>;
+}
+
+function Panel({ title, eyebrow, children }: { title: string; eyebrow: string; children: React.ReactNode }) {
+  return <section className="command-panel"><p className="eyebrow">{eyebrow}</p><h3>{title}</h3>{children}</section>;
+}
+
+function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onCreateArtifact }: { conduitStatus: any; onSearchConduit: (query: string) => Promise<any>; onBuildContextPack: (task: string) => Promise<any>; onCreateArtifact: (input: CreateArtifactInput) => Promise<void> }) {
+  const [agent, setAgent] = useState('OpenClaw');
+  const [mode, setMode] = useState<'chat' | 'task'>('chat');
+  const [message, setMessage] = useState('Summarize the current Imbas OS state and suggest the next safe task.');
+  const [messages, setMessages] = useState<{ role: 'human' | 'agent' | 'system'; text: string; createdAt: string }[]>([
+    { role: 'system', text: 'Agent Console v0 is a steering surface. Live agent dispatch is next; today it can build context packs, search Conduit, and save transcript artifacts.', createdAt: new Date().toISOString() }
+  ]);
+  const [result, setResult] = useState<any>(null);
+
+  async function sendMessage() {
+    const createdAt = new Date().toISOString();
+    const human = { role: 'human' as const, text: message, createdAt };
+    setMessages((current) => [...current, human]);
+    const response = mode === 'task' ? await onBuildContextPack(message) : await onSearchConduit(message);
+    setResult(response);
+    const agentText = mode === 'task'
+      ? `${agent} task staging: built a context pack through Conduit. Live dispatch/approval cards are the next connector slice.`
+      : `${agent} search: queried Conduit for relevant runs, events, proposals, and context. Live chat transport is the next connector slice.`;
+    setMessages((current) => [...current, { role: 'agent', text: agentText, createdAt: new Date().toISOString() }]);
+  }
+
+  async function saveTranscriptArtifact() {
+    const transcriptHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Agent Console transcript</title><style>body{font-family:system-ui;margin:2rem;line-height:1.5}.msg{border:1px solid #ddd;border-radius:12px;padding:1rem;margin:1rem 0}.system{background:#f6f6f6}.human{background:#eef6ff}.agent{background:#effaf3}pre{white-space:pre-wrap;background:#111;color:#eee;padding:1rem;border-radius:12px}</style></head><body><h1>Agent Console transcript</h1><p>Agent: ${escapeHtml(agent)} · Mode: ${escapeHtml(mode)}</p>${messages.map((item) => `<section class="msg ${item.role}"><strong>${item.role}</strong><p>${escapeHtml(item.text)}</p><small>${item.createdAt}</small></section>`).join('')}<h2>Last Conduit result</h2><pre>${escapeHtml(JSON.stringify(result ?? {}, null, 2))}</pre></body></html>`;
+    await onCreateArtifact({ html: transcriptHtml, title: `Agent Console transcript — ${agent}`, sourceType: 'generated', provider: 'Imbas OS', model: 'agent-console-v0', project: 'Imbas OS', tags: ['agent-console', 'transcript'] });
+  }
+
+  return <div className="agent-console">
+    <header className="hero-card compact">
+      <p className="eyebrow">agent console v0</p>
+      <h2>Chat with agents, stage tasks, and turn useful replies into durable Imbas OS records.</h2>
+      <p>Live agent transport comes next. This skeleton already uses Conduit search/context-pack calls so the UI shape can be dogfooded safely.</p>
+    </header>
+    <div className="console-layout">
+      <section className="chat-panel">
+        <div className="console-toolbar">
+          <label>Agent<select value={agent} onChange={(event) => setAgent(event.target.value)}><option>OpenClaw</option><option>Hermes</option><option>Codex</option><option>Claude Code</option><option>Auto-route</option></select></label>
+          <label>Mode<select value={mode} onChange={(event) => setMode(event.target.value as 'chat' | 'task')}><option value="chat">Chat / ask</option><option value="task">Task / context pack</option></select></label>
+        </div>
+        <div className="message-list">
+          {messages.map((item, index) => <article className={`message ${item.role}`} key={`${item.createdAt}-${index}`}><strong>{item.role}</strong><p>{item.text}</p><span>{new Date(item.createdAt).toLocaleTimeString()}</span></article>)}
+        </div>
+        <label>Message<textarea className="prompt-editor console-input" value={message} onChange={(event) => setMessage(event.target.value)} /></label>
+        <div className="button-row"><button onClick={sendMessage}>Send to {agent}</button><button className="secondary" onClick={saveTranscriptArtifact}>Save transcript artifact</button></div>
+      </section>
+      <aside className="metadata-panel console-side">
+        <details open><summary>Connector readiness</summary>
+          <p className="muted">OpenClaw is first dogfood target. Hermes and Codex adapters should follow once Runledger + context-pack evidence is solid.</p>
+          <dl><dt>Conduit status</dt><dd>{conduitStatus?.status ?? 'loading'}</dd><dt>Runs</dt><dd>{conduitStatus?.counts?.runs ?? 0}</dd><dt>Events</dt><dd>{conduitStatus?.counts?.events ?? 0}</dd><dt>Lorekeeper proposals</dt><dd>{conduitStatus?.counts?.lorekeeperProposals ?? 0}</dd></dl>
+        </details>
+        <details open><summary>Last Conduit result</summary>{result ? <pre>{JSON.stringify(result, null, 2).slice(0, 5000)}</pre> : <p className="muted">No query yet.</p>}</details>
+        <details><summary>Next connector slice</summary><ol><li>Send message to OpenClaw session.</li><li>Record request/reply in Runledger.</li><li>Allow replies to become artifacts or Lorekeeper proposals.</li><li>Add approval cards for risky actions.</li></ol></details>
+      </aside>
+    </div>
+  </div>;
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as Record<string, string>)[char] ?? char);
 }
 
 function labelFor(graph: ArtifactGraph, id: string) {
