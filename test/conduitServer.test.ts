@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { startConduitLoopbackService } from '../src/main/conduit/server.ts';
 
-test('Conduit loopback service serves status and records events over HTTP', async () => {
+test('Conduit loopback service serves status and accepts scoped mobile capture over HTTP', async () => {
   const service = await startConduitLoopbackService();
   try {
     const statusResponse = await fetch(`${service.url}/v0/status`);
@@ -10,8 +10,25 @@ test('Conduit loopback service serves status and records events over HTTP', asyn
     const status = await statusResponse.json() as { modules: { memsocket: { health: string } } };
     assert.equal(status.modules.memsocket.health, 'not_configured');
 
+    const challengeResponse = await fetch(`${service.url}/v0/mobile/pairing-challenges`, { method: 'POST', body: '{}' });
+    assert.equal(challengeResponse.status, 202);
+    const challenge = (await challengeResponse.json()) as { challenge: { id: string; code: string } };
+    const completeResponse = await fetch(`${service.url}/v0/mobile/pairing-challenges/complete`, {
+      method: 'POST',
+      body: JSON.stringify({ challengeId: challenge.challenge.id, code: challenge.challenge.code, deviceLabel: 'Loopback test' })
+    });
+    assert.equal(completeResponse.status, 200);
+    const completed = (await completeResponse.json()) as { token: string };
+
+    const rejectedEventResponse = await fetch(`${service.url}/v0/events`, {
+      method: 'POST',
+      body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', type: 'observation', layer: 'episodic', visibility: 'private', text: 'unauthenticated' })
+    });
+    assert.equal(rejectedEventResponse.status, 401);
+
     const eventResponse = await fetch(`${service.url}/v0/events`, {
       method: 'POST',
+      headers: { Authorization: `Bearer ${completed.token}` },
       body: JSON.stringify({
         connector: 'OpenClaw',
         agent: 'main',

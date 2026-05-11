@@ -145,3 +145,8 @@ Existing read/review endpoints Android will use:
 - Pairing codes expire quickly.
 - No public exposure by default; prefer tailnet/local network.
 - Android should not mutate wiki pages directly; it approves proposals/actions through Conduit.
+
+
+## Loopback HTTP hardening
+
+When Conduit is exposed over the tailnet for Android testing, server-layer HTTP guards require the paired bearer token for mobile capture (`capture.write`), proposal approval/rejection (`approvals.review`), and session revoke (`status.read`). Lorekeeper apply and Agent Console live dispatch remain desktop-only over the loopback HTTP surface.

@@ -1,6 +1,7 @@
 import { createServer, IncomingMessage, Server, ServerResponse } from 'node:http';
 import { AddressInfo } from 'node:net';
 import { createConduitRecordStore, ConduitRecordStore, handleConduitRequest } from './localApi.js';
+import { authenticateMobileSession, MobileSessionScope } from '../mobile/pairing.js';
 
 export interface ConduitLoopbackServiceOptions {
   host?: string;
@@ -45,6 +46,13 @@ export async function startConduitLoopbackService(options: ConduitLoopbackServic
 async function handleNodeRequest(req: IncomingMessage, res: ServerResponse, store: ConduitRecordStore): Promise<void> {
   try {
     const request = await nodeRequestToFetchRequest(req);
+    const authorization = authorizeLoopbackRequest(request, store);
+    if (authorization) {
+      res.statusCode = authorization.status;
+      res.setHeader('content-type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify(authorization.body));
+      return;
+    }
     const response = await handleConduitRequest(request, store);
     res.statusCode = response.status;
     res.setHeader('content-type', 'application/json; charset=utf-8');
@@ -54,6 +62,35 @@ async function handleNodeRequest(req: IncomingMessage, res: ServerResponse, stor
     res.setHeader('content-type', 'application/json; charset=utf-8');
     res.end(JSON.stringify({ error: 'internal_error', message: error instanceof Error ? error.message : String(error) }));
   }
+}
+
+function authorizeLoopbackRequest(request: Request, store: ConduitRecordStore): { status: number; body: unknown } | null {
+  const url = new URL(request.url);
+  const path = url.pathname;
+  if (request.method !== 'POST') return null;
+
+  if (path === '/v0/agents/openclaw/dispatch') {
+    return { status: 403, body: { errors: ['loopback Agent Console dispatch is disabled; use the desktop Agent Console'] } };
+  }
+  if (/^\/v0\/wiki\/proposals\/[^/]+\/apply$/.test(path)) {
+    return { status: 403, body: { errors: ['loopback Lorekeeper apply is disabled; use the desktop review path'] } };
+  }
+  if (path === '/v0/events') return requireMobileScope(request, store, 'capture.write');
+  if (/^\/v0\/wiki\/proposals\/[^/]+\/(approve|reject)$/.test(path)) return requireMobileScope(request, store, 'approvals.review');
+  if (/^\/v0\/mobile\/sessions\/[^/]+\/revoke$/.test(path)) return requireMobileScope(request, store, 'status.read');
+  return null;
+}
+
+function requireMobileScope(request: Request, store: ConduitRecordStore, scope: MobileSessionScope): { status: number; body: unknown } | null {
+  const token = readBearerToken(request);
+  if (!token || !authenticateMobileSession(store.mobile, token, scope)) return { status: 401, body: { errors: [`mobile scope ${scope} is required`] } };
+  return null;
+}
+
+function readBearerToken(request: Request): string | null {
+  const header = request.headers.get('authorization') ?? '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : null;
 }
 
 async function nodeRequestToFetchRequest(req: IncomingMessage): Promise<Request> {
