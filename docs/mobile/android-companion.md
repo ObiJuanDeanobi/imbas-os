@@ -183,7 +183,7 @@ The Capture tab includes a **Dictate** action that opens Android speech recognit
 
 ## Runledger detail cards
 
-The Runs tab parses Runledger `summary` and `refs` fields from Conduit so mobile review shows enough provenance to decide whether to switch back to desktop for deeper replay or Lorekeeper work.
+The Runs tab parses Runledger `summary` and `refs` fields from Conduit and includes local filtering across title, outcome, timestamp, summary, and refs so mobile review shows enough provenance to decide whether to switch back to desktop for deeper replay or Lorekeeper work.
 
 
 ## Companion diagnostics

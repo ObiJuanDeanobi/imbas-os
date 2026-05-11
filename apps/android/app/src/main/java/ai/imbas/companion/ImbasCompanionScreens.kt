@@ -347,9 +347,25 @@ fun AiWorldScreen(status: ImbasStatus?, serviceUrl: String, connectionMessage: S
 
 @Composable
 fun RunledgerScreen(items: List<RunledgerItem>) {
+    var query by remember { mutableStateOf("") }
+    val filteredItems = remember(items, query) {
+        val needle = query.trim().lowercase()
+        if (needle.isBlank()) items else items.filter { item ->
+            listOf(item.title, item.outcome, item.createdAt, item.summary, item.refs.joinToString(" "))
+                .any { value -> value.lowercase().contains(needle) }
+        }
+    }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Runledger", style = MaterialTheme.typography.titleLarge)
-        items.forEach { item ->
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = query,
+            onValueChange = { query = it },
+            label = { Text("Filter runs, outcomes, refs") },
+            singleLine = true
+        )
+        Text("Showing ${filteredItems.size} of ${items.size} entries", style = MaterialTheme.typography.bodySmall)
+        filteredItems.forEach { item ->
             Card {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(item.title, fontWeight = FontWeight.Bold)
@@ -360,6 +376,7 @@ fun RunledgerScreen(items: List<RunledgerItem>) {
                 }
             }
         }
+        if (filteredItems.isEmpty()) StatusCard("No matching entries", "Try a different run title, outcome, or reference.")
     }
 }
 
