@@ -1,6 +1,6 @@
 node_modules/
 dist/
-release/
+/release/
 .DS_Store
 *.log
 .env
@@ -8,3 +8,10 @@ release/
 !.env.example
 .vault/
 coverage/
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+**/.gradle/
+**/build/

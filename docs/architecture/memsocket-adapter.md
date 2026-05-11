@@ -55,6 +55,8 @@ Still remaining:
 
 See [`module-selection.md`](module-selection.md). Memsocket is currently a separate engine repo with an Imbas adapter, not vendored into this repo. The intended private-preview direction is optional integration through stable boundaries.
 
+See also [`memsocket-agentmemory-patterns.md`](memsocket-agentmemory-patterns.md) for pattern-harvest notes from agentmemory that should inform Memsocket's Imbas OS integration without adopting agentmemory as a runtime dependency.
+
 
 ## CLI boundary
 

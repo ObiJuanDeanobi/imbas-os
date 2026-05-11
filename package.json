@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:electron\"",
     "dev:renderer": "vite --host 127.0.0.1",
-    "dev:electron": "wait-on tcp:5173 && tsc -p tsconfig.main.json --watch --preserveWatchOutput & wait-on dist/main/app.js dist/preload/api.js && IMBAS_OS_DEV_SERVER_URL=http://127.0.0.1:5173 ARTIFACT_VAULT_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
+    "dev:electron": "wait-on tcp:5173 && tsc -p tsconfig.main.json --watch --preserveWatchOutput & wait-on dist/main/app.js dist/preload/api.cjs && IMBAS_OS_DEV_SERVER_URL=http://127.0.0.1:5173 ARTIFACT_VAULT_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
     "build": "tsc -p tsconfig.main.json && node scripts/copy-demo-assets.mjs && vite build",
     "start": "npm run build && electron .",
     "test": "node --test --import tsx test/*.test.ts",

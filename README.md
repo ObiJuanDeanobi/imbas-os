@@ -99,6 +99,7 @@ Start here:
 - [`docs/imbas/agent-readme.md`](docs/imbas/agent-readme.md) — agent-facing operating guide.
 - [`docs/architecture/subsystems.md`](docs/architecture/subsystems.md) — subsystem map.
 - [`docs/architecture/module-selection.md`](docs/architecture/module-selection.md) — optional module/install-profile direction.
+- [`docs/architecture/memory-migration.md`](docs/architecture/memory-migration.md) — staged MemPalace → Imbas/Memsocket dogfood and retirement plan.
 - [`docs/architecture/ai-first-os.md`](docs/architecture/ai-first-os.md) — product principle: UI as a window into the AI operating layer.
 - [`docs/mobile/android-companion.md`](docs/mobile/android-companion.md) — Android companion MVP, pairing, scopes, and screen contract.
 - [`docs/sanctum/agent-secret-vault.md`](docs/sanctum/agent-secret-vault.md) — Sanctum secret/capability design.
@@ -131,6 +132,8 @@ Required before public 1.0:
 - End-to-end events/search/context-pack flow.
 - OpenClaw/Hermes connector dogfood.
 - Sanctum redaction/secret-handle safety across memory/context packs.
+- MemPalace retired only after the staged migration criteria pass; until then it remains a working safety net, not the public 1.0 memory dependency.
+- Fresh-system user experience gate passes: clean OpenClaw config connected to Imbas OS with all supported modules, companion app paired, adapters tested, backup/restore tested, and security smoke verified. See [`docs/release/fresh-system-1.0-gate.md`](docs/release/fresh-system-1.0-gate.md).
 - Backup/restore/export/delete/forget behavior tested across memory, artifacts, and wiki.
 - Explicit Johnathan approval.
 

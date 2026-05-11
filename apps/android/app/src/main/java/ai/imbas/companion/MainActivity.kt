@@ -10,13 +10,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                AiWorldScreen(
-                    ImbasStatus(
-                        service = "imbas-os-conduit",
-                        status = "private-preview scaffold",
-                        counts = ImbasCounts()
-                    )
-                )
+                ImbasCompanionApp()
             }
         }
     }

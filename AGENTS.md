@@ -20,6 +20,10 @@ Conduit = agent connector/API layer
 
 Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit Johnathan approval.
 
+Do not remove MemPalace during early OpenClaw/Imbas dogfood. MemPalace remains the working OpenClaw/Hermes recall safety net until the staged migration criteria in `docs/architecture/memory-migration.md` pass and Johnathan explicitly approves retirement.
+
+Public 1.0 also requires a fresh-system user experience gate: clean OpenClaw config, Imbas OS with all supported modules, companion app pairing, adapter dogfood, backup/restore, security smoke, and human review loop. See `docs/release/fresh-system-1.0-gate.md`.
+
 ## Current repo state
 
 This private-preview repo is seeded from the working Artifact Vault desktop app.
@@ -116,7 +120,9 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/imbas/agent-readme.md` — agent operating guide.
 - `docs/architecture/subsystems.md` — subsystem map.
 - `docs/architecture/module-selection.md` — optional module/install-profile direction.
+- `docs/architecture/memory-migration.md` — MemPalace → Imbas/Memsocket migration and retirement criteria.
 - `docs/architecture/ai-first-os.md` — product principle: UI as a window into the AI operating layer.
+- `docs/release/fresh-system-1.0-gate.md` — mandatory clean-system public 1.0 gate.
 - `docs/mobile/android-companion.md` — Android companion MVP, pairing, scopes, and screen contract.
 - `docs/connectors/protocol.md` — connector/API design target.
 - `docs/sanctum/agent-secret-vault.md` — secret/capability boundary.
