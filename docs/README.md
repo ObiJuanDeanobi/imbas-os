@@ -21,12 +21,16 @@ Imbas OS documentation has three jobs:
 - [Private-preview package restore](private-preview-restore.md) — create and verify the dev preview tarball.
 - [Android companion setup](setup/android-companion.md) — build/install APK, pair, run diagnostics, and test mobile flows.
 - [OpenClaw integration setup](setup/openclaw-integration.md) — connect OpenClaw through Conduit/private-preview dispatch.
+- [Clean install checklist](setup/clean-install-checklist.md) — fresh-system validation checklist.
 
 ## How to use Imbas OS
 
 - [User guide](how-to/use-imbas-os.md) — day-to-day desktop, Agent Console, artifacts, wiki, and Runledger flows.
 - [Lorekeeper review workflow](how-to/lorekeeper-review.md) — propose, preview, approve, apply, snapshot, restore.
 - [Android companion guide](mobile/android-companion.md) — mobile concepts, scopes, endpoints, diagnostics, and current screen contract.
+- [Troubleshooting](troubleshooting.md) — common private-preview problems and expected behavior.
+- [Known limitations](known-limitations.md) — explicit not-public-ready gaps.
+- [Glossary](glossary.md) — subsystem and release terminology.
 
 ## Architecture and subsystem docs
 
