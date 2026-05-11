@@ -90,6 +90,28 @@ class ImbasApiClient(private val serviceUrl: String) {
         }
     }
 
+
+    suspend fun approveLorekeeperProposal(proposalId: String, session: ImbasMobileSession): Boolean = withContext(Dispatchers.IO) {
+        postJson("$lorekeeperProposalsEndpoint/${proposalId}/approve", JSONObject(), session)
+        true
+    }
+
+    suspend fun rejectLorekeeperProposal(proposalId: String, session: ImbasMobileSession): Boolean = withContext(Dispatchers.IO) {
+        postJson("$lorekeeperProposalsEndpoint/${proposalId}/reject", JSONObject(), session)
+        true
+    }
+
+    suspend fun captureNote(note: String, session: ImbasMobileSession): Boolean = withContext(Dispatchers.IO) {
+        postJson("$normalizedServiceUrl/v0/events", JSONObject()
+            .put("connector", "Android Companion")
+            .put("agent", session.deviceLabel)
+            .put("type", "observation")
+            .put("layer", "episodic")
+            .put("visibility", "private")
+            .put("text", note), session)
+        true
+    }
+
     private fun getJson(endpoint: String, session: ImbasMobileSession? = null): JSONObject {
         val connection = (URL(endpoint).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"

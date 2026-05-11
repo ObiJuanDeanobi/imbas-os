@@ -27,9 +27,14 @@ It is not a separate source of truth. It should inspect, capture into, and appro
    - voice/text note later.
 
 4. **Review guarded actions**
-   - approve/reject Lorekeeper proposals;
+   - approve/reject Lorekeeper proposals over live Conduit POSTs;
    - later approve Sanctum capability requests;
    - later approve external effects.
+
+5. **Capture lightweight notes**
+   - send private text observations into Conduit using the paired session;
+   - rely on server-side redaction before durable storage;
+   - share-sheet/photo/voice capture later.
 
 ## Stack decision
 
@@ -113,7 +118,7 @@ Existing read/review endpoints Android will use:
    - persist the returned mobile token encrypted with Android Keystore;
    - forget/revoke the paired local session.
 
-2. **Home / AI world**
+2. **Status / AI world**
    - module health cards;
    - recent runs/events;
    - Memsocket status;
@@ -124,12 +129,12 @@ Existing read/review endpoints Android will use:
    - filter/search.
 
 4. **Lorekeeper review**
-   - proposal list;
-   - proposal markdown preview;
-   - approve/reject buttons.
+   - live proposal list;
+   - approve/reject proposal buttons via Conduit;
+   - apply remains desktop-guarded.
 
 5. **Capture**
-   - quick note to Conduit event;
+   - quick private note to Conduit event;
    - share-sheet capture later.
 
 ## Safety boundaries

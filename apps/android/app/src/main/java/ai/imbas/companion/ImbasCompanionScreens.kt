@@ -36,7 +36,8 @@ enum class CompanionTab(val label: String) {
     Pair("Pair"),
     Status("Status"),
     Runledger("Runs"),
-    Lorekeeper("Wiki")
+    Lorekeeper("Wiki"),
+    Capture("Capture")
 }
 
 @Composable
@@ -52,6 +53,7 @@ fun ImbasCompanionApp() {
     var runledgerItems by remember { mutableStateOf<List<RunledgerItem>>(emptyList()) }
     var proposals by remember { mutableStateOf<List<LorekeeperProposalItem>>(emptyList()) }
     var connectionMessage by remember { mutableStateOf("Not connected yet") }
+    var actionMessage by remember { mutableStateOf("No mobile action sent yet") }
     val scope = rememberCoroutineScope()
 
     fun refreshLiveStatus() {
@@ -141,14 +143,66 @@ fun ImbasCompanionApp() {
                     CompanionTab.Runledger -> RunledgerScreen(items = runledgerItems)
                     CompanionTab.Lorekeeper -> LorekeeperReviewScreen(
                         proposals = proposals,
-                        onApprove = { },
-                        onReject = { }
+                        actionMessage = actionMessage,
+                        canReview = mobileSession != null,
+                        onApprove = { proposalId ->
+                            scope.launch {
+                                val session = mobileSession
+                                if (session == null) {
+                                    actionMessage = "Pair before approving proposals."
+                                } else {
+                                    try {
+                                        ImbasApiClient(serviceUrl).approveLorekeeperProposal(proposalId, session)
+                                        actionMessage = "Approved proposal $proposalId"
+                                        refreshLiveStatus()
+                                    } catch (error: Exception) {
+                                        actionMessage = "Approve failed: ${error.message ?: error.javaClass.simpleName}"
+                                    }
+                                }
+                            }
+                        },
+                        onReject = { proposalId ->
+                            scope.launch {
+                                val session = mobileSession
+                                if (session == null) {
+                                    actionMessage = "Pair before rejecting proposals."
+                                } else {
+                                    try {
+                                        ImbasApiClient(serviceUrl).rejectLorekeeperProposal(proposalId, session)
+                                        actionMessage = "Rejected proposal $proposalId"
+                                        refreshLiveStatus()
+                                    } catch (error: Exception) {
+                                        actionMessage = "Reject failed: ${error.message ?: error.javaClass.simpleName}"
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    CompanionTab.Capture -> CaptureScreen(
+                        mobileSession = mobileSession,
+                        actionMessage = actionMessage,
+                        onCapture = { note ->
+                            scope.launch {
+                                val session = mobileSession
+                                if (session == null) {
+                                    actionMessage = "Pair before capturing notes."
+                                } else {
+                                    try {
+                                        ImbasApiClient(serviceUrl).captureNote(note, session)
+                                        actionMessage = "Captured note into Conduit."
+                                        refreshLiveStatus()
+                                    } catch (error: Exception) {
+                                        actionMessage = "Capture failed: ${error.message ?: error.javaClass.simpleName}"
+                                    }
+                                }
+                            }
+                        }
                     )
                 }
             }
 
             Text(
-                "Private preview build — live Conduit reads and Android Keystore-backed pairing token storage.",
+                "Private preview build — live Conduit reads, pairing, proposal review, and capture notes.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -264,9 +318,11 @@ fun RunledgerScreen(items: List<RunledgerItem>) {
 }
 
 @Composable
-fun LorekeeperReviewScreen(proposals: List<LorekeeperProposalItem>, onApprove: (String) -> Unit, onReject: (String) -> Unit) {
+fun LorekeeperReviewScreen(proposals: List<LorekeeperProposalItem>, actionMessage: String, canReview: Boolean, onApprove: (String) -> Unit, onReject: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Lorekeeper review", style = MaterialTheme.typography.titleLarge)
+        Text(if (canReview) "Paired session can approve or reject proposals. Apply remains desktop-guarded." else "Pair before sending proposal decisions.")
+        StatusCard("Last action", actionMessage)
         proposals.forEach { proposal ->
             Card {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -274,12 +330,34 @@ fun LorekeeperReviewScreen(proposals: List<LorekeeperProposalItem>, onApprove: (
                     Text("Status: ${proposal.status}")
                     Text("Target: ${proposal.targetPageId ?: "No target page"}")
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = { onApprove(proposal.id) }) { Text("Approve") }
-                        OutlinedButton(onClick = { onReject(proposal.id) }) { Text("Reject") }
+                        Button(enabled = canReview, onClick = { onApprove(proposal.id) }) { Text("Approve") }
+                        OutlinedButton(enabled = canReview, onClick = { onReject(proposal.id) }) { Text("Reject") }
                     }
                 }
             }
         }
+    }
+}
+
+
+@Composable
+fun CaptureScreen(mobileSession: ImbasMobileSession?, actionMessage: String, onCapture: (String) -> Unit) {
+    var note by remember { mutableStateOf("") }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("Capture note", style = MaterialTheme.typography.titleLarge)
+        Text("Send a lightweight private observation into Conduit. Raw secrets are still redacted by Imbas OS before durable storage.")
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = note,
+            onValueChange = { note = it },
+            label = { Text("Private note") },
+            minLines = 4
+        )
+        Button(enabled = mobileSession != null && note.isNotBlank(), onClick = { onCapture(note); note = "" }) {
+            Text("Capture to Conduit")
+        }
+        StatusCard("Pairing", mobileSession?.let { "Paired as ${it.deviceLabel}" } ?: "Pair before capturing notes")
+        StatusCard("Last action", actionMessage)
     }
 }
 
