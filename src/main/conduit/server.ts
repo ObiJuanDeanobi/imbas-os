@@ -67,17 +67,27 @@ async function handleNodeRequest(req: IncomingMessage, res: ServerResponse, stor
 function authorizeLoopbackRequest(request: Request, store: ConduitRecordStore): { status: number; body: unknown } | null {
   const url = new URL(request.url);
   const path = url.pathname;
-  if (request.method !== 'POST') return null;
 
-  if (path === '/v0/agents/openclaw/dispatch') {
-    return { status: 403, body: { errors: ['loopback Agent Console dispatch is disabled; use the desktop Agent Console'] } };
+  if (request.method === 'GET') {
+    if (path === '/v0/status') return null;
+    if (path === '/v0/events') return requireMobileScope(request, store, 'events.read');
+    if (path === '/v0/runs' || /^\/v0\/replay\/runs\/[^/]+$/.test(path)) return requireMobileScope(request, store, 'runs.read');
+    if (path === '/v0/runledger') return requireMobileScope(request, store, 'runledger.read');
+    if (path === '/v0/wiki/proposals') return requireMobileScope(request, store, 'lorekeeper.read');
+    return null;
   }
-  if (/^\/v0\/wiki\/proposals\/[^/]+\/apply$/.test(path)) {
-    return { status: 403, body: { errors: ['loopback Lorekeeper apply is disabled; use the desktop review path'] } };
-  }
+
+  if (request.method !== 'POST') return null;
+  if (path === '/v0/mobile/pairing-challenges' || path === '/v0/mobile/pairing-challenges/complete') return null;
+
   if (path === '/v0/events') return requireMobileScope(request, store, 'capture.write');
+  if (path === '/v0/search' || path === '/v0/context-packs') return requireMobileScope(request, store, 'events.read');
   if (/^\/v0\/wiki\/proposals\/[^/]+\/(approve|reject)$/.test(path)) return requireMobileScope(request, store, 'approvals.review');
   if (/^\/v0\/mobile\/sessions\/[^/]+\/revoke$/.test(path)) return requireMobileScope(request, store, 'status.read');
+
+  if (path === '/v0/agents/openclaw/dispatch') return { status: 403, body: { errors: ['loopback Agent Console dispatch is disabled; use the desktop Agent Console'] } };
+  if (path === '/v0/wiki/proposals' || /^\/v0\/wiki\/proposals\/[^/]+\/(preview|apply)$/.test(path)) return { status: 403, body: { errors: ['loopback Lorekeeper mutation is disabled; use the desktop review path'] } };
+  if (path === '/v0/runs' || path === '/v0/artifacts') return { status: 403, body: { errors: ['loopback write endpoint is disabled; use desktop or an approved connector boundary'] } };
   return null;
 }
 

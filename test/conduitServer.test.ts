@@ -20,11 +20,22 @@ test('Conduit loopback service serves status and accepts scoped mobile capture o
     assert.equal(completeResponse.status, 200);
     const completed = (await completeResponse.json()) as { token: string };
 
+    const rejectedRunledgerResponse = await fetch(`${service.url}/v0/runledger`);
+    assert.equal(rejectedRunledgerResponse.status, 401);
+    const runledgerResponse = await fetch(`${service.url}/v0/runledger`, { headers: { Authorization: `Bearer ${completed.token}` } });
+    assert.equal(runledgerResponse.status, 200);
+
     const rejectedEventResponse = await fetch(`${service.url}/v0/events`, {
       method: 'POST',
       body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', type: 'observation', layer: 'episodic', visibility: 'private', text: 'unauthenticated' })
     });
     assert.equal(rejectedEventResponse.status, 401);
+
+    const rejectedProposalWrite = await fetch(`${service.url}/v0/wiki/proposals`, {
+      method: 'POST',
+      body: JSON.stringify({ title: 'Should not write over loopback', markdown: 'Nope', rationale: 'HTTP hardening', sources: ['test://server'] })
+    });
+    assert.equal(rejectedProposalWrite.status, 403);
 
     const eventResponse = await fetch(`${service.url}/v0/events`, {
       method: 'POST',

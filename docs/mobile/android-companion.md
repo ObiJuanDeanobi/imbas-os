@@ -149,4 +149,14 @@ Existing read/review endpoints Android will use:
 
 ## Loopback HTTP hardening
 
-When Conduit is exposed over the tailnet for Android testing, server-layer HTTP guards require the paired bearer token for mobile capture (`capture.write`), proposal approval/rejection (`approvals.review`), and session revoke (`status.read`). Lorekeeper apply and Agent Console live dispatch remain desktop-only over the loopback HTTP surface.
+When Conduit is exposed over the tailnet for Android testing, server-layer HTTP guards require the paired bearer token for mobile reads and scoped actions:
+
+- `events.read` for event search/context HTTP reads;
+- `runs.read` for runs and run replay;
+- `runledger.read` for Runledger;
+- `lorekeeper.read` for proposal lists;
+- `capture.write` for mobile capture;
+- `approvals.review` for proposal approval/rejection;
+- `status.read` for session revoke.
+
+`GET /v0/status` and the short-lived pairing challenge endpoints remain available for diagnostics/pairing. Lorekeeper apply, proposal creation, artifact save, run writes, and Agent Console live dispatch remain desktop/approved-connector-only over the loopback HTTP surface.
