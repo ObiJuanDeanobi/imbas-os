@@ -4,7 +4,7 @@ import { createDefaultModuleRegistry, ImbasModuleRegistry } from '../../shared/i
 import { MemsocketCliClient } from '../memsocket/cliClient.js';
 import { createRunledgerEntry, RunledgerEntry, searchRunledger } from '../runledger/store.js';
 import { applyLorekeeperProposalToMarkdown, createLorekeeperProposal, LorekeeperProposal, searchLorekeeperProposals, transitionLorekeeperProposal } from '../lorekeeper/proposals.js';
-import { readMarkdownPageFromVault, updateMarkdownPage } from '../markdown/markdownStore.js';
+import { createMarkdownSnapshot, readMarkdownPageFromVault, updateMarkdownPage } from '../markdown/markdownStore.js';
 import { createArtifact } from '../vault/vaultStore.js';
 import { OpenClawDispatcher } from '../openclaw/dispatcher.js';
 import type { CreateArtifactInput } from '../../shared/types.js';
@@ -257,12 +257,13 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       const page = await readMarkdownPageFromVault(store.markdownRoot, proposal.targetPageId);
       const beforeMarkdown = page.markdown;
       const applied = applyLorekeeperProposalToMarkdown(beforeMarkdown, proposal);
+      const snapshot = applied.changed ? await createMarkdownSnapshot(store.markdownRoot, proposal.targetPageId, beforeMarkdown, `lorekeeper-${proposal.id}`) : undefined;
       const updated = applied.changed ? await updateMarkdownPage(store.markdownRoot, proposal.targetPageId, applied.markdown) : page;
       const next = transitionLorekeeperProposal(proposal, 'applied');
       store.lorekeeperProposals[store.lorekeeperProposals.indexOf(proposal)] = next;
       store.runledger.push(createRunledgerEntry({ kind: 'lorekeeper', connector: proposal.connector, agent: proposal.agent, title: `Applied ${proposal.title}`, outcome: 'applied', summary: `Applied Lorekeeper managed block ${applied.blockId} to ${proposal.targetPageId}`, refs: [proposal.id, proposal.targetPageId, ...(proposal.sources ?? [])] }));
       await store.persist?.();
-      return { status: 200, body: { proposal: next, page: updated.node, blockId: applied.blockId, changed: applied.changed, snapshot: { kind: 'markdown-before-apply', markdown: beforeMarkdown, createdAt: new Date().toISOString() } } };
+      return { status: 200, body: { proposal: next, page: updated.node, blockId: applied.blockId, changed: applied.changed, snapshot: snapshot ?? { kind: 'markdown-before-apply', pageId: proposal.targetPageId, relativePath: page.node.relativePath, createdAt: new Date().toISOString(), markdown: beforeMarkdown } } };
     } catch (error) {
       return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
     }

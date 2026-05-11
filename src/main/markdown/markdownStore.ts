@@ -38,6 +38,18 @@ export async function updateMarkdownPage(root: string, pageId: string, markdown:
   return readMarkdownPageFromVault(root, pageId);
 }
 
+export async function createMarkdownSnapshot(root: string, pageId: string, markdown: string, reason = 'manual'): Promise<{ kind: 'markdown-before-apply'; pageId: string; relativePath: string; snapshotPath: string; createdAt: string; markdown: string }> {
+  const filePath = resolveVaultMarkdownPath(root, pageId);
+  const relativePath = toVaultRelativePath(root, filePath);
+  const createdAt = new Date().toISOString();
+  const safeReason = reason.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'snapshot';
+  const snapshotRelativePath = path.join('.snapshots', relativePath.replace(/\.md$/i, ''), `${createdAt.replace(/[:.]/g, '-')}-${safeReason}.md`).split(path.sep).join('/');
+  const snapshotPath = path.join(root, snapshotRelativePath);
+  await mkdir(path.dirname(snapshotPath), { recursive: true });
+  await writeFile(snapshotPath, markdown);
+  return { kind: 'markdown-before-apply', pageId, relativePath, snapshotPath: snapshotRelativePath, createdAt, markdown };
+}
+
 export async function searchMarkdownPagesInVault(root: string, query: string): Promise<UnifiedSearchResult[]> {
   const normalizedQuery = query.trim().toLowerCase();
   const pages = await listMarkdownPages(root);

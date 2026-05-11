@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createDurableConduitRecordStore } from '../src/main/conduit/durableStore.ts';
@@ -83,6 +83,11 @@ test('Conduit applies approved Lorekeeper proposal to managed block and records 
   await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${proposal.id}/approve`, { method: 'POST' }), store);
   const applyResponse = await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${proposal.id}/apply`, { method: 'POST' }), store);
   assert.equal(applyResponse.status, 200);
+  const applyBody = applyResponse.body as { snapshot?: { snapshotPath?: string; markdown?: string } };
+  assert.match(applyBody.snapshot?.snapshotPath ?? '', /^\.snapshots\/pages\/imbas-os\//);
+  const snapshotMarkdown = await readFile(path.join(root, applyBody.snapshot?.snapshotPath ?? ''), 'utf8');
+  assert.match(snapshotMarkdown, /Human-owned intro\./);
+  assert.doesNotMatch(snapshotMarkdown, /Managed block apply is guarded\./);
   const updated = await readMarkdownPageFromVault(root, page.node.id);
   assert.match(updated.markdown, /Human-owned intro\./);
   assert.match(updated.markdown, /<!-- IMBAS:LOREKEEPER:BEGIN sprint-6-apply -->/);
