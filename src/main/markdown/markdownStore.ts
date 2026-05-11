@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import type { ArtifactGraph, CreateMarkdownPageInput, UnifiedSearchResult, WikiPageBundle, WikiPageNode } from '../../shared/types.js';
@@ -48,6 +48,22 @@ export async function createMarkdownSnapshot(root: string, pageId: string, markd
   await mkdir(path.dirname(snapshotPath), { recursive: true });
   await writeFile(snapshotPath, markdown);
   return { kind: 'markdown-before-apply', pageId, relativePath, snapshotPath: snapshotRelativePath, createdAt, markdown };
+}
+
+export async function listMarkdownSnapshots(root: string, pageId: string): Promise<{ pageId: string; relativePath: string; snapshotPath: string; createdAt: string; sizeBytes: number }[]> {
+  const filePath = resolveVaultMarkdownPath(root, pageId);
+  const relativePath = toVaultRelativePath(root, filePath);
+  const snapshotDir = path.join(root, '.snapshots', relativePath.replace(/\.md$/i, ''));
+  if (!existsSync(snapshotDir)) return [];
+  const entries = await readdir(snapshotDir, { withFileTypes: true });
+  const snapshots = await Promise.all(entries.filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.md')).map(async (entry) => {
+    const snapshotPath = path.join(snapshotDir, entry.name);
+    const info = await stat(snapshotPath);
+    const snapshotRelativePath = toVaultRelativePath(root, snapshotPath);
+    const createdAt = parseSnapshotCreatedAt(entry.name) ?? info.mtime.toISOString();
+    return { pageId, relativePath, snapshotPath: snapshotRelativePath, createdAt, sizeBytes: info.size };
+  }));
+  return snapshots.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function searchMarkdownPagesInVault(root: string, query: string): Promise<UnifiedSearchResult[]> {
@@ -160,6 +176,12 @@ function buildResolver(pages: WikiPageNode[]) {
 
 function normalizeWikiTarget(value: string) {
   return value.replace(/\.md$/i, '').trim().toLowerCase().replace(/\\/g, '/');
+}
+
+function parseSnapshotCreatedAt(fileName: string): string | null {
+  const match = fileName.match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)/);
+  if (!match) return null;
+  return match[1].replace(/T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z$/, 'T$1:$2:$3.$4Z');
 }
 
 function parseFrontmatter(markdown: string): Record<string, unknown> {

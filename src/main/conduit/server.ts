@@ -73,7 +73,7 @@ function authorizeLoopbackRequest(request: Request, store: ConduitRecordStore): 
     if (path === '/v0/events') return requireMobileScope(request, store, 'events.read');
     if (path === '/v0/runs' || /^\/v0\/replay\/runs\/[^/]+$/.test(path)) return requireMobileScope(request, store, 'runs.read');
     if (path === '/v0/runledger') return requireMobileScope(request, store, 'runledger.read');
-    if (path === '/v0/wiki/proposals') return requireMobileScope(request, store, 'lorekeeper.read');
+    if (path === '/v0/wiki/proposals' || path === '/v0/wiki/snapshots') return requireMobileScope(request, store, 'lorekeeper.read');
     return null;
   }
 

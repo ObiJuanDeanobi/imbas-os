@@ -232,7 +232,7 @@ function App() {
         {activeView === 'command'
           ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} mobilePairingChallenge={mobilePairingChallenge} onCreateMobilePairingChallenge={createMobilePairingChallenge} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
           : activeView === 'agent'
-            ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onDispatchOpenClaw={window.artifactVault.conduitOpenClawDispatch} onRunReplay={window.artifactVault.conduitRunReplay} onCreateLorekeeperProposal={window.artifactVault.conduitCreateLorekeeperProposal} onPreviewLorekeeperProposal={window.artifactVault.conduitPreviewLorekeeperProposal} onApproveLorekeeperProposal={window.artifactVault.conduitApproveLorekeeperProposal} onRejectLorekeeperProposal={window.artifactVault.conduitRejectLorekeeperProposal} onApplyLorekeeperProposal={window.artifactVault.conduitApplyLorekeeperProposal} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
+            ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onDispatchOpenClaw={window.artifactVault.conduitOpenClawDispatch} onRunReplay={window.artifactVault.conduitRunReplay} onCreateLorekeeperProposal={window.artifactVault.conduitCreateLorekeeperProposal} onPreviewLorekeeperProposal={window.artifactVault.conduitPreviewLorekeeperProposal} onApproveLorekeeperProposal={window.artifactVault.conduitApproveLorekeeperProposal} onRejectLorekeeperProposal={window.artifactVault.conduitRejectLorekeeperProposal} onApplyLorekeeperProposal={window.artifactVault.conduitApplyLorekeeperProposal} onListLorekeeperSnapshots={window.artifactVault.conduitListLorekeeperSnapshots} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
             : selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
       </section>
     </main>
@@ -359,7 +359,7 @@ function summarizeDispatch(response: any, human: ConsoleMessage, agentMessage: C
   };
 }
 
-function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDispatchOpenClaw, onRunReplay, onCreateLorekeeperProposal, onPreviewLorekeeperProposal, onApproveLorekeeperProposal, onRejectLorekeeperProposal, onApplyLorekeeperProposal, onCreateArtifact }: { conduitStatus: any; onSearchConduit: (query: string) => Promise<any>; onBuildContextPack: (task: string) => Promise<any>; onDispatchOpenClaw: (input: { message: string; mode?: 'chat' | 'task'; agent?: string }) => Promise<any>; onRunReplay: (runId: string) => Promise<any>; onCreateLorekeeperProposal: (input: any) => Promise<any>; onPreviewLorekeeperProposal: (id: string) => Promise<any>; onApproveLorekeeperProposal: (id: string) => Promise<any>; onRejectLorekeeperProposal: (id: string) => Promise<any>; onApplyLorekeeperProposal: (id: string) => Promise<any>; onCreateArtifact: (input: CreateArtifactInput) => Promise<void> }) {
+function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDispatchOpenClaw, onRunReplay, onCreateLorekeeperProposal, onPreviewLorekeeperProposal, onApproveLorekeeperProposal, onRejectLorekeeperProposal, onApplyLorekeeperProposal, onListLorekeeperSnapshots, onCreateArtifact }: { conduitStatus: any; onSearchConduit: (query: string) => Promise<any>; onBuildContextPack: (task: string) => Promise<any>; onDispatchOpenClaw: (input: { message: string; mode?: 'chat' | 'task'; agent?: string }) => Promise<any>; onRunReplay: (runId: string) => Promise<any>; onCreateLorekeeperProposal: (input: any) => Promise<any>; onPreviewLorekeeperProposal: (id: string) => Promise<any>; onApproveLorekeeperProposal: (id: string) => Promise<any>; onRejectLorekeeperProposal: (id: string) => Promise<any>; onApplyLorekeeperProposal: (id: string) => Promise<any>; onListLorekeeperSnapshots: (targetPageId: string) => Promise<any>; onCreateArtifact: (input: CreateArtifactInput) => Promise<void> }) {
   const [agent, setAgent] = useState('OpenClaw');
   const [mode, setMode] = useState<'chat' | 'task'>('chat');
   const [message, setMessage] = useState('Summarize the current Imbas OS state and suggest the next safe task.');
@@ -372,6 +372,7 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
   const [proposalPreview, setProposalPreview] = useState<any>(null);
   const [selectedProposalId, setSelectedProposalId] = useState('');
   const [proposalStatuses, setProposalStatuses] = useState<Record<string, string>>({});
+  const [markdownSnapshots, setMarkdownSnapshots] = useState<any[]>([]);
   const [lastDispatch, setLastDispatch] = useState<ConsoleDispatchSummary | null>(null);
   const [isDispatching, setIsDispatching] = useState(false);
   const [actionStatus, setActionStatus] = useState('Ready.');
@@ -479,6 +480,10 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
     const preview = await onPreviewLorekeeperProposal(id);
     setSelectedProposalId(id);
     setProposalPreview(preview);
+    if (preview?.proposal?.targetPageId) {
+      const snapshots = await onListLorekeeperSnapshots(preview.proposal.targetPageId);
+      setMarkdownSnapshots(snapshots?.snapshots ?? []);
+    }
     setResult(preview);
     setActionStatus(`Previewed proposal ${id}.`);
   }
@@ -493,6 +498,10 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
         const preview = await onPreviewLorekeeperProposal(id);
         setSelectedProposalId(id);
         setProposalPreview(preview);
+        if (preview?.proposal?.targetPageId) {
+          const snapshots = await onListLorekeeperSnapshots(preview.proposal.targetPageId);
+          setMarkdownSnapshots(snapshots?.snapshots ?? []);
+        }
       } catch {
         if (action === 'apply') setProposalPreview(null);
       }
@@ -537,7 +546,7 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
           {(conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 4).map((proposal: any) => { const status = proposalStatuses[proposal.id] ?? proposal.status; return <div className={`action-card ${selectedProposalId === proposal.id ? 'selected' : ''}`} key={proposal.id}><strong>{proposal.title}</strong><span>{status}{proposal.targetPageId ? ` → ${proposal.targetPageId}` : ''}</span><p className="muted">{proposal.rationale}</p><div className="button-row"><button className="secondary" onClick={() => previewProposal(proposal.id)}>Preview diff</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'approve')}>Approve</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'reject')}>Reject</button><button className="secondary" disabled={status !== 'approved'} title={status === 'approved' ? 'Apply managed block to target page' : 'Approve before applying'} onClick={() => transitionProposal(proposal.id, 'apply')}>Apply</button></div></div>; })}
         </details>
         <details open><summary>Last Conduit result</summary>{result ? <pre>{JSON.stringify(result, null, 2).slice(0, 5000)}</pre> : <p className="muted">No query yet.</p>}</details>
-        <details open><summary>Lorekeeper visual diff</summary>{proposalPreview ? <LorekeeperDiffPreview preview={proposalPreview} /> : <p className="muted">Preview a proposal to see before/after markdown without applying it.</p>}</details>
+        <details open><summary>Lorekeeper visual diff</summary>{proposalPreview ? <LorekeeperDiffPreview preview={proposalPreview} snapshots={markdownSnapshots} /> : <p className="muted">Preview a proposal to see before/after markdown without applying it.</p>}</details>
         <details><summary>Connector boundary</summary><ol><li>Dispatches are local OpenClaw CLI calls, not public/external integrations.</li><li>Request and reply are redacted before durable Runledger storage.</li><li>Non-OpenClaw agents are blocked until their adapters exist.</li><li>Risky/destructive/external actions still require explicit approval.</li></ol></details>
       </aside>
     </div>
@@ -545,7 +554,7 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
 }
 
 
-function LorekeeperDiffPreview({ preview }: { preview: any }) {
+function LorekeeperDiffPreview({ preview, snapshots }: { preview: any; snapshots: any[] }) {
   const diff = markdownLineDiff(preview.before ?? '', preview.after ?? '');
   const added = diff.filter((line) => line.kind === 'added').length;
   const removed = diff.filter((line) => line.kind === 'removed').length;
@@ -560,6 +569,7 @@ function LorekeeperDiffPreview({ preview }: { preview: any }) {
       <section><h4>Before</h4><pre>{(preview.before ?? '').slice(0, 4000) || 'No existing page content.'}</pre></section>
       <section><h4>After</h4><pre>{(preview.after ?? '').slice(0, 4000) || 'No preview content.'}</pre></section>
     </div>
+    {snapshots.length > 0 && <div className="snapshot-strip" aria-label="Markdown snapshots"><strong>Saved snapshots</strong>{snapshots.slice(0, 4).map((snapshot) => <span key={snapshot.snapshotPath}><code>{snapshot.snapshotPath}</code> · {new Date(snapshot.createdAt).toLocaleString()}</span>)}</div>}
     <div className="line-diff" aria-label="Line-by-line Lorekeeper diff">
       {diff.slice(0, 180).map((line, index) => <code className={`diff-line ${line.kind}`} key={`${index}-${line.text.slice(0, 24)}`}>{line.prefix} {line.text || ' '}</code>)}
       {diff.length > 180 && <p className="muted">Diff truncated to first 180 lines for UI safety.</p>}

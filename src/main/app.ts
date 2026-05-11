@@ -144,6 +144,7 @@ ipcMain.handle('conduit:lorekeeper-proposal:preview', async (_event, id: string)
 ipcMain.handle('conduit:lorekeeper-proposal:approve', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/approve`, { method: 'POST' }), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-proposal:reject', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/reject`, { method: 'POST' }), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-proposal:apply', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/apply`, { method: 'POST' }), conduitStore)).body);
+ipcMain.handle('conduit:lorekeeper-snapshots:list', async (_event, targetPageId: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/snapshots?targetPageId=${encodeURIComponent(targetPageId)}`), conduitStore)).body);
 ipcMain.handle('vault:info', async () => initVault(vaultRoot));
 ipcMain.handle('sync:status', async () => getSyncStatus(vaultRoot));
 ipcMain.handle('sync:rebuild-manifest', async () => rebuildSyncManifest(vaultRoot));
