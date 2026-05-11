@@ -184,3 +184,8 @@ The Capture tab includes a **Dictate** action that opens Android speech recognit
 ## Runledger detail cards
 
 The Runs tab parses Runledger `summary` and `refs` fields from Conduit so mobile review shows enough provenance to decide whether to switch back to desktop for deeper replay or Lorekeeper work.
+
+
+## Companion diagnostics
+
+The Android app includes a Diagnostics tab that reports the active Conduit URL, stored pairing/session metadata, granted scopes, and live endpoint checks for status, Runledger, Lorekeeper proposals, and events. Protected endpoints intentionally report that pairing is required when no scoped session is available.

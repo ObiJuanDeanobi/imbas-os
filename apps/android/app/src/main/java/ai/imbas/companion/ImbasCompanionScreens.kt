@@ -38,7 +38,8 @@ enum class CompanionTab(val label: String) {
     Status("Status"),
     Runledger("Runs"),
     Lorekeeper("Wiki"),
-    Capture("Capture")
+    Capture("Capture"),
+    Diagnostics("Diagnostics")
 }
 
 @Composable
@@ -55,6 +56,7 @@ fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload
     var proposals by remember { mutableStateOf<List<LorekeeperProposalItem>>(emptyList()) }
     var connectionMessage by remember { mutableStateOf("Not connected yet") }
     var actionMessage by remember { mutableStateOf("No mobile action sent yet") }
+    var diagnosticChecks by remember { mutableStateOf<List<DiagnosticCheck>>(emptyList()) }
     val scope = rememberCoroutineScope()
 
     fun refreshLiveStatus() {
@@ -84,6 +86,17 @@ fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload
                         LorekeeperProposalItem("prop-002", "Pairing flow hardening", "planned", "AI_OS/Imbas/security", "Make mobile auth clearer", "Pairing should use scoped revocable tokens.", listOf("demo://security"))
                     )
                 }
+            }
+        }
+    }
+
+    fun runDiagnostics() {
+        scope.launch {
+            diagnosticChecks = listOf(DiagnosticCheck("Diagnostics", false, "Running checks…"))
+            diagnosticChecks = try {
+                ImbasApiClient(serviceUrl).runDiagnostics(mobileSession)
+            } catch (error: Exception) {
+                listOf(DiagnosticCheck("Diagnostics", false, error.message ?: error.javaClass.simpleName))
             }
         }
     }
@@ -206,6 +219,12 @@ fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload
                                 }
                             }
                         }
+                    )
+                    CompanionTab.Diagnostics -> DiagnosticsScreen(
+                        serviceUrl = serviceUrl,
+                        mobileSession = mobileSession,
+                        checks = diagnosticChecks,
+                        onRunDiagnostics = { runDiagnostics() }
                     )
                 }
             }
@@ -398,6 +417,31 @@ fun CaptureScreen(mobileSession: ImbasMobileSession?, actionMessage: String, ini
         StatusCard("Pairing", mobileSession?.let { "Paired as ${it.deviceLabel}" } ?: "Pair before capturing notes")
         StatusCard("Voice", voiceMessage ?: "No voice transcript captured yet")
         StatusCard("Last action", actionMessage)
+    }
+}
+
+@Composable
+fun DiagnosticsScreen(serviceUrl: String, mobileSession: ImbasMobileSession?, checks: List<DiagnosticCheck>, onRunDiagnostics: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("Diagnostics", style = MaterialTheme.typography.titleLarge)
+        Text("Check Conduit reachability, mobile auth, and stored session scopes before deeper phone testing.")
+        StatusCard("Conduit URL", serviceUrl)
+        StatusCard("Pairing", mobileSession?.let { "Paired as ${it.deviceLabel} · ${it.sessionId}" } ?: "No paired session stored")
+        StatusCard("Scopes", mobileSession?.scopes?.joinToString()?.ifBlank { "No scopes reported" } ?: "Pair to see granted scopes")
+        Button(onClick = onRunDiagnostics) { Text("Run diagnostics") }
+        if (checks.isEmpty()) {
+            StatusCard("Checks", "Not run yet")
+        } else {
+            checks.forEach { check ->
+                Card(colors = CardDefaults.cardColors(containerColor = if (check.ok) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.errorContainer)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(check.label, fontWeight = FontWeight.Bold)
+                        Text(if (check.ok) "OK" else "Needs attention")
+                        Text(check.detail)
+                    }
+                }
+            }
+        }
     }
 }
 

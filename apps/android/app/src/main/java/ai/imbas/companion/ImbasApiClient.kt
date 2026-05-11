@@ -107,6 +107,27 @@ class ImbasApiClient(private val serviceUrl: String) {
         true
     }
 
+    suspend fun runDiagnostics(session: ImbasMobileSession? = null): List<DiagnosticCheck> = withContext(Dispatchers.IO) {
+        val checks = mutableListOf<DiagnosticCheck>()
+        checks += checkEndpoint("Status", statusEndpoint, null)
+        checks += checkEndpoint("Runledger", "$runledgerEndpoint?limit=1", session)
+        checks += checkEndpoint("Lorekeeper proposals", "$lorekeeperProposalsEndpoint?limit=1", session)
+        checks += checkEndpoint("Events", "$normalizedServiceUrl/v0/events?limit=1", session)
+        checks
+    }
+
+    private fun checkEndpoint(label: String, endpoint: String, session: ImbasMobileSession? = null): DiagnosticCheck {
+        return try {
+            getJson(endpoint, session)
+            DiagnosticCheck(label, true, "OK")
+        } catch (error: Exception) {
+            val message = error.message ?: error.javaClass.simpleName
+            val expected = if (session == null && message.contains("HTTP 401")) "Needs paired session" else message.take(180)
+            DiagnosticCheck(label, false, expected)
+        }
+    }
+
+
     suspend fun captureNote(note: String, session: ImbasMobileSession): Boolean = withContext(Dispatchers.IO) {
         postJson("$normalizedServiceUrl/v0/events", JSONObject()
             .put("connector", "Android Companion")

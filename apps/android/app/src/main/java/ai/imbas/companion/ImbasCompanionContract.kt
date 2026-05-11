@@ -53,3 +53,10 @@ data class LorekeeperProposalItem(
     val markdownPreview: String = "",
     val sources: List<String> = emptyList()
 )
+
+
+data class DiagnosticCheck(
+    val label: String,
+    val ok: Boolean,
+    val detail: String
+)
