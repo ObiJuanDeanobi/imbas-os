@@ -41,8 +41,8 @@ enum class CompanionTab(val label: String) {
 }
 
 @Composable
-fun ImbasCompanionApp() {
-    var selectedTab by remember { mutableStateOf(CompanionTab.Status) }
+fun ImbasCompanionApp(initialCaptureDraft: String? = null) {
+    var selectedTab by remember { mutableStateOf(if (initialCaptureDraft.isNullOrBlank()) CompanionTab.Status else CompanionTab.Capture) }
     var serviceUrl by remember { mutableStateOf("http://100.81.12.30:3077") }
     val context = LocalContext.current
     val sessionStore = remember { SecureSessionStore(context) }
@@ -181,6 +181,7 @@ fun ImbasCompanionApp() {
                     CompanionTab.Capture -> CaptureScreen(
                         mobileSession = mobileSession,
                         actionMessage = actionMessage,
+                        initialNote = initialCaptureDraft,
                         onCapture = { note ->
                             scope.launch {
                                 val session = mobileSession
@@ -344,11 +345,14 @@ fun LorekeeperReviewScreen(proposals: List<LorekeeperProposalItem>, actionMessag
 
 
 @Composable
-fun CaptureScreen(mobileSession: ImbasMobileSession?, actionMessage: String, onCapture: (String) -> Unit) {
-    var note by remember { mutableStateOf("") }
+fun CaptureScreen(mobileSession: ImbasMobileSession?, actionMessage: String, initialNote: String? = null, onCapture: (String) -> Unit) {
+    var note by remember { mutableStateOf(initialNote.orEmpty()) }
+    LaunchedEffect(initialNote) {
+        if (!initialNote.isNullOrBlank() && note.isBlank()) note = initialNote
+    }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Capture note", style = MaterialTheme.typography.titleLarge)
-        Text("Send a lightweight private observation into Conduit. Raw secrets are still redacted by Imbas OS before durable storage.")
+        Text("Send a lightweight private observation into Conduit. Shared text opens here as a draft; raw secrets are still redacted by Imbas OS before durable storage.")
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = note,

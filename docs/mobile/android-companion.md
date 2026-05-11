@@ -136,7 +136,8 @@ Existing read/review endpoints Android will use:
 
 5. **Capture**
    - quick private note to Conduit event;
-   - share-sheet capture later.
+   - Android text share-sheet opens the Capture tab with a draft;
+   - photo/voice capture later.
 
 ## Safety boundaries
 
