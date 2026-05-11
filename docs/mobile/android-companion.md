@@ -167,3 +167,10 @@ When Conduit is exposed over the tailnet for Android testing, server-layer HTTP 
 ## Desktop review companion
 
 - Desktop Agent Console now shows a visual Lorekeeper before/after diff for proposal previews, highlights added/removed lines, and keeps apply guarded behind approval. Android still reviews proposal details and can approve/reject; managed-block apply remains desktop-only.
+
+
+## QR pairing
+
+- Command Center pairing challenges now include an `imbas://pair?...` QR payload with challenge ID, code, and the default tailnet Conduit URL.
+- Android Pair tab can launch the Google code scanner, parse the Imbas pairing URI, prefill challenge/code, update the Conduit URL, and then complete the existing scoped pairing flow.
+- Manual challenge ID/code entry remains available as fallback.

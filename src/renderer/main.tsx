@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import QRCode from 'qrcode';
 import type { ArtifactGraph, ArtifactSnapshot, ArtifactSummary, SearchIndexStats, SyncStatus, TrustLevel, UnifiedSearchResult, VaultInfo, WikiBridgeReport, WikiPageBundle } from '../shared/types';
 import './styles.css';
+
+const MOBILE_DEFAULT_CONDUIT_URL = 'http://100.81.12.30:3077';
 
 const defaultHtml = `<!doctype html>
 <html>
@@ -31,6 +34,7 @@ function App() {
   const [aiWorldQuery, setAiWorldQuery] = useState('Imbas OS');
   const [aiWorldResult, setAiWorldResult] = useState<any>(null);
   const [mobilePairingChallenge, setMobilePairingChallenge] = useState<any>(null);
+  const [mobilePairingQrDataUrl, setMobilePairingQrDataUrl] = useState('');
   const projectOptions = useMemo(() => [...new Set(graph.nodes.map((node) => node.project).filter(Boolean))].sort(), [graph.nodes]);
   const selected = useMemo(() => artifacts.find((artifact) => artifact.id === selectedId) ?? artifacts[0], [artifacts, selectedId]);
   const selectedWikiNode = useMemo(() => selectedWikiId ? graph.nodes.find((node) => node.id === selectedWikiId && node.kind === 'wiki') : null, [graph.nodes, selectedWikiId]);
@@ -130,7 +134,10 @@ function App() {
 
   async function createMobilePairingChallenge() {
     const response = await window.artifactVault.conduitCreateMobilePairingChallenge({ ttlMs: 10 * 60 * 1000 });
-    setMobilePairingChallenge(response?.challenge ?? response);
+    const challenge = response?.challenge ?? response;
+    setMobilePairingChallenge(challenge);
+    const payload = buildPairingPayload(challenge);
+    setMobilePairingQrDataUrl(await QRCode.toDataURL(payload, { margin: 1, width: 220 }));
     setConduitStatus(await window.artifactVault.conduitStatus());
     setLastAction('Created a short-lived Android pairing challenge. Enter its challenge ID and code in the companion app.');
   }
@@ -230,7 +237,7 @@ function App() {
       </aside>
       <section className="workspace">
         {activeView === 'command'
-          ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} mobilePairingChallenge={mobilePairingChallenge} onCreateMobilePairingChallenge={createMobilePairingChallenge} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
+          ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} mobilePairingChallenge={mobilePairingChallenge} mobilePairingQrDataUrl={mobilePairingQrDataUrl} onCreateMobilePairingChallenge={createMobilePairingChallenge} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
           : activeView === 'agent'
             ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onDispatchOpenClaw={window.artifactVault.conduitOpenClawDispatch} onRunReplay={window.artifactVault.conduitRunReplay} onCreateLorekeeperProposal={window.artifactVault.conduitCreateLorekeeperProposal} onPreviewLorekeeperProposal={window.artifactVault.conduitPreviewLorekeeperProposal} onApproveLorekeeperProposal={window.artifactVault.conduitApproveLorekeeperProposal} onRejectLorekeeperProposal={window.artifactVault.conduitRejectLorekeeperProposal} onApplyLorekeeperProposal={window.artifactVault.conduitApplyLorekeeperProposal} onListLorekeeperSnapshots={window.artifactVault.conduitListLorekeeperSnapshots} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
             : selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
@@ -297,11 +304,13 @@ function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mob
 
 
       <Panel title="Android pairing" eyebrow="mobile companion">
-        <p className="muted">Create a 10-minute challenge here, then enter the challenge ID and code in the Android companion Pair tab.</p>
+        <p className="muted">Create a 10-minute challenge here, then scan the QR code from the Android companion Pair tab or enter the challenge manually.</p>
         {mobilePairingChallenge ? <div className="pairing-challenge-card">
           <span>Challenge ID</span><code>{mobilePairingChallenge.id}</code>
           <span>Code</span><strong>{mobilePairingChallenge.code}</strong>
           <em>Expires {mobilePairingChallenge.expiresAt ? new Date(mobilePairingChallenge.expiresAt).toLocaleTimeString() : 'soon'}</em>
+          {mobilePairingQrDataUrl && <img className="pairing-qr" src={mobilePairingQrDataUrl} alt="Android pairing QR code" />}
+          <small>Payload includes the challenge, code, and default tailnet Conduit URL.</small>
         </div> : <p className="muted">No active challenge created in this UI session.</p>}
         <button className="secondary" onClick={onCreateMobilePairingChallenge}>Create new pairing challenge</button>
         {activeSessions.length ? activeSessions.map((session: any) => <article className="timeline-item" key={session.id}><strong>{session.deviceLabel}</strong><span>{session.scopes?.join(', ')}</span><p>{session.id}</p></article>) : <p className="muted">No active companion sessions yet.</p>}
@@ -318,6 +327,16 @@ function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mob
       </Panel>
     </section>
   </div>;
+}
+
+
+function buildPairingPayload(challenge: any) {
+  const params = new URLSearchParams({
+    serviceUrl: MOBILE_DEFAULT_CONDUIT_URL,
+    challengeId: challenge?.id ?? '',
+    code: challenge?.code ?? ''
+  });
+  return `imbas://pair?${params.toString()}`;
 }
 
 function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {

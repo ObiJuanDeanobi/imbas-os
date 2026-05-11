@@ -2,6 +2,9 @@ package ai.imbas.companion
 
 import android.content.Intent
 import android.os.Bundle
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
@@ -11,13 +14,15 @@ import androidx.compose.runtime.setValue
 
 class MainActivity : ComponentActivity() {
     private var sharedText by mutableStateOf<String?>(null)
+    private var pairingQrPayload by mutableStateOf<String?>(null)
+    private var qrScanMessage by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedText = extractSharedText(intent)
         setContent {
             MaterialTheme {
-                ImbasCompanionApp(initialCaptureDraft = sharedText)
+                ImbasCompanionApp(initialCaptureDraft = sharedText, scannedPairingPayload = pairingQrPayload, qrScanMessage = qrScanMessage, onScanPairingQr = { scanPairingQr() })
             }
         }
     }
@@ -26,6 +31,20 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         sharedText = extractSharedText(intent)
+    }
+
+    private fun scanPairingQr() {
+        qrScanMessage = "Opening QR scanner…"
+        val options = GmsBarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+        GmsBarcodeScanning.getClient(this, options).startScan()
+            .addOnSuccessListener { barcode ->
+                pairingQrPayload = barcode.rawValue
+                qrScanMessage = if (barcode.rawValue.isNullOrBlank()) "QR scan returned no payload." else "QR pairing payload captured."
+            }
+            .addOnCanceledListener { qrScanMessage = "QR scan cancelled." }
+            .addOnFailureListener { error -> qrScanMessage = "QR scan failed: ${error.message ?: error.javaClass.simpleName}" }
     }
 
     private fun extractSharedText(intent: Intent?): String? {

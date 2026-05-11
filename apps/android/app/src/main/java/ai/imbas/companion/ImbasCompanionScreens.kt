@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.net.Uri
 import kotlinx.coroutines.launch
 
 enum class CompanionTab(val label: String) {
@@ -41,7 +42,7 @@ enum class CompanionTab(val label: String) {
 }
 
 @Composable
-fun ImbasCompanionApp(initialCaptureDraft: String? = null) {
+fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload: String? = null, qrScanMessage: String? = null, onScanPairingQr: () -> Unit = {}) {
     var selectedTab by remember { mutableStateOf(if (initialCaptureDraft.isNullOrBlank()) CompanionTab.Status else CompanionTab.Capture) }
     var serviceUrl by remember { mutableStateOf("http://100.81.12.30:3077") }
     val context = LocalContext.current
@@ -114,6 +115,10 @@ fun ImbasCompanionApp(initialCaptureDraft: String? = null) {
                     CompanionTab.Pair -> PairingScreen(
                         mobileSession = mobileSession,
                         lastPairingMessage = lastPairingMessage,
+                        scannedPairingPayload = scannedPairingPayload,
+                        qrScanMessage = qrScanMessage,
+                        onScanPairingQr = onScanPairingQr,
+                        onServiceUrlChange = { serviceUrl = it },
                         onPair = { request ->
                             scope.launch {
                                 lastPairingMessage = "Completing pairing for ${request.deviceLabel}…"
@@ -242,13 +247,29 @@ private fun TabRow(selectedTab: CompanionTab, onSelect: (CompanionTab) -> Unit) 
 }
 
 @Composable
-fun PairingScreen(mobileSession: ImbasMobileSession?, lastPairingMessage: String, onPair: (ImbasPairingRequest) -> Unit, onForget: () -> Unit) {
+fun PairingScreen(mobileSession: ImbasMobileSession?, lastPairingMessage: String, scannedPairingPayload: String? = null, qrScanMessage: String? = null, onScanPairingQr: () -> Unit = {}, onServiceUrlChange: (String) -> Unit = {}, onPair: (ImbasPairingRequest) -> Unit, onForget: () -> Unit) {
     var challengeId by remember { mutableStateOf("") }
     var serviceCode by remember { mutableStateOf("") }
     var deviceLabel by remember { mutableStateOf("Johnathan's Android") }
+    var parsedPairingMessage by remember { mutableStateOf("No QR pairing payload scanned yet") }
+
+    LaunchedEffect(scannedPairingPayload) {
+        val payload = scannedPairingPayload ?: return@LaunchedEffect
+        val parsed = parsePairingPayload(payload)
+        if (parsed == null) {
+            parsedPairingMessage = "QR payload was not an Imbas pairing link."
+        } else {
+            challengeId = parsed.challengeId
+            serviceCode = parsed.code
+            parsed.serviceUrl?.takeIf { it.isNotBlank() }?.let { onServiceUrlChange(it) }
+            parsedPairingMessage = "QR pairing details loaded. Tap Complete pairing to finish."
+        }
+    }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Pair with Imbas OS", style = MaterialTheme.typography.titleLarge)
-        Text("Enter the challenge ID and 6-digit code from the Imbas OS Command Center. The returned mobile token is encrypted with Android Keystore.")
+        Text("Scan the Command Center QR code, or enter the challenge ID and 6-digit code manually. The returned mobile token is encrypted with Android Keystore.")
+        Button(onClick = onScanPairingQr) { Text("Scan pairing QR") }
+        StatusCard(title = "QR scanner", body = qrScanMessage ?: parsedPairingMessage)
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = challengeId,
@@ -375,5 +396,21 @@ private fun StatusCard(title: String, body: String) {
             Text(title, fontWeight = FontWeight.Bold)
             Text(body)
         }
+    }
+}
+
+
+private data class ParsedPairingPayload(val serviceUrl: String?, val challengeId: String, val code: String)
+
+private fun parsePairingPayload(payload: String): ParsedPairingPayload? {
+    return try {
+        val uri = Uri.parse(payload.trim())
+        if (uri.scheme != "imbas" || uri.host != "pair") return null
+        val challengeId = uri.getQueryParameter("challengeId")?.trim().orEmpty()
+        val code = uri.getQueryParameter("code")?.trim().orEmpty()
+        val serviceUrl = uri.getQueryParameter("serviceUrl")?.trim()
+        if (challengeId.isBlank() || code.isBlank()) null else ParsedPairingPayload(serviceUrl, challengeId, code)
+    } catch (_: Exception) {
+        null
     }
 }
