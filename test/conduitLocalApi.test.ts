@@ -151,3 +151,47 @@ test('Conduit writes accepted events to Memsocket when enabled', async () => {
   assert.equal(response.status, 202);
   assert.deepEqual(writes, ['Write through to Memsocket']);
 });
+
+test('Conduit dispatches Agent Console messages to configured OpenClaw dispatcher and records Runledger', async () => {
+  const store = createConduitRecordStore();
+  const received: string[] = [];
+  store.openclawDispatcher = {
+    async dispatch(request) {
+      received.push(request.message);
+      return { status: 'completed', reply: 'OpenClaw reply: next safe task is to verify the connector.', sessionId: 'session:test', runId: 'openclaw-run:test', transport: 'test' };
+    }
+  };
+
+  const response = await handleConduitRequest(new Request('http://127.0.0.1:0/v0/agents/openclaw/dispatch', {
+    method: 'POST',
+    body: JSON.stringify({ agent: 'OpenClaw', mode: 'chat', message: 'Please inspect token=ghp_abcdefghijklmnopqrstuvwxyz123456 and summarize.' })
+  }), store);
+
+  assert.equal(response.status, 200);
+  assert.equal(received.length, 1);
+  assert.equal(received[0].includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(store.runs.length, 1);
+  assert.equal(store.runs[0].outcome, 'completed');
+  assert.equal(store.runs[0].summary, 'OpenClaw reply: next safe task is to verify the connector.');
+  assert.equal(store.runledger.some((entry) => entry.title.startsWith('Agent Console dispatch:')), true);
+  assert.equal(JSON.stringify(response.body).includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+});
+
+test('Conduit blocks non-OpenClaw Agent Console live dispatch targets', async () => {
+  const store = createConduitRecordStore();
+  store.openclawDispatcher = {
+    async dispatch() {
+      throw new Error('should not be called');
+    }
+  };
+
+  const response = await handleConduitRequest(new Request('http://127.0.0.1:0/v0/agents/openclaw/dispatch', {
+    method: 'POST',
+    body: JSON.stringify({ agent: 'Hermes', mode: 'chat', message: 'Hello Hermes' })
+  }), store);
+
+  assert.equal(response.status, 501);
+  assert.equal(store.runs.length, 1);
+  assert.equal(store.runs[0].outcome, 'blocked');
+  assert.equal(store.runledger[0].outcome, 'blocked');
+});

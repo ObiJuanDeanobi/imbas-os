@@ -6,6 +6,7 @@ import { createRunledgerEntry, RunledgerEntry, searchRunledger } from '../runled
 import { applyLorekeeperProposalToMarkdown, createLorekeeperProposal, LorekeeperProposal, searchLorekeeperProposals, transitionLorekeeperProposal } from '../lorekeeper/proposals.js';
 import { readMarkdownPageFromVault, updateMarkdownPage } from '../markdown/markdownStore.js';
 import { createArtifact } from '../vault/vaultStore.js';
+import { OpenClawDispatcher } from '../openclaw/dispatcher.js';
 import type { CreateArtifactInput } from '../../shared/types.js';
 import { completePairingChallenge, createMobilePairingStore, createPairingChallenge, MobilePairingStore, MobileSessionScope, revokeMobileSession } from '../mobile/pairing.js';
 
@@ -30,6 +31,7 @@ export interface ConduitRecordStore {
   vaultRoot?: string;
   modules: ImbasModuleRegistry;
   memsocket?: MemsocketCliClient;
+  openclawDispatcher?: OpenClawDispatcher;
   persist?: () => Promise<void>;
 }
 
@@ -52,7 +54,7 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
       body: {
         service: 'imbas-os-conduit',
         status: 'ok',
-        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/replay/runs/:id', 'GET /v0/wiki/proposals', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/artifacts', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/preview', 'POST /v0/wiki/proposals/:id/apply'],
+        implemented: ['GET /v0/status', 'GET /v0/events', 'GET /v0/runs', 'GET /v0/runledger', 'GET /v0/replay/runs/:id', 'GET /v0/wiki/proposals', 'POST /v0/agents/openclaw/dispatch', 'POST /v0/events', 'POST /v0/runs', 'POST /v0/artifacts', 'POST /v0/search', 'POST /v0/context-packs', 'POST /v0/wiki/proposals', 'POST /v0/mobile/pairing-challenges', 'POST /v0/mobile/pairing-challenges/complete', 'POST /v0/mobile/sessions/:id/revoke', 'POST /v0/wiki/proposals/:id/preview', 'POST /v0/wiki/proposals/:id/apply'],
         modules: store.modules,
         pending: ['POST /v0/snapshots'],
         counts: { events: store.events.length, runs: store.runs.length, runledger: store.runledger.length, lorekeeperProposals: store.lorekeeperProposals.length, mobileSessions: store.mobile.sessions.filter((session) => !session.revokedAt).length },
@@ -92,6 +94,55 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
   if (request.method === 'GET' && path === '/v0/wiki/proposals') {
     const limit = parseLimit(url.searchParams.get('limit'));
     return { status: 200, body: { proposals: searchLorekeeperProposals(store.lorekeeperProposals, url.searchParams.get('query') ?? '', limit), count: store.lorekeeperProposals.length } };
+  }
+
+
+  if (request.method === 'POST' && path === '/v0/agents/openclaw/dispatch') {
+    try {
+      const body = await readJson<{ message: string; mode?: 'chat' | 'task'; agent?: string }>(request);
+      const message = body.message?.trim();
+      if (!message) return { status: 400, body: { errors: ['message is required'] } };
+      const mode = body.mode === 'task' ? 'task' : 'chat';
+      const targetAgent = body.agent?.trim() || 'OpenClaw';
+      if (!['OpenClaw', 'Auto-route'].includes(targetAgent)) {
+        const runId = createAgentDispatchRunId();
+        const summary = `${targetAgent} live dispatch is not wired yet. OpenClaw is the private-preview connector in this slice.`;
+        const run = { connector: 'Imbas OS Agent Console', agent: targetAgent, runId, task: redactSensitiveText(message), outcome: 'blocked' as const, summary, verification: ['No external dispatch attempted'], createdAt: new Date().toISOString() };
+        store.runs.push(run);
+        store.runledger.push(createRunledgerEntry({ kind: 'run', connector: run.connector, agent: run.agent, title: `Agent Console dispatch blocked: ${targetAgent}`, outcome: 'blocked', summary, refs: [runId], createdAt: run.createdAt }));
+        await store.persist?.();
+        return { status: 501, body: { accepted: false, run, dispatch: { status: 'blocked', reply: summary } } };
+      }
+
+      const safeMessage = redactSensitiveText(message);
+      recordRedactionAudit(store, 'run', 'Imbas OS Agent Console', targetAgent, message, safeMessage);
+      const runId = createAgentDispatchRunId();
+      const createdAt = new Date().toISOString();
+      const dispatch = store.openclawDispatcher
+        ? await store.openclawDispatcher.dispatch({ message: safeMessage, mode, agent: 'main' })
+        : { status: 'blocked' as const, reply: 'OpenClaw dispatcher is not configured in this runtime.', transport: 'unconfigured' };
+      const outcome = dispatch.status === 'completed' ? 'completed' as const : dispatch.status === 'blocked' ? 'blocked' as const : 'failed' as const;
+      const safeReply = redactSensitiveText(dispatch.reply);
+      recordRedactionAudit(store, 'run', 'OpenClaw', 'main', dispatch.reply, safeReply);
+      const run = {
+        connector: 'Imbas OS Agent Console',
+        agent: 'OpenClaw',
+        runId,
+        task: safeMessage,
+        outcome,
+        summary: safeReply,
+        verification: [`dispatch.status=${dispatch.status}`, `transport=${dispatch.transport ?? 'unknown'}`],
+        artifacts: [dispatch.sessionId, dispatch.runId].filter(Boolean) as string[],
+        createdAt
+      };
+      store.runs.push(run);
+      store.runledger.push(createRunledgerEntry({ kind: 'run', connector: run.connector, agent: run.agent, title: `Agent Console dispatch: ${safeMessage.slice(0, 80)}`, outcome, summary: safeReply, refs: [runId, ...(run.artifacts ?? [])], createdAt }));
+      store.modules.runledger = { ...store.modules.runledger, enabled: true, available: true, configured: true, health: outcome === 'completed' ? 'ok' : 'limited' };
+      await store.persist?.();
+      return { status: outcome === 'completed' ? 200 : 202, body: { accepted: true, run, dispatch: { ...dispatch, reply: safeReply } } };
+    } catch (error) {
+      return { status: 400, body: { errors: [error instanceof Error ? error.message : String(error)] } };
+    }
   }
 
   if (request.method === 'POST' && path === '/v0/artifacts') {
@@ -278,6 +329,10 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
 }
 
 
+
+function createAgentDispatchRunId(): string {
+  return `agent-dispatch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 function recordRedactionAudit(store: ConduitRecordStore, recordKind: 'event' | 'run', connector: string, agent: string, original: string, redacted: string): void {
   if (original === redacted) return;

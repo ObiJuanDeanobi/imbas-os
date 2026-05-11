@@ -14,6 +14,7 @@ import { startConduitLoopbackService, ConduitLoopbackService } from './conduit/s
 import { createDurableConduitRecordStore } from './conduit/durableStore.js';
 import { createConduitRecordStore, ConduitRecordStore, handleConduitRequest } from './conduit/localApi.js';
 import { createMemsocketCliClient } from './memsocket/cliClient.js';
+import { createOpenClawCliDispatcher } from './openclaw/dispatcher.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const devServerUrl = process.env.IMBAS_OS_DEV_SERVER_URL ?? process.env.ARTIFACT_VAULT_DEV_SERVER_URL;
@@ -30,6 +31,7 @@ async function prepareRuntime() {
   conduitStore.vaultRoot = vaultRoot;
   conduitStore.markdownRoot = vaultRoot;
   configureMemsocketModule();
+  configureOpenClawDispatcher();
   installArtifactProtocol();
   installNetworkBlocker();
   await maybeStartConduitLoopback();
@@ -43,6 +45,19 @@ async function maybeStartConduitLoopback() {
   console.log(`Imbas OS Conduit loopback listening on ${conduitService.url}`);
 }
 
+
+
+function configureOpenClawDispatcher() {
+  conduitStore.openclawDispatcher = createOpenClawCliDispatcher();
+  conduitStore.modules.openclaw = {
+    ...conduitStore.modules.openclaw,
+    enabled: true,
+    available: true,
+    configured: true,
+    health: 'limited',
+    notes: 'Local CLI dispatch adapter configured for private-preview Agent Console runs.'
+  };
+}
 
 function configureMemsocketModule() {
   const configPath = process.env.IMBAS_OS_MEMSOCKET_CONFIG;
@@ -120,6 +135,7 @@ function installNetworkBlocker() {
 ipcMain.handle('conduit:status', async () => (await handleConduitRequest(new Request('http://127.0.0.1/v0/status'), conduitStore)).body);
 ipcMain.handle('conduit:search', async (_event, query: string) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/search', { method: 'POST', body: JSON.stringify({ query }) }), conduitStore)).body);
 ipcMain.handle('conduit:context-pack', async (_event, task: string) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/context-packs', { method: 'POST', body: JSON.stringify({ task, projectId: 'imbas-os', maxTokens: 1200 }) }), conduitStore)).body);
+ipcMain.handle('conduit:openclaw-dispatch', async (_event, input) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/agents/openclaw/dispatch', { method: 'POST', body: JSON.stringify(input) }), conduitStore)).body);
 ipcMain.handle('conduit:run-replay', async (_event, runId: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/replay/runs/${encodeURIComponent(runId)}`), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-proposal:create', async (_event, input) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/proposals', { method: 'POST', body: JSON.stringify(input) }), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-proposal:preview', async (_event, id: string) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/proposals/${encodeURIComponent(id)}/preview`, { method: 'POST' }), conduitStore)).body);

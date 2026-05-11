@@ -2,6 +2,7 @@ export type ImbasModuleId =
   | 'artifact-vault'
   | 'memsocket'
   | 'conduit'
+  | 'openclaw'
   | 'sanctum'
   | 'lorekeeper'
   | 'runledger'
@@ -59,6 +60,16 @@ export function createDefaultModuleRegistry(overrides: Partial<Record<ImbasModul
       configured: true,
       health: 'limited',
       capabilities: ['status.read', 'events.write', 'runs.write']
+    },
+    openclaw: {
+      id: 'openclaw',
+      title: 'OpenClaw',
+      description: 'Local OpenClaw connector for private-preview agent dispatch and reply capture.',
+      enabled: false,
+      available: false,
+      configured: false,
+      health: 'planned',
+      capabilities: ['agents.dispatch', 'sessions.reply', 'runs.capture']
     },
     sanctum: {
       id: 'sanctum',
