@@ -306,36 +306,130 @@ function Panel({ title, eyebrow, children }: { title: string; eyebrow: string; c
   return <section className="command-panel"><p className="eyebrow">{eyebrow}</p><h3>{title}</h3>{children}</section>;
 }
 
+
+type ConsoleMessage = { role: 'human' | 'agent' | 'system'; text: string; createdAt: string };
+
+type ConsoleDispatchSummary = {
+  agent: string;
+  mode: 'chat' | 'task';
+  runId: string;
+  title: string;
+  outcome: string;
+  transport: string;
+  request: string;
+  reply: string;
+  sessionRef?: string;
+};
+
+function summarizeDispatch(response: any, human: ConsoleMessage, agentMessage: ConsoleMessage, agent: string, mode: 'chat' | 'task'): ConsoleDispatchSummary {
+  const run = response?.run ?? {};
+  const dispatch = response?.dispatch ?? {};
+  return {
+    agent,
+    mode,
+    runId: run.runId ?? `agent-dispatch-${Date.now()}`,
+    title: human.text.slice(0, 96) || 'Untitled dispatch',
+    outcome: run.outcome ?? dispatch.status ?? 'unknown',
+    transport: dispatch.transport ?? run.verification?.find?.((item: string) => item.startsWith('transport='))?.replace('transport=', '') ?? 'unknown',
+    request: run.task ?? human.text,
+    reply: dispatch.reply ?? run.summary ?? agentMessage.text,
+    sessionRef: dispatch.sessionId ?? dispatch.runId ?? run.artifacts?.[0]
+  };
+}
+
 function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDispatchOpenClaw, onRunReplay, onCreateLorekeeperProposal, onPreviewLorekeeperProposal, onApproveLorekeeperProposal, onRejectLorekeeperProposal, onApplyLorekeeperProposal, onCreateArtifact }: { conduitStatus: any; onSearchConduit: (query: string) => Promise<any>; onBuildContextPack: (task: string) => Promise<any>; onDispatchOpenClaw: (input: { message: string; mode?: 'chat' | 'task'; agent?: string }) => Promise<any>; onRunReplay: (runId: string) => Promise<any>; onCreateLorekeeperProposal: (input: any) => Promise<any>; onPreviewLorekeeperProposal: (id: string) => Promise<any>; onApproveLorekeeperProposal: (id: string) => Promise<any>; onRejectLorekeeperProposal: (id: string) => Promise<any>; onApplyLorekeeperProposal: (id: string) => Promise<any>; onCreateArtifact: (input: CreateArtifactInput) => Promise<void> }) {
   const [agent, setAgent] = useState('OpenClaw');
   const [mode, setMode] = useState<'chat' | 'task'>('chat');
   const [message, setMessage] = useState('Summarize the current Imbas OS state and suggest the next safe task.');
-  const [messages, setMessages] = useState<{ role: 'human' | 'agent' | 'system'; text: string; createdAt: string }[]>([
-    { role: 'system', text: 'Agent Console v0.1 can dispatch to OpenClaw through a constrained local adapter, record the request/reply in Runledger, and still build context packs or save transcript artifacts.', createdAt: new Date().toISOString() }
+  const [messages, setMessages] = useState<ConsoleMessage[]>([
+    { role: 'system', text: 'Agent Console v0.2 can dispatch to OpenClaw through a constrained local adapter, record the request/reply in Runledger, and still build context packs or save transcript artifacts.', createdAt: new Date().toISOString() }
   ]);
   const [result, setResult] = useState<any>(null);
   const [runReplayId, setRunReplayId] = useState('');
   const [proposalTargetPageId, setProposalTargetPageId] = useState('');
   const [proposalPreview, setProposalPreview] = useState<any>(null);
+  const [lastDispatch, setLastDispatch] = useState<ConsoleDispatchSummary | null>(null);
+  const [isDispatching, setIsDispatching] = useState(false);
+  const [actionStatus, setActionStatus] = useState('Ready.');
 
   async function sendMessage() {
+    if (!message.trim() || isDispatching) return;
     const createdAt = new Date().toISOString();
-    const human = { role: 'human' as const, text: message, createdAt };
+    const human = { role: 'human' as const, text: message.trim(), createdAt };
     setMessages((current) => [...current, human]);
-    const response = await onDispatchOpenClaw({ message, mode, agent });
-    setResult(response);
-    const agentText = response?.dispatch?.reply
-      ?? response?.run?.summary
-      ?? `${agent} dispatch returned without a displayable reply.`;
-    setMessages((current) => [...current, { role: 'agent', text: agentText, createdAt: new Date().toISOString() }]);
+    setIsDispatching(true);
+    setActionStatus(`Dispatching to ${agent}…`);
+    try {
+      const response = await onDispatchOpenClaw({ message: human.text, mode, agent });
+      setResult(response);
+      const agentText = response?.dispatch?.reply
+        ?? response?.run?.summary
+        ?? `${agent} dispatch returned without a displayable reply.`;
+      const agentMessage = { role: 'agent' as const, text: agentText, createdAt: new Date().toISOString() };
+      setMessages((current) => [...current, agentMessage]);
+      const summary = summarizeDispatch(response, human, agentMessage, agent, mode);
+      setLastDispatch(summary);
+      setRunReplayId(summary.runId);
+      setActionStatus(summary.outcome === 'completed' ? `Completed via ${summary.transport}. Run ${summary.runId} is ready for replay or promotion.` : `${summary.outcome}: ${agentText.slice(0, 140)}`);
+    } catch (error) {
+      const text = error instanceof Error ? error.message : String(error);
+      setMessages((current) => [...current, { role: 'system', text: `Dispatch failed: ${text}`, createdAt: new Date().toISOString() }]);
+      setActionStatus(`Dispatch failed: ${text}`);
+    } finally {
+      setIsDispatching(false);
+    }
   }
 
   async function saveTranscriptArtifact() {
+    setActionStatus('Saving transcript artifact…');
     const transcriptHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Agent Console transcript</title><style>body{font-family:system-ui;margin:2rem;line-height:1.5}.msg{border:1px solid #ddd;border-radius:12px;padding:1rem;margin:1rem 0}.system{background:#f6f6f6}.human{background:#eef6ff}.agent{background:#effaf3}pre{white-space:pre-wrap;background:#111;color:#eee;padding:1rem;border-radius:12px}</style></head><body><h1>Agent Console transcript</h1><p>Agent: ${escapeHtml(agent)} · Mode: ${escapeHtml(mode)}</p>${messages.map((item) => `<section class="msg ${item.role}"><strong>${item.role}</strong><p>${escapeHtml(item.text)}</p><small>${item.createdAt}</small></section>`).join('')}<h2>Last Conduit result</h2><pre>${escapeHtml(JSON.stringify(result ?? {}, null, 2))}</pre></body></html>`;
     await onCreateArtifact({ html: transcriptHtml, title: `Agent Console transcript — ${agent}`, sourceType: 'generated', provider: 'Imbas OS', model: 'agent-console-v0', project: 'Imbas OS', tags: ['agent-console', 'transcript'] });
+    setActionStatus('Saved transcript as an Artifact Vault artifact.');
+  }
+
+
+  async function saveLastReplyArtifact() {
+    if (!lastDispatch) return;
+    setActionStatus('Saving latest reply artifact…');
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Agent reply — ${escapeHtml(lastDispatch.agent)}</title><style>body{font-family:system-ui;margin:2rem;line-height:1.55;max-width:900px}.meta{color:#666}.card{border:1px solid #ddd;border-radius:14px;padding:1rem;margin:1rem 0}pre{white-space:pre-wrap;background:#111;color:#eee;padding:1rem;border-radius:12px}</style></head><body><h1>Agent reply</h1><p class="meta">${escapeHtml(lastDispatch.agent)} · ${escapeHtml(lastDispatch.mode)} · ${escapeHtml(lastDispatch.outcome)} · ${escapeHtml(lastDispatch.transport)}</p><section class="card"><h2>Request</h2><pre>${escapeHtml(lastDispatch.request)}</pre></section><section class="card"><h2>Reply</h2><pre>${escapeHtml(lastDispatch.reply)}</pre></section><p class="meta">Runledger ref: ${escapeHtml(lastDispatch.runId)}</p></body></html>`;
+    await onCreateArtifact({ html, title: `Agent reply — ${lastDispatch.agent}`, sourceType: 'generated', provider: 'Imbas OS', model: 'agent-console-v0.2', project: 'Imbas OS', tags: ['agent-console', 'agent-reply', lastDispatch.outcome] });
+    setActionStatus('Saved latest reply as an Artifact Vault artifact.');
+  }
+
+  async function createLorekeeperProposalFromLastReply() {
+    if (!lastDispatch) return;
+    setActionStatus('Creating Lorekeeper proposal from latest reply…');
+    const response = await onCreateLorekeeperProposal({
+      title: `Agent reply note — ${lastDispatch.agent}`,
+      markdown: `## ${lastDispatch.agent} reply\n\n**Request:** ${lastDispatch.request}\n\n**Reply:**\n\n${lastDispatch.reply}`,
+      rationale: 'Promote the latest Agent Console reply into reviewable durable wiki knowledge.',
+      connector: 'Imbas OS',
+      agent: 'agent-console',
+      targetPageId: proposalTargetPageId.trim() || undefined,
+      sources: [`imbas://runledger/${lastDispatch.runId}`, ...(lastDispatch.sessionRef ? [`openclaw://sessions/${lastDispatch.sessionRef}`] : [])]
+    });
+    setResult(response);
+    setActionStatus('Created Lorekeeper proposal from latest reply.');
+  }
+
+  async function replayLastDispatch() {
+    if (!lastDispatch) return;
+    setActionStatus(`Replaying ${lastDispatch.runId}…`);
+    const replay = await onRunReplay(lastDispatch.runId);
+    setResult(replay);
+    setActionStatus(`Loaded replay timeline for ${lastDispatch.runId}.`);
+  }
+
+  async function contextPackForLastDispatch() {
+    if (!lastDispatch) return;
+    setActionStatus('Building context pack for latest exchange…');
+    const pack = await onBuildContextPack(`${lastDispatch.request}\n\n${lastDispatch.reply}`);
+    setResult(pack);
+    setActionStatus(`Built context pack with ${pack?.totalItems ?? pack?.items?.length ?? 0} item(s).`);
   }
 
   async function createLorekeeperProposalFromTranscript() {
+    setActionStatus('Creating Lorekeeper proposal from full transcript…');
     const markdown = messages.map((item) => `- **${item.role}** (${item.createdAt}): ${item.text}`).join('\n');
     const response = await onCreateLorekeeperProposal({
       title: `Agent Console note — ${agent}`,
@@ -347,27 +441,32 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
       sources: ['imbas://agent-console/transcript']
     });
     setResult(response);
+    setActionStatus('Created Lorekeeper proposal from full transcript.');
   }
 
   async function replayRun() {
     if (!runReplayId.trim()) return;
-    setResult(await onRunReplay(runReplayId.trim()));
+    const replay = await onRunReplay(runReplayId.trim());
+    setResult(replay);
+    setActionStatus(`Loaded replay timeline for ${runReplayId.trim()}.`);
   }
 
   async function previewProposal(id: string) {
     const preview = await onPreviewLorekeeperProposal(id);
     setProposalPreview(preview);
     setResult(preview);
+    setActionStatus(`Previewed proposal ${id}.`);
   }
 
   async function transitionProposal(id: string, action: 'approve' | 'reject' | 'apply') {
     const response = action === 'approve' ? await onApproveLorekeeperProposal(id) : action === 'reject' ? await onRejectLorekeeperProposal(id) : await onApplyLorekeeperProposal(id);
     setResult(response);
+    setActionStatus(`${action} proposal ${id}.`);
   }
 
   return <div className="agent-console">
     <header className="hero-card compact">
-      <p className="eyebrow">agent console v0</p>
+      <p className="eyebrow">agent console v0.2</p>
       <h2>Chat with agents, stage tasks, and turn useful replies into durable Imbas OS records.</h2>
       <p>OpenClaw dispatch is live through a local constrained adapter. Requests and replies are written into Runledger so they can be replayed, reviewed, and turned into artifacts or Lorekeeper proposals.</p>
     </header>
@@ -381,7 +480,14 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
           {messages.map((item, index) => <article className={`message ${item.role}`} key={`${item.createdAt}-${index}`}><strong>{item.role}</strong><p>{item.text}</p><span>{new Date(item.createdAt).toLocaleTimeString()}</span></article>)}
         </div>
         <label>Message<textarea className="prompt-editor console-input" value={message} onChange={(event) => setMessage(event.target.value)} /></label>
-        <div className="button-row"><button onClick={sendMessage}>Dispatch to {agent}</button><button className="secondary" onClick={async () => setResult(mode === 'task' ? await onBuildContextPack(message) : await onSearchConduit(message))}>Search/context only</button><button className="secondary" onClick={saveTranscriptArtifact}>Save transcript artifact</button><button className="secondary" onClick={createLorekeeperProposalFromTranscript}>Propose wiki note</button></div>
+        <div className="button-row"><button onClick={sendMessage} disabled={isDispatching || !message.trim()}>{isDispatching ? 'Dispatching…' : `Dispatch to ${agent}`}</button><button className="secondary" onClick={async () => { setActionStatus('Searching Conduit…'); const next = mode === 'task' ? await onBuildContextPack(message) : await onSearchConduit(message); setResult(next); setActionStatus('Loaded search/context-only result.'); }}>Search/context only</button><button className="secondary" onClick={saveTranscriptArtifact}>Save full transcript</button><button className="secondary" onClick={createLorekeeperProposalFromTranscript}>Propose full transcript</button></div>
+        <p className="action-status" aria-live="polite">{actionStatus}</p>
+        {lastDispatch && <section className="reply-action-card" aria-label="Latest dispatch actions">
+          <div className="section-heading"><div><p className="eyebrow">latest dispatch</p><h3>{lastDispatch.outcome}: {lastDispatch.title}</h3></div><span className={`health health-${lastDispatch.outcome === 'completed' ? 'ok' : 'limited'}`}>{lastDispatch.transport}</span></div>
+          <p className="muted">Run <code>{lastDispatch.runId}</code>{lastDispatch.sessionRef ? <> · session <code>{lastDispatch.sessionRef}</code></> : null}</p>
+          <p>{lastDispatch.reply.slice(0, 360)}{lastDispatch.reply.length > 360 ? '…' : ''}</p>
+          <div className="button-row"><button className="secondary" onClick={replayLastDispatch}>Replay Runledger</button><button className="secondary" onClick={saveLastReplyArtifact}>Save reply artifact</button><button className="secondary" onClick={createLorekeeperProposalFromLastReply}>Propose reply note</button><button className="secondary" onClick={contextPackForLastDispatch}>Build context pack</button></div>
+        </section>}
       </section>
       <aside className="metadata-panel console-side">
         <details open><summary>Connector readiness</summary>

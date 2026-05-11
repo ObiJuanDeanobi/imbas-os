@@ -125,3 +125,23 @@ pre { white-space: pre-wrap; background: #09090b; border-radius: 12px; padding: 
   background: #18181b;
 }
 .action-card span { color: #a1a1aa; font-size: 0.86rem; }
+
+.reply-action-card {
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid #2f5f4a;
+  border-radius: 18px;
+  padding: 14px;
+  background: linear-gradient(135deg, #0f1f18, #111113 72%);
+}
+.reply-action-card h3 { font-size: 18px; line-height: 1.2; }
+.reply-action-card p { margin: 0; color: #d4d4d8; }
+.action-status {
+  margin: -4px 0 0;
+  color: #fde68a;
+  font-size: 13px;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
