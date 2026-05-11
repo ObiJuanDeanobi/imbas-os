@@ -370,6 +370,8 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
   const [runReplayId, setRunReplayId] = useState('');
   const [proposalTargetPageId, setProposalTargetPageId] = useState('');
   const [proposalPreview, setProposalPreview] = useState<any>(null);
+  const [selectedProposalId, setSelectedProposalId] = useState('');
+  const [proposalStatuses, setProposalStatuses] = useState<Record<string, string>>({});
   const [lastDispatch, setLastDispatch] = useState<ConsoleDispatchSummary | null>(null);
   const [isDispatching, setIsDispatching] = useState(false);
   const [actionStatus, setActionStatus] = useState('Ready.');
@@ -475,6 +477,7 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
 
   async function previewProposal(id: string) {
     const preview = await onPreviewLorekeeperProposal(id);
+    setSelectedProposalId(id);
     setProposalPreview(preview);
     setResult(preview);
     setActionStatus(`Previewed proposal ${id}.`);
@@ -483,6 +486,17 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
   async function transitionProposal(id: string, action: 'approve' | 'reject' | 'apply') {
     const response = action === 'approve' ? await onApproveLorekeeperProposal(id) : action === 'reject' ? await onRejectLorekeeperProposal(id) : await onApplyLorekeeperProposal(id);
     setResult(response);
+    const nextStatus = response?.proposal?.status ?? (action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'applied');
+    setProposalStatuses((current) => ({ ...current, [id]: nextStatus }));
+    if (action !== 'reject') {
+      try {
+        const preview = await onPreviewLorekeeperProposal(id);
+        setSelectedProposalId(id);
+        setProposalPreview(preview);
+      } catch {
+        if (action === 'apply') setProposalPreview(null);
+      }
+    }
     setActionStatus(`${action} proposal ${id}.`);
   }
 
@@ -520,14 +534,53 @@ function AgentConsole({ conduitStatus, onSearchConduit, onBuildContextPack, onDi
           <label>Run replay ID<input value={runReplayId} onChange={(event) => setRunReplayId(event.target.value)} placeholder="runId from Conduit" /></label>
           <button className="secondary" onClick={replayRun}>Replay run timeline</button>
           <label>Lorekeeper target page<input value={proposalTargetPageId} onChange={(event) => setProposalTargetPageId(event.target.value)} placeholder="optional wiki:pages/name.md" /></label>
-          {(conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 4).map((proposal: any) => <div className="action-card" key={proposal.id}><strong>{proposal.title}</strong><span>{proposal.status}{proposal.targetPageId ? ` → ${proposal.targetPageId}` : ''}</span><div className="button-row"><button className="secondary" onClick={() => previewProposal(proposal.id)}>Preview diff</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'approve')}>Approve</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'reject')}>Reject</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'apply')}>Apply</button></div></div>)}
+          {(conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 4).map((proposal: any) => { const status = proposalStatuses[proposal.id] ?? proposal.status; return <div className={`action-card ${selectedProposalId === proposal.id ? 'selected' : ''}`} key={proposal.id}><strong>{proposal.title}</strong><span>{status}{proposal.targetPageId ? ` → ${proposal.targetPageId}` : ''}</span><p className="muted">{proposal.rationale}</p><div className="button-row"><button className="secondary" onClick={() => previewProposal(proposal.id)}>Preview diff</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'approve')}>Approve</button><button className="secondary" onClick={() => transitionProposal(proposal.id, 'reject')}>Reject</button><button className="secondary" disabled={status !== 'approved'} title={status === 'approved' ? 'Apply managed block to target page' : 'Approve before applying'} onClick={() => transitionProposal(proposal.id, 'apply')}>Apply</button></div></div>; })}
         </details>
         <details open><summary>Last Conduit result</summary>{result ? <pre>{JSON.stringify(result, null, 2).slice(0, 5000)}</pre> : <p className="muted">No query yet.</p>}</details>
-        <details><summary>Lorekeeper preview</summary>{proposalPreview ? <pre>{JSON.stringify({ blockId: proposalPreview.blockId, changed: proposalPreview.changed, before: proposalPreview.before, after: proposalPreview.after }, null, 2).slice(0, 5000)}</pre> : <p className="muted">Preview a proposal to see before/after markdown without applying it.</p>}</details>
+        <details open><summary>Lorekeeper visual diff</summary>{proposalPreview ? <LorekeeperDiffPreview preview={proposalPreview} /> : <p className="muted">Preview a proposal to see before/after markdown without applying it.</p>}</details>
         <details><summary>Connector boundary</summary><ol><li>Dispatches are local OpenClaw CLI calls, not public/external integrations.</li><li>Request and reply are redacted before durable Runledger storage.</li><li>Non-OpenClaw agents are blocked until their adapters exist.</li><li>Risky/destructive/external actions still require explicit approval.</li></ol></details>
       </aside>
     </div>
   </div>;
+}
+
+
+function LorekeeperDiffPreview({ preview }: { preview: any }) {
+  const diff = markdownLineDiff(preview.before ?? '', preview.after ?? '');
+  const added = diff.filter((line) => line.kind === 'added').length;
+  const removed = diff.filter((line) => line.kind === 'removed').length;
+  return <div className="lorekeeper-diff">
+    <div className="diff-summary">
+      <span className={preview.changed ? 'health health-limited' : 'health health-ok'}>{preview.changed ? 'changes pending' : 'no change'}</span>
+      <span>Block <code>{preview.blockId ?? 'unknown'}</code></span>
+      <span>{added} added · {removed} removed</span>
+      {preview.targetPage?.relativePath && <span>{preview.targetPage.relativePath}</span>}
+    </div>
+    <div className="diff-grid">
+      <section><h4>Before</h4><pre>{(preview.before ?? '').slice(0, 4000) || 'No existing page content.'}</pre></section>
+      <section><h4>After</h4><pre>{(preview.after ?? '').slice(0, 4000) || 'No preview content.'}</pre></section>
+    </div>
+    <div className="line-diff" aria-label="Line-by-line Lorekeeper diff">
+      {diff.slice(0, 180).map((line, index) => <code className={`diff-line ${line.kind}`} key={`${index}-${line.text.slice(0, 24)}`}>{line.prefix} {line.text || ' '}</code>)}
+      {diff.length > 180 && <p className="muted">Diff truncated to first 180 lines for UI safety.</p>}
+    </div>
+  </div>;
+}
+
+function markdownLineDiff(before: string, after: string): { kind: 'same' | 'added' | 'removed'; prefix: string; text: string }[] {
+  const beforeLines = before.split('\n');
+  const afterLines = after.split('\n');
+  let prefix = 0;
+  while (prefix < beforeLines.length && prefix < afterLines.length && beforeLines[prefix] === afterLines[prefix]) prefix++;
+  let beforeSuffix = beforeLines.length - 1;
+  let afterSuffix = afterLines.length - 1;
+  while (beforeSuffix >= prefix && afterSuffix >= prefix && beforeLines[beforeSuffix] === afterLines[afterSuffix]) { beforeSuffix--; afterSuffix--; }
+  const output: { kind: 'same' | 'added' | 'removed'; prefix: string; text: string }[] = [];
+  beforeLines.slice(Math.max(0, prefix - 4), prefix).forEach((text) => output.push({ kind: 'same', prefix: ' ', text }));
+  beforeLines.slice(prefix, beforeSuffix + 1).forEach((text) => output.push({ kind: 'removed', prefix: '-', text }));
+  afterLines.slice(prefix, afterSuffix + 1).forEach((text) => output.push({ kind: 'added', prefix: '+', text }));
+  afterLines.slice(afterSuffix + 1, Math.min(afterLines.length, afterSuffix + 5)).forEach((text) => output.push({ kind: 'same', prefix: ' ', text }));
+  return output.length ? output : [{ kind: 'same', prefix: ' ', text: 'No line-level changes detected.' }];
 }
 
 function escapeHtml(value: string) {

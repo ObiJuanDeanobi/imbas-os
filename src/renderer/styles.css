@@ -157,3 +157,16 @@ button:disabled {
 .pairing-challenge-card span { color: #a1a1aa; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
 .pairing-challenge-card strong { color: #fde68a; font-size: 32px; letter-spacing: .08em; }
 .pairing-challenge-card em { color: #d4d4d8; font-style: normal; font-size: 13px; }
+
+.action-card.selected { border-color: #fde68a; box-shadow: 0 0 0 1px #854d0e inset; }
+.lorekeeper-diff { display: grid; gap: 12px; }
+.diff-summary { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: #d4d4d8; font-size: 13px; }
+.diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.diff-grid h4 { margin: 0 0 6px; color: #f4f4f5; }
+.diff-grid pre { max-height: 220px; font-size: 11px; }
+.line-diff { border: 1px solid #27272a; border-radius: 12px; overflow: auto; background: #09090b; max-height: 360px; }
+.diff-line { display: block; padding: 2px 8px; color: #d4d4d8; white-space: pre-wrap; font-size: 11px; }
+.diff-line.added { color: #bbf7d0; background: rgba(22, 101, 52, .22); }
+.diff-line.removed { color: #fecaca; background: rgba(127, 29, 29, .22); }
+.diff-line.same { color: #a1a1aa; }
+@media (max-width: 700px) { .diff-grid { grid-template-columns: 1fr; } }

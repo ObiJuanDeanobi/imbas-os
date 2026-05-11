@@ -162,3 +162,8 @@ When Conduit is exposed over the tailnet for Android testing, server-layer HTTP 
 - `status.read` for session revoke.
 
 `GET /v0/status` and the short-lived pairing challenge endpoints remain available for diagnostics/pairing. Lorekeeper apply, proposal creation, artifact save, run writes, and Agent Console live dispatch remain desktop/approved-connector-only over the loopback HTTP surface.
+
+
+## Desktop review companion
+
+- Desktop Agent Console now shows a visual Lorekeeper before/after diff for proposal previews, highlights added/removed lines, and keeps apply guarded behind approval. Android still reviews proposal details and can approve/reject; managed-block apply remains desktop-only.
