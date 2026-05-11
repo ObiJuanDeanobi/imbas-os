@@ -124,6 +124,21 @@ AI/system surface:
 - Conduit route contracts;
 - redacted event payloads.
 
+## Operational checklist
+
+When implementing or reviewing a feature, capture:
+
+- source of truth;
+- human surface;
+- AI surface;
+- stable identity;
+- provenance;
+- trust/sensitivity;
+- rollback path;
+- verification gate.
+
+The repo workflow version of this checklist lives in [`../../skill.md`](../../skill.md).
+
 ## Design requirements
 
 For any durable object, prefer adding both surfaces deliberately:

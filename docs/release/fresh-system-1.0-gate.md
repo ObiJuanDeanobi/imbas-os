@@ -27,6 +27,8 @@ The test must not depend on hidden local state from `/home/ubuntu/.openclaw`, ex
 
 - Follow the [documentation readiness gate](documentation-1.0-gate.md).
 - Confirm setup/use/security/backup docs are sufficient without private chat history or hidden VPS state.
+- Verify the dual-surface pattern from [`dual-surface-information.md`](../architecture/dual-surface-information.md): root README/docs for humans, `llms.txt`/`llms-full.txt`/`AGENTS.md`/`skill.md` and structured APIs/context packs for agents.
+- Run `npm run docs:llms:check` to confirm AI context files are current.
 - Record every undocumented step as a docs bug or product bug.
 
 ### 1. Install/setup
@@ -124,6 +126,7 @@ The release candidate needs a completion report containing:
 - environment description;
 - exact install steps;
 - documentation pages followed and any doc gaps found;
+- dual-surface evidence for the core workflows: human surface, AI surface, source of truth, provenance, rollback, and verification;
 - module profile used;
 - adapter versions/configs;
 - screenshots or logs for desktop and Android pairing;

@@ -17,12 +17,28 @@ Preserve local-first ownership, generated-artifact sandboxing, human review, and
 ## Standard implementation loop
 
 1. Identify the module boundary: Desktop, Android, Conduit, Lorekeeper, Runledger, Sanctum, Memsocket, docs, or release.
-2. Make a small change.
-3. Run the smallest meaningful verification gate.
-4. Update docs when behavior changes.
-5. Run stronger gates before committing larger slices.
-6. Commit with a clear message.
-7. Record artifact paths/SHA256 when APKs or packages change.
+2. Fill the dual-surface checklist for the feature or object.
+3. Make a small change.
+4. Run the smallest meaningful verification gate.
+5. Update docs and AI context files when behavior changes.
+6. Run stronger gates before committing larger slices.
+7. Commit with a clear message.
+8. Record artifact paths/SHA256 when APKs or packages change.
+
+## Dual-surface checklist
+
+Every durable feature, subsystem, or object should define both projections over the same source of truth:
+
+- **Source of truth:** which file/database/API record owns the durable state?
+- **Human surface:** what can a human read, see, approve, undo, or troubleshoot?
+- **AI surface:** what compact structured record, API, context pack, or `llms`/workflow entry can an agent ingest?
+- **Stable identity:** what ID/path/ref remains stable across UI/API/context projections?
+- **Provenance:** which sources, prompts, runs, commits, snapshots, or refs explain the state?
+- **Trust/sensitivity:** what policy, scope, redaction, or approval boundary applies?
+- **Rollback:** what snapshot, backup, restore, reject, revoke, or forget path exists?
+- **Verification:** which test/build/smoke/manual gate proves both surfaces still match?
+
+Do not create UI-only state agents cannot inspect, or machine-only records humans cannot review.
 
 ## Verification gates
 
@@ -49,6 +65,13 @@ Android touched:
 
 ```bash
 ./apps/android/gradlew -p apps/android assembleDebug
+```
+
+AI context gate:
+
+```bash
+npm run docs:llms
+npm run docs:llms:check
 ```
 
 Markdown docs touched:
