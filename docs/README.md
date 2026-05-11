@@ -45,6 +45,10 @@ Imbas OS documentation has three jobs:
 
 - [Business model strategy](strategy/business-model.md) — free/open-source core, Patreon supporter tiers, and future paid cloud/workspace product boundaries.
 - [Pitch](pitch.md) — current product pitch and wedge.
+- [Positioning](marketing/positioning.md) — audience, category, messaging pillars, and narrative.
+- [Landing page copy draft](marketing/landing-page-copy.md) — draft website sections.
+- [Early access and Patreon copy](marketing/early-access.md) — draft supporter messaging in USD.
+- [Demo script](marketing/demo-script.md) — 3-minute private-preview demo flow.
 
 ## Operations and release readiness
 
