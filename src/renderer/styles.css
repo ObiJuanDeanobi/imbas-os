@@ -176,3 +176,5 @@ button:disabled {
 
 .pairing-qr { width: 220px; height: 220px; align-self: start; border-radius: 12px; background: #fff; padding: 8px; }
 .pairing-challenge-card small { color: #a1a1aa; font-size: 12px; }
+
+.mini-button { padding: 4px 8px; border-radius: 8px; font-size: 12px; margin-left: 6px; }

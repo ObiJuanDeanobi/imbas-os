@@ -93,6 +93,11 @@ test('Conduit applies approved Lorekeeper proposal to managed block and records 
   const snapshots = (snapshotsResponse.body as { snapshots: { snapshotPath: string }[] }).snapshots;
   assert.equal(snapshots.length, 1);
   assert.equal(snapshots[0].snapshotPath, applyBody.snapshot?.snapshotPath);
+  const snapshotPreviewResponse = await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/snapshots/preview?targetPageId=${encodeURIComponent(page.node.id)}&snapshotPath=${encodeURIComponent(snapshots[0].snapshotPath)}`), store);
+  assert.equal(snapshotPreviewResponse.status, 200);
+  const snapshotPreview = snapshotPreviewResponse.body as { snapshot: { markdown: string } };
+  assert.match(snapshotPreview.snapshot.markdown, /Human-owned intro\./);
+  assert.doesNotMatch(snapshotPreview.snapshot.markdown, /Managed block apply is guarded\./);
   const updated = await readMarkdownPageFromVault(root, page.node.id);
   assert.match(updated.markdown, /Human-owned intro\./);
   assert.match(updated.markdown, /<!-- IMBAS:LOREKEEPER:BEGIN sprint-6-apply -->/);

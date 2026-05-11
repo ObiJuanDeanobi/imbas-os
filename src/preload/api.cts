@@ -43,7 +43,8 @@ const api = {
   conduitApproveLorekeeperProposal: (id: string) => ipcRenderer.invoke('conduit:lorekeeper-proposal:approve', id) as Promise<any>,
   conduitRejectLorekeeperProposal: (id: string) => ipcRenderer.invoke('conduit:lorekeeper-proposal:reject', id) as Promise<any>,
   conduitApplyLorekeeperProposal: (id: string) => ipcRenderer.invoke('conduit:lorekeeper-proposal:apply', id) as Promise<any>,
-  conduitListLorekeeperSnapshots: (targetPageId: string) => ipcRenderer.invoke('conduit:lorekeeper-snapshots:list', targetPageId) as Promise<any>
+  conduitListLorekeeperSnapshots: (targetPageId: string) => ipcRenderer.invoke('conduit:lorekeeper-snapshots:list', targetPageId) as Promise<any>,
+  conduitPreviewLorekeeperSnapshot: (input: { targetPageId: string; snapshotPath: string }) => ipcRenderer.invoke('conduit:lorekeeper-snapshot:preview', input) as Promise<any>
 };
 
 contextBridge.exposeInMainWorld('artifactVault', api);

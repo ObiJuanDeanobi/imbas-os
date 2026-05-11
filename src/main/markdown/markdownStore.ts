@@ -50,7 +50,9 @@ export async function createMarkdownSnapshot(root: string, pageId: string, markd
   return { kind: 'markdown-before-apply', pageId, relativePath, snapshotPath: snapshotRelativePath, createdAt, markdown };
 }
 
-export async function listMarkdownSnapshots(root: string, pageId: string): Promise<{ pageId: string; relativePath: string; snapshotPath: string; createdAt: string; sizeBytes: number }[]> {
+export interface MarkdownSnapshotSummary { pageId: string; relativePath: string; snapshotPath: string; createdAt: string; sizeBytes: number }
+
+export async function listMarkdownSnapshots(root: string, pageId: string): Promise<MarkdownSnapshotSummary[]> {
   const filePath = resolveVaultMarkdownPath(root, pageId);
   const relativePath = toVaultRelativePath(root, filePath);
   const snapshotDir = path.join(root, '.snapshots', relativePath.replace(/\.md$/i, ''));
@@ -64,6 +66,16 @@ export async function listMarkdownSnapshots(root: string, pageId: string): Promi
     return { pageId, relativePath, snapshotPath: snapshotRelativePath, createdAt, sizeBytes: info.size };
   }));
   return snapshots.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function readMarkdownSnapshot(root: string, pageId: string, snapshotPath: string): Promise<MarkdownSnapshotSummary & { markdown: string }> {
+  const snapshots = await listMarkdownSnapshots(root, pageId);
+  const snapshot = snapshots.find((item) => item.snapshotPath === snapshotPath);
+  if (!snapshot) throw new Error('Markdown snapshot not found for page');
+  const absolutePath = path.resolve(root, snapshot.snapshotPath);
+  const snapshotRoot = path.resolve(root, '.snapshots');
+  if (!absolutePath.startsWith(`${snapshotRoot}${path.sep}`)) throw new Error('Markdown snapshot path escapes snapshots directory');
+  return { ...snapshot, markdown: await readFile(absolutePath, 'utf8') };
 }
 
 export async function searchMarkdownPagesInVault(root: string, query: string): Promise<UnifiedSearchResult[]> {
