@@ -42,7 +42,7 @@ enum class CompanionTab(val label: String) {
 }
 
 @Composable
-fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload: String? = null, qrScanMessage: String? = null, onScanPairingQr: () -> Unit = {}) {
+fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload: String? = null, qrScanMessage: String? = null, voiceCaptureDraft: String? = null, voiceCaptureMessage: String? = null, onScanPairingQr: () -> Unit = {}, onStartVoiceCapture: () -> Unit = {}) {
     var selectedTab by remember { mutableStateOf(if (initialCaptureDraft.isNullOrBlank()) CompanionTab.Status else CompanionTab.Capture) }
     var serviceUrl by remember { mutableStateOf("http://100.81.12.30:3077") }
     val context = LocalContext.current
@@ -187,6 +187,9 @@ fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload
                         mobileSession = mobileSession,
                         actionMessage = actionMessage,
                         initialNote = initialCaptureDraft,
+                        voiceDraft = voiceCaptureDraft,
+                        voiceMessage = voiceCaptureMessage,
+                        onStartVoiceCapture = onStartVoiceCapture,
                         onCapture = { note ->
                             scope.launch {
                                 val session = mobileSession
@@ -366,14 +369,17 @@ fun LorekeeperReviewScreen(proposals: List<LorekeeperProposalItem>, actionMessag
 
 
 @Composable
-fun CaptureScreen(mobileSession: ImbasMobileSession?, actionMessage: String, initialNote: String? = null, onCapture: (String) -> Unit) {
+fun CaptureScreen(mobileSession: ImbasMobileSession?, actionMessage: String, initialNote: String? = null, voiceDraft: String? = null, voiceMessage: String? = null, onStartVoiceCapture: () -> Unit = {}, onCapture: (String) -> Unit) {
     var note by remember { mutableStateOf(initialNote.orEmpty()) }
     LaunchedEffect(initialNote) {
         if (!initialNote.isNullOrBlank() && note.isBlank()) note = initialNote
     }
+    LaunchedEffect(voiceDraft) {
+        if (!voiceDraft.isNullOrBlank()) note = listOf(note, voiceDraft).filter { it.isNotBlank() }.joinToString("\n\n")
+    }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Capture note", style = MaterialTheme.typography.titleLarge)
-        Text("Send a lightweight private observation into Conduit. Shared text opens here as a draft; raw secrets are still redacted by Imbas OS before durable storage.")
+        Text("Send a lightweight private observation into Conduit. Shared text and voice transcripts open here as drafts; raw secrets are still redacted by Imbas OS before durable storage.")
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = note,
@@ -381,10 +387,14 @@ fun CaptureScreen(mobileSession: ImbasMobileSession?, actionMessage: String, ini
             label = { Text("Private note") },
             minLines = 4
         )
-        Button(enabled = mobileSession != null && note.isNotBlank(), onClick = { onCapture(note); note = "" }) {
-            Text("Capture to Conduit")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = onStartVoiceCapture) { Text("Dictate") }
+            Button(enabled = mobileSession != null && note.isNotBlank(), onClick = { onCapture(note); note = "" }) {
+                Text("Capture to Conduit")
+            }
         }
         StatusCard("Pairing", mobileSession?.let { "Paired as ${it.deviceLabel}" } ?: "Pair before capturing notes")
+        StatusCard("Voice", voiceMessage ?: "No voice transcript captured yet")
         StatusCard("Last action", actionMessage)
     }
 }

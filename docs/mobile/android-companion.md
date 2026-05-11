@@ -174,3 +174,8 @@ When Conduit is exposed over the tailnet for Android testing, server-layer HTTP 
 - Command Center pairing challenges now include an `imbas://pair?...` QR payload with challenge ID, code, and the default tailnet Conduit URL.
 - Android Pair tab can launch the Google code scanner, parse the Imbas pairing URI, prefill challenge/code, update the Conduit URL, and then complete the existing scoped pairing flow.
 - Manual challenge ID/code entry remains available as fallback.
+
+
+## Voice dictation capture
+
+The Capture tab includes a **Dictate** action that opens Android speech recognition and inserts the returned transcript as an editable private-note draft. The draft still goes through the paired `capture.write` Conduit endpoint; no raw audio is persisted by Imbas OS.
