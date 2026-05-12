@@ -716,21 +716,6 @@ This lane is not Patreon. Patreon/supporter tiers may fund development and early
 
 These are intended to become GitHub milestones/issues once approved.
 
-### M0 — Public alpha readiness
-
-- [ ] Decide license, default recommendation: Apache-2.0 for permissive OSS with patent protection; AGPL-3.0 only if reciprocal network-use sharing is preferred.
-- [ ] Add `LICENSE`.
-- [ ] Add `SECURITY.md`.
-- [ ] Add `CONTRIBUTING.md`.
-- [ ] Add issue templates.
-- [ ] Add pull request template.
-- [x] Update README around HTML Artifact Vault alpha positioning.
-- [x] Add screenshots/GIFs and demo walkthrough.
-- [x] Add public alpha status section.
-- [x] Run secret scan and private URL audit.
-- [x] Run `npm run package:dev`.
-- [x] Produce public-alpha launch checklist.
-
 ### M1 — HTML Artifact Vault alpha
 
 - [ ] Make first-run flow obvious.
@@ -840,17 +825,16 @@ Before public unveil, replace or supplement the generated concept demo with at l
 
 Recommended next implementation slice:
 
-1. Prepare public-alpha repository hygiene privately:
-   - `LICENSE` decision;
-   - `SECURITY.md`;
-   - `CONTRIBUTING.md`;
-   - issue/PR templates;
-   - public alpha launch checklist.
-2. Rewrite README top section for the HTML Artifact Vault alpha wedge while keeping Imbas OS roadmap visible.
-3. Add demo media/artifact walkthrough.
-4. Run secret/private URL audit.
-5. Run `npm run package:dev`.
-6. Stop for approval before making the repo public or announcing anything.
+1. Finish the remaining **M1 — HTML Artifact Vault alpha** UX work:
+   - obvious first-run flow;
+   - polished import/paste flow;
+   - clearer artifact detail + metadata editing;
+   - provenance card;
+   - “Copy AI context” and artifact context-pack export;
+   - snapshot browser/restore explanation.
+2. Re-run the alpha gate: docs check, tests, build, smoke/security smoke, and `npm run package:dev`.
+3. Confirm GitHub README media renders well in dark/light.
+4. Stop for approval before making the repo public or announcing anything.
 
 ## Approval boundaries
 
