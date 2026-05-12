@@ -196,10 +196,16 @@ Stretch/push-to-beta if needed:
 
 ### M2 — HTML Artifact Vault beta
 
+Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/human-facing-vault-shell.md).
+
+- [ ] M2.1 shell redesign: branded app frame, left vault navigation, artifact list, center workspace, and right inspector.
+- [ ] M2.2 smart artifact taxonomy: dashboards, tools, reports, simulations, sites, experiments as metadata-backed views/filters.
+- [ ] M2.3 inspector tabs: Details, Notes, Provenance, and Snapshots backed by real artifact data.
+- [ ] M2.4 human vault navigation: Pages, Projects, Tags, Graph, with Runs hidden/disabled/private-preview-labelled until Runledger is ready.
+- [ ] M2.5 polish and accessibility: keyboard navigation, focus states, empty/error states, narrow-window behavior, and visual verification.
 - [ ] Add drag/drop import.
 - [ ] Add zip bundle import/export.
 - [ ] Add snapshot diff/compare.
-- [ ] Improve gallery/list filters.
 - [ ] Add graph/backlink polish across nested Markdown folders and artifact bundles.
 - [ ] Add richer demo vault.
 - [ ] Add browser/share workflow research note.
@@ -284,6 +290,7 @@ The repo should be prepared for a clean GitHub reveal before it is made public. 
 - `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
 - `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.
 - `docs/assets/demo/html-artifact-vault-flow.png` — official HTML Artifact Vault promo/flow image.
+- `docs/assets/ui/human-facing-vault-shell-target.png` — human-facing Artifact Vault shell design target.
 - `docs/assets/roadmap/roadmap.svg` — roadmap graphic for README/docs/GitHub discussion.
 - [`docs/release/public-alpha-unveil-checklist.md`](release/public-alpha-unveil-checklist.md) — repository presentation and final pre-public checklist.
 
@@ -293,17 +300,18 @@ Before public unveil, replace or supplement the generated concept demo with at l
 
 Recommended next implementation slice:
 
-1. Finish the remaining **M1 — HTML Artifact Vault alpha** must-have UX work:
+1. Keep the **M1 — HTML Artifact Vault alpha** gate green. The must-have UX work is implemented, but any shell redesign must preserve:
    - obvious first-run flow;
    - polished paste/import flow with clear destination;
-   - clearer artifact detail + metadata editing;
+   - clear artifact detail + metadata editing;
    - provenance card/panel;
-   - “Copy AI context” or artifact context-package export;
+   - “Copy AI context” / artifact context-package export;
    - snapshot browser/restore explanation.
-2. Treat the deeper Obsidian-style folder tree and graph polish as stretch/beta work unless the alpha wedge is otherwise ready.
-3. Re-run the alpha gate: docs check, tests, build, smoke/security smoke, and `npm run package:dev`.
-4. Confirm GitHub README media renders well in dark/light.
-5. Stop for approval before making the repo public or announcing anything.
+2. Start **M2.1 — Human-facing shell redesign** from [`design/human-facing-vault-shell.md`](design/human-facing-vault-shell.md): branded app frame, left vault navigation, artifact list, center workspace, and right inspector tabs.
+3. Treat deeper nested filesystem migration, graph polish, and Runledger-backed Runs as beta/private-preview work unless they can be shipped honestly without weakening the alpha.
+4. Re-run the gate after each UI slice: docs check, tests, build, smoke/security smoke, and `npm run package:dev` before release packaging.
+5. Confirm GitHub README media renders well in dark/light.
+6. Stop for approval before making the repo public or announcing anything.
 
 Detailed operator plan: [`release/html-artifact-vault-alpha-finish-line.md`](release/html-artifact-vault-alpha-finish-line.md).
 

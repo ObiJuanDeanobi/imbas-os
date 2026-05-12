@@ -92,6 +92,8 @@ Markdown should be first-class in the same tree:
 
 Artifact Vault should not force users into one flat `pages/` folder long term. The current `pages/` implementation is a stepping stone, not the desired final human layout.
 
+The human-facing application shell should expose this model as a navigable product surface, not just as files on disk. The current target shell is documented in [`../design/human-facing-vault-shell.md`](../design/human-facing-vault-shell.md): a branded three-pane UI with vault filters, artifact list, safe preview/actions, and Details / Notes / Provenance / Snapshots inspector tabs.
+
 
 ## Links, backlinks, and graph
 

@@ -62,6 +62,12 @@ Stretch/push-to-beta if schedule gets tight:
 - snapshot visual diff;
 - browser extension/share target.
 
+## Human-facing shell target
+
+The preferred human-facing Artifact Vault shell is documented in [`../design/human-facing-vault-shell.md`](../design/human-facing-vault-shell.md). It uses a branded three-pane layout: vault navigation, artifact list, center workspace, and right inspector tabs for Details / Notes / Provenance / Snapshots.
+
+This is realistic for Artifact Vault and should guide M2/beta UI work. For alpha, pull in the pieces that improve trust and clarity without risking the core import, sandbox, snapshot, search, and context-export guarantees.
+
 ## Workstream B — Public GitHub story
 
 Required public-facing materials:
@@ -146,13 +152,12 @@ Rollback path:
 
 ## Current recommended next slice
 
-Build the smallest cohesive alpha UX pass:
+Keep the alpha gate green, then begin the smallest cohesive M2 UI pass:
 
-1. First-run orientation.
-2. Import/paste destination clarity.
-3. Artifact detail/provenance panel polish.
-4. Snapshot browser/restore explanation.
-5. Copy/export AI context button.
-6. Re-run `npm run check` and `npm run package:dev`.
+1. Implement the human-facing shell frame from [`../design/human-facing-vault-shell.md`](../design/human-facing-vault-shell.md).
+2. Preserve current first-run, import/paste, artifact detail, provenance, snapshot, search, and AI context export behavior.
+3. Move Details / Notes / Provenance / Snapshots into an inspector-tab structure backed by real data.
+4. Add smart taxonomy filters only where metadata can support them honestly.
+5. Re-run `npm run check` and `npm run package:dev`.
 
-Do not spend the next slice on full Imbas OS integration, Android polish, or Memsocket 1.0 work unless the alpha wedge is already ready for final approval.
+Do not spend the next slice on full Imbas OS integration, Android polish, Runledger-backed Runs, or Memsocket 1.0 work unless the alpha wedge is already ready for final approval.

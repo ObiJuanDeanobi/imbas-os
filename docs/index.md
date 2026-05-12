@@ -21,6 +21,7 @@ Imbas OS documentation has three jobs:
 - [Fresh-system public 1.0 gate](release/fresh-system-1.0-gate.md) — mandatory release gate before public 1.0.
 - [Public alpha unveil checklist](release/public-alpha-unveil-checklist.md) — private presentation, asset, hygiene, and verification checklist before public alpha.
 - [HTML Artifact Vault alpha finish-line plan](release/html-artifact-vault-alpha-finish-line.md) — detailed operator plan for the remaining alpha work, gates, approval, and rollback.
+- [Human-facing Artifact Vault shell](design/human-facing-vault-shell.md) — target three-pane product shell, inspector tabs, vault navigation, and implementation slices.
 
 ## Setup and onboarding
 

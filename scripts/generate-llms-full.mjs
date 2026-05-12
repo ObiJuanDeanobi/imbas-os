@@ -11,6 +11,7 @@ const sourcePaths = [
   'skill.md',
   'docs/index.md',
   'docs/roadmap.md',
+  'docs/design/human-facing-vault-shell.md',
   'docs/architecture/ai-first-os.md',
   'docs/architecture/dual-surface-information.md',
   'docs/architecture/human-filesystem-vault.md',
