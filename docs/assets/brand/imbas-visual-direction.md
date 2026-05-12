@@ -6,6 +6,11 @@ The Imbas OS asset pack in [`imbasos_asset_pack/`](imbasos_asset_pack/) is the o
 
 Johnathan confirmed this asset pack is fully owned by the project and can be used directly for Imbas OS design work. Public use is allowed when the repo/release is approved.
 
+
+## Official logo
+
+The official Imbas OS logo lockup is [`logo.png`](logo.png), also preserved as [`official-logo-lockup.png`](official-logo-lockup.png). Use this for README headers, launch materials, and public-facing Imbas OS brand presentation unless Johnathan chooses a replacement.
+
 ## Direction
 
 - Premium dark-tech plus Celtic illuminated-manuscript / sigil energy.

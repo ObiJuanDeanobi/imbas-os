@@ -278,8 +278,8 @@ Stretch/push-to-beta if needed:
 
 The repo should be prepared for a clean GitHub reveal before it is made public. Required visual/story assets:
 
-- `docs/assets/brand/logo.svg` — full logo for README/header use.
-- `docs/assets/brand/logo-mark.svg` — square icon/mark.
+- `docs/assets/brand/logo.png` — official full logo lockup for README/header use.
+- `docs/assets/brand/logo-mark.svg` — legacy/source square icon/mark.
 - `docs/assets/brand/logo-mark.png` — raster mark for surfaces that prefer PNG.
 - `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
 - `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.

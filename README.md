@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/brand/logo.svg" alt="Imbas OS — local-first vault for AI-generated artifacts" width="760">
+  <img src="docs/assets/brand/logo.png" alt="Imbas OS — local-first vault for AI-generated artifacts" width="760">
 </p>
 
 <p align="center">

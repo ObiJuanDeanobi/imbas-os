@@ -33,7 +33,7 @@ Current prepared assets:
 
 - Real alpha screenshot: [`../assets/demo/html-artifact-vault-real-alpha.png`](../assets/demo/html-artifact-vault-real-alpha.png)
 
-- Full logo: [`../assets/brand/logo.svg`](../assets/brand/logo.svg)
+- Official full logo: [`../assets/brand/logo.png`](../assets/brand/logo.png)
 - Logo mark SVG: [`../assets/brand/logo-mark.svg`](../assets/brand/logo-mark.svg)
 - Logo mark PNG: [`../assets/brand/logo-mark.png`](../assets/brand/logo-mark.png)
 - Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
