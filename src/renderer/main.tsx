@@ -818,8 +818,14 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
     <div className="detail-grid">
       <iframe className="artifact-frame" title={artifact.title} src={`artifact://${artifact.id}/`} sandbox="allow-scripts" />
       <aside className="metadata-panel">
-        <details open><summary>Provenance</summary>
-        <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>SHA-256</dt><dd><code>{artifact.hashes.sha256Html}</code></dd><dt>Bundle</dt><dd><code>{artifact.bundlePath}</code></dd></dl>
+        <details open><summary>Provenance card</summary>
+        <div className="provenance-card">
+          <div><span>Capture source</span><strong>{artifact.sourceType}</strong><p>{artifact.sourcePath ? 'Imported from a local source path.' : 'Created inside the vault from paste or generated content.'}</p></div>
+          <div><span>AI generator</span><strong>{artifact.provider || 'unknown provider'}{artifact.model ? ` / ${artifact.model}` : ''}</strong><p>{artifact.prompt ? artifact.prompt.slice(0, 180) : 'No source prompt recorded yet.'}</p></div>
+          <div><span>Safety posture</span><strong>{metadataTrust}</strong><p>Replays through <code>artifact://</code> with no Node bridge; artifact-origin network requests are blocked by default.</p></div>
+          <div><span>Integrity</span><strong>{artifact.snapshotCount} snapshot{artifact.snapshotCount === 1 ? '' : 's'}</strong><p>HTML SHA-256 <code>{artifact.hashes.sha256Html}</code></p></div>
+        </div>
+        <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>Source path</dt><dd>{artifact.sourcePath ? <code>{artifact.sourcePath}</code> : 'not recorded'}</dd><dt>Bundle</dt><dd><code>{artifact.bundlePath}</code></dd></dl>
         </details>
         <details open><summary>Metadata</summary>
         <p className="metadata-status">{metadataStatus}</p>
