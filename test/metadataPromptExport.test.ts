@@ -32,18 +32,22 @@ test('updateArtifactMetadata edits title tags provenance and trust level', async
   }
 });
 
-test('exportArtifactPromptPackage includes metadata notes prompt and fenced HTML', async () => {
+test('exportArtifactPromptPackage includes metadata notes prompt visible text snapshots and fenced HTML', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'artifact-vault-'));
   const html = '<!doctype html><html><head><title>Pack</title></head><body><h1>Artifact</h1></body></html>';
   try {
     const created = await createArtifact(root, { title: 'Pack', html, prompt: 'Make a useful artifact', tags: ['pack'] });
     const promptPackage = await exportArtifactPromptPackage(root, created.metadata.id);
 
-    assert.match(promptPackage, /^# Prompt package: Pack/);
+    assert.match(promptPackage, /^# Artifact Context Package: Pack/);
     assert.match(promptPackage, /Artifact ID:/);
+    assert.match(promptPackage, /## Visible text extracted from HTML/);
+    assert.match(promptPackage, /Artifact/);
+    assert.match(promptPackage, /## Snapshot history/);
     assert.match(promptPackage, /Make a useful artifact/);
     assert.match(promptPackage, /```html\n<!doctype html>/);
     assert.match(promptPackage, /Do not add network dependencies/);
+    assert.match(promptPackage, /Do not paste secrets into external AI tools/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

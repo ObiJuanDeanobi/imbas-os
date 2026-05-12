@@ -92,7 +92,7 @@ AI surface:
 - hashes;
 - trust level;
 - explicit links;
-- prompt-package export.
+- AI context package export.
 
 ### Lorekeeper page
 

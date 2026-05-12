@@ -30,10 +30,10 @@ The app then adds the missing workflow around them:
 - sidecar notes and reversible snapshots;
 - search and artifact links/backlinks;
 - project filtering;
-- Markdown, JSON, prompt-package, and portable bundle-folder export;
+- Markdown, JSON, AI context package, and portable bundle-folder export;
 - demo vault that shows the product in under 60 seconds;
 - Obsidian/OpenClaw wiki bridge that maps Markdown pages and HTML artifacts together without replacing the Markdown source of truth;
-- unified Markdown + artifact workflow: shared search, backlinks, graph, source ownership, project filters, and mixed prompt-package export.
+- unified Markdown + artifact workflow: shared search, backlinks, graph, source ownership, project filters, and mixed AI context package export.
 
 ## Why now
 
@@ -58,7 +58,7 @@ For Markdown/Obsidian users, the first integration posture is **integrate, not r
 4. Use search/project filter to jump between demo artifacts.
 5. Show sidecar notes and metadata provenance.
 6. Create or restore a snapshot.
-7. Export a prompt package or portable bundle folder.
+7. Export a AI context package or portable bundle folder.
 
 ## Current private-preview proof
 
@@ -68,7 +68,7 @@ For Markdown/Obsidian users, the first integration posture is **integrate, not r
 - Live Electron security smoke using a malicious fixture.
 - Full local verification gate: `npm run verify`.
 - Initial read-only Markdown/wiki bridge with mixed graph/report foundations.
-- Unified search and mixed prompt-package export for Markdown pages plus linked HTML artifacts.
+- Unified search and mixed AI context package export for Markdown pages plus linked HTML artifacts.
 - Sync foundation with local node identity, source-file manifest rebuilds, changed-file detection, and conflict candidates.
 - Vault-owned Markdown pages for local project notes that can link to artifacts and participate in graph/search/export.
 - Private dev preview tarball: `release/imbas-os-dev-preview.tgz`.

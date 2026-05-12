@@ -88,7 +88,7 @@ Markdown should be first-class in the same tree:
 - normal `.md` notes can be created inside any human folder;
 - notes can use Obsidian-style wikilinks;
 - notes can link to artifacts by stable ID or by resolved local reference;
-- folder hierarchy should participate in search, graph, prompt-package export, and sync manifests.
+- folder hierarchy should participate in search, graph, AI context package export, and sync manifests.
 
 Artifact Vault should not force users into one flat `pages/` folder long term. The current `pages/` implementation is a stepping stone, not the desired final human layout.
 
@@ -119,7 +119,7 @@ The AI-facing layer can use:
 - rebuildable SQLite/vector/graph indexes;
 - sync manifests;
 - structured JSON records;
-- context packs and prompt-package exports;
+- context packs and AI context package exports;
 - Conduit APIs.
 
 AI agents may read the human tree when useful, but operational actions should resolve through stable IDs and manifests so moves/renames do not break history.

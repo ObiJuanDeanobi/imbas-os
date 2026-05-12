@@ -36,7 +36,7 @@ Generated artifact workbench:
 - artifact bundles;
 - sandboxed replay;
 - snapshots;
-- prompt-package export;
+- AI context package export;
 - provenance and trust levels.
 
 ## Lorekeeper

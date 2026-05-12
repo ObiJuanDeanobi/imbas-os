@@ -68,7 +68,7 @@ Scope:
 - Local artifact bundles with `artifact.html`, `metadata.json`, `notes.md`, and snapshots.
 - Metadata editing: title, project, tags, prompt, provider/model, trust level.
 - Search across title/tags/notes/prompt/visible HTML.
-- Notes, provenance, snapshot create/restore, and prompt-package/context export.
+- Notes, provenance, snapshot create/restore, and AI context package/context export.
 - A readable-storage path toward an Obsidian-like folder tree, with stable IDs/indexes underneath.
 - Basic Markdown/artifact link and backlink foundations; deeper graph polish can move to beta if it threatens alpha focus.
 - Demo artifacts and screenshots/GIFs.
@@ -86,7 +86,7 @@ Non-goals for alpha:
 
 Alpha success criteria:
 
-- A new developer can clone, install, run, import an HTML artifact, place it in a human-readable folder tree, inspect metadata, create/restore snapshots, search, export a prompt package, and understand the security model.
+- A new developer can clone, install, run, import an HTML artifact, place it in a human-readable folder tree, inspect metadata, create/restore snapshots, search, export a AI context package, and understand the security model.
 - No secrets/private URLs/private user data are present.
 - Security smoke proves untrusted HTML cannot access Node/Electron bridge and cannot make artifact-origin network requests by default.
 - README makes the value obvious in under one minute.

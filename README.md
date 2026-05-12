@@ -19,57 +19,139 @@
 
 # Imbas OS
 
-**Imbas OS is launching with HTML Artifact Vault first:** a free/open-source local-first desktop workbench for AI-generated HTML artifacts.
+**Imbas OS starts with Imbas Artifact Vault:** a local-first desktop vault for AI-generated HTML apps, dashboards, reports, simulations, slides, calculators, and mini-tools.
 
-Generated HTML is becoming a natural next output layer after raw text and Markdown. Imbas OS gives those artifacts a durable home: sandboxed replay, metadata, notes, provenance, snapshots, search, and AI-context export.
+**Chats are temporary. Artifacts should be durable.** Instead of losing generated HTML in chat threads, random downloads, or one-off folders, save it into a vault with sandboxed replay, metadata, notes, provenance, snapshots, search, backlinks, and AI-context export.
 
-If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or HTML report, HTML Artifact Vault is the place to keep it instead of losing it in a chat thread or downloads folder.
+The bigger Imbas OS vision is a local-first agent workbench, but the public alpha is intentionally focused on one useful thing: making AI artifacts durable, inspectable, replayable, and reusable.
 
-## What works now
+## Why this exists
+
+AI models increasingly produce interactive HTML: dashboards, visual explainers, slide decks, simulations, calculators, internal tools, reports, prototypes, and compliance/evidence views. Those outputs are useful, but they are usually treated as disposable chat attachments.
+
+Imbas Artifact Vault turns those outputs into durable project objects:
+
+- saved as local files you can back up and inspect;
+- replayed in a hostile-document sandbox;
+- annotated with notes, prompt, provider/model, tags, project, trust level, and provenance;
+- snapshotted as they evolve;
+- searchable later;
+- exportable as AI context for the next model pass.
+
+## What you can use today
 
 - Paste or import generated HTML and replay it locally.
 - Inspect artifacts inside a sandboxed `artifact://` viewer with network access blocked by default.
 - Add title/project/tags/prompt/provider metadata, notes, provenance, and trust level.
 - Create and restore snapshots as the artifact evolves.
 - Search artifact titles, tags, notes, prompts, and visible HTML.
-- Export prompt/context packages for the next AI pass.
+- Copy/export AI context packages for the next AI pass.
 - Keep vault-owned Markdown notes alongside artifacts, with read-only bridge support for external Markdown/wiki pages.
 - Use current graph/backlink foundations across artifacts and Markdown pages.
 
-## Coming in the public alpha/M1 polish pass
+HTML Artifact Vault is useful when an AI model gives you:
 
-- Make the human-facing vault feel more like an Obsidian folder tree: folders, nested folders, notes, and readable `.artifact/` bundles, while AI agents use stable IDs/indexes underneath.
-- Polish link, backlink, unresolved-link, and graph navigation across notes, artifacts, folders, runs, and wiki knowledge.
-- Add clearer first-run, import destination, artifact detail, provenance-card, snapshot-browser, and “Copy AI context” flows.
-- Treat the wiki as the long-term human-readable knowledge layer, tightly indexed into Memsocket for contextual memory, agentic search, and context packs.
+- an interactive dashboard;
+- a single-file web app or prototype;
+- a simulation or visual explainer;
+- a report or slide-style presentation;
+- a calculator or internal tool;
+- a compliance/evidence pack;
+- a project artifact you want to continue with another model.
+
+## Core concepts
+
+- **Artifact** — a generated HTML output saved as a durable local object.
+- **Vault** — the local filesystem store for artifacts, notes, snapshots, indexes, and exports.
+- **Snapshot** — a version checkpoint for artifact HTML and metadata; restore remains reversible.
+- **Provenance** — source type, source path when known, prompt, provider/model, hash, and capture history.
+- **Trust level** — imported artifacts start as `untrusted`; trust should be earned locally through review.
+- **AI context package** — a Markdown handoff containing metadata, notes, provenance, visible text, snapshot history, and fenced HTML for the next AI pass.
+- **Wiki bridge** — optional Markdown/wiki indexing so artifacts can connect to project notes and backlinks.
+
+## Security model
+
+Replaying generated HTML is the core risk, so Artifact Vault treats artifacts like hostile documents by default.
+
+Current alpha boundaries:
+
+- artifact replay uses a sandboxed `artifact://` viewer;
+- artifact-origin network requests are blocked by default;
+- the Electron shell uses `nodeIntegration: false`, `contextIsolation: true`, and `sandbox: true`;
+- artifacts do not get Node/system/filesystem access;
+- artifacts do not get direct access to the app shell bridge;
+- imported artifacts start as `untrusted`;
+- security smoke tests cover generated HTML boundaries.
+
+Future controls such as explicit network permission or trusted-artifact capabilities should stay opt-in, visible, and auditable.
+
+## File and bundle format
+
+The current alpha stores source-of-truth bundles as local folders under the vault:
+
+```text
+vault-root/
+  artifacts/
+    <artifact-id>/
+      artifact.html
+      metadata.json
+      notes.md
+      snapshots/
+        <timestamp>.html
+        <timestamp>.json
+```
+
+The public product direction is a more human-readable `.artifact/` bundle shape that can live naturally in an Obsidian-like folder tree, for example:
+
+```text
+my-dashboard.artifact/
+  artifact.html
+  metadata.json
+  notes.md
+  provenance.md
+  snapshots/
+  context/
+    ai-context.md
+```
+
+Stable IDs and indexes remain available for agents/search/sync, but the human-facing vault should stay plain-file, Git-friendly, backup-friendly, and easy to inspect. See [`docs/file-format.md`](docs/file-format.md).
+
+## Roadmap
+
+The launch path is deliberately layered:
+
+```text
+Artifact Vault
+→ Knowledge Vault
+→ Agent Workbench
+→ Imbas OS
+```
+
+1. **Imbas Artifact Vault / HTML Artifact Vault alpha** — save/import generated HTML, replay it safely, edit metadata/notes/provenance, snapshot versions, search, and export/copy AI context.
+2. **Knowledge Vault** — make the vault feel daily-useful with human-readable folders, `.artifact/` bundles, richer graph/backlink polish, unresolved-link workflows, and better Markdown/wiki flows.
+3. **Agent Workbench** — connect context packs, local APIs, run history, memory/search, reviewed wiki updates, mobile capture, and agent dispatch behind stable safety boundaries.
+4. **Imbas OS public 1.0** — ship the broader local-first agent workbench only after fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass.
+
+For the detailed milestone plan, see [`docs/roadmap.md`](docs/roadmap.md). For the operator checklist to get the alpha across the finish line, see [`docs/release/html-artifact-vault-alpha-finish-line.md`](docs/release/html-artifact-vault-alpha-finish-line.md).
+
+| State | Status |
+|---|---|
+| Imbas Artifact Vault alpha | Public target after approval: focused local desktop vault for generated HTML artifacts. |
+| Imbas OS private preview | Internal/dogfood integration lane for Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket, and OpenClaw dispatch. |
+| Imbas OS public 1.0 | Blocked until fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass. |
 
 ## What this is not yet
 
 - Not a hosted cloud service.
 - Not a production signed/notarized installer.
 - Not the full Imbas OS 1.0 agent operating layer.
-- Not a claim that Android, Memsocket, Conduit, or live agent dispatch are public-stable yet.
+- Not a claim that Android, Memsocket, Conduit, Runledger, Lorekeeper, Sanctum, or live agent dispatch are public-stable yet.
 
-## Simple roadmap
-
-The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench.
-
-1. **HTML Artifact Vault alpha** — save/import generated HTML, replay it safely, edit metadata/notes/provenance, snapshot versions, search, and export/copy AI context.
-2. **Artifact Vault beta** — make the vault feel daily-useful with better onboarding, drag/drop, portable bundles, richer graph/backlink polish, snapshot compare, and demo walkthroughs.
-3. **Imbas OS private-preview integration** — connect agents, Runledger, Lorekeeper, Sanctum, Memsocket, Android, and context packs behind stable local APIs.
-4. **Imbas OS public 1.0** — ship a coherent local-first agent workbench only after fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass.
-
-For the detailed milestone plan, see [`docs/roadmap.md`](docs/roadmap.md). For the operator checklist to get the alpha across the finish line, see [`docs/release/html-artifact-vault-alpha-finish-line.md`](docs/release/html-artifact-vault-alpha-finish-line.md).
-
-| State | Status |
-|---|---|
-| HTML Artifact Vault alpha | Public target after approval: focused local desktop vault for generated HTML artifacts. |
-| Imbas OS private preview | Internal/dogfood integration lane for Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket, and OpenClaw dispatch. |
-| Imbas OS public 1.0 | Blocked until fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass. |
+The larger Imbas OS roadmap includes local memory, agent run history, context APIs, mobile capture, reviewed wiki updates, approvals, and agent dispatch. Those pieces are intentionally lower in the README until the artifact vault wedge is useful on its own.
 
 ## Current alpha status
 
-This repo is currently an alpha-stage desktop app centered on HTML Artifact Vault. It already includes:
+This repo is currently an alpha-stage desktop app centered on Imbas Artifact Vault. It already includes:
 
 - Electron + React + TypeScript desktop shell.
 - Local vault initialization.
@@ -79,12 +161,12 @@ This repo is currently an alpha-stage desktop app centered on HTML Artifact Vaul
 - Vault-owned Markdown pages.
 - Read-only Markdown/wiki bridge.
 - Unified artifact + Markdown search.
-- Mixed graph/backlinks and prompt-package export.
+- Mixed graph/backlinks and AI-context export.
 - Sync manifest foundation.
 - Demo vault with seven artifacts.
 - Security smoke test for generated HTML boundaries.
 
-Implemented as alpha foundations, but not production complete yet:
+Implemented as private-preview foundations, but not public-stable yet:
 
 - Memsocket adapter/CLI boundary and optional Conduit write-through; public 1.0 still requires full first-class integration.
 - Local Conduit API/loopback service for status, events, runs, artifacts, search, context packs, Lorekeeper proposals/apply, and mobile pairing.

@@ -44,7 +44,7 @@ On headless environments, use the existing smoke scripts rather than manual GUI 
    - Emphasize that restore records another snapshot so the action remains reversible.
 
 7. **Agent handoff**
-   - Export **Prompt package**.
+   - Export **AI context package**.
    - Show that the artifact can re-enter the AI loop with metadata, notes, prompt, links, and fenced HTML.
 
 8. **Portability**
@@ -58,7 +58,7 @@ On headless environments, use the existing smoke scripts rather than manual GUI 
 - Metadata/provenance panel.
 - Sidecar notes + snapshot controls.
 - Search/index state.
-- Prompt-package export.
+- AI context package export.
 - Bundle-folder export confirmation.
 
 ## Safety callout

@@ -14,7 +14,7 @@ test('exportMixedPromptPackage combines Markdown pages and HTML artifacts', asyn
     await writeFile(path.join(wikiRoot, 'Brief.md'), `# Brief\nUse [[artifact:${artifact.metadata.id}]] for the next planning pass.\n`);
 
     const exported = await exportMixedPromptPackage(vaultRoot, wikiRoot, { artifactIds: [artifact.metadata.id], wikiPageIds: ['wiki:Brief.md'] });
-    assert.match(exported, /# Mixed prompt package/);
+    assert.match(exported, /# Mixed AI context package/);
     assert.match(exported, /Markdown pages: 1/);
     assert.match(exported, /Included HTML artifacts: 1/);
     assert.match(exported, /Source ownership: external-readonly/);

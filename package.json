@@ -2,7 +2,7 @@
   "name": "imbas-os",
   "version": "0.1.0",
   "private": true,
-  "description": "Local-first vault for AI-generated HTML artifacts — save, sandbox, version, search, and export interactive LLM outputs.",
+  "description": "Local-first vault for AI-generated artifacts — save, sandbox, version, search, and export AI context.",
   "type": "module",
   "main": "dist/main/app.js",
   "scripts": {

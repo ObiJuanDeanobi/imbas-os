@@ -132,7 +132,7 @@ Vault-owned pages support frontmatter, normal Markdown text, Obsidian-style wiki
 [[artifact:00000000-0000-0000-0000-000000000000]]
 ```
 
-They participate in unified search, graph edges, backlinks, sync manifests, and mixed Markdown + HTML prompt-package export. The public direction is Obsidian-style linking across notes, artifacts, folders/projects, Runledger entries, and Lorekeeper-managed wiki blocks.
+They participate in unified search, graph edges, backlinks, sync manifests, and mixed Markdown + HTML AI context package export. The public direction is Obsidian-style linking across notes, artifacts, folders/projects, Runledger entries, and Lorekeeper-managed wiki blocks.
 
 Longer term, `pages/` should evolve into a general human folder tree where Markdown notes can live anywhere under project/area folders, closer to an Obsidian vault. The AI surface should continue resolving pages through stable IDs/frontmatter and manifests so user moves/renames remain safe.
 
@@ -152,11 +152,11 @@ Migration rules:
 
 The shared reference model in [`architecture/shared-reference-model.md`](architecture/shared-reference-model.md) is the compatibility layer: humans can see nicer folders and filenames while agents, graph search, SyncCore, and Memsocket continue to resolve stable entity IDs.
 
-## Prompt package export
+## AI context package export
 
-Prompt-package export is a generated Markdown handoff for the next AI/human pass. It includes artifact metadata, explicit links, original/source prompt, sidecar notes, fenced HTML, and a safety reminder to preserve local-first assumptions and avoid adding network dependencies unless explicitly requested.
+AI context package export is a generated Markdown handoff for the next AI/human pass. It includes artifact metadata, provenance, original/source prompt, current notes, visible text extracted from HTML, snapshot history, fenced HTML, and a local-first safety reminder.
 
-Mixed prompt-package export combines selected Markdown pages and HTML artifacts into one generated Markdown handoff. For bridged Markdown pages it includes page ID, relative path, `sourceOwnership`, tags, artifact links, and fenced Markdown content. For artifacts it includes metadata, sidecar notes, source prompt, and fenced HTML.
+Mixed AI context package export combines selected Markdown pages and HTML artifacts into one generated Markdown handoff. For bridged Markdown pages it includes page ID, relative path, `sourceOwnership`, tags, artifact links, and fenced Markdown content. For artifacts it includes metadata, sidecar notes, source prompt, and fenced HTML.
 
 ## Portable bundle-folder export/import
 

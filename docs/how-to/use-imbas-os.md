@@ -52,7 +52,7 @@ Use artifacts for:
 - analysis reports;
 - compliance packs;
 - decision matrices;
-- prompt packages.
+- AI context packages.
 
 ## Lorekeeper wiki
 

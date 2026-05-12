@@ -183,7 +183,7 @@ function App() {
             <li><strong>Capture</strong> generated HTML by paste or file import.</li>
             <li><strong>Replay</strong> it in a sandboxed <code>artifact://</code> viewer with network denied.</li>
             <li><strong>Organize</strong> with project metadata, notes, snapshots, search, and backlinks.</li>
-            <li><strong>Export</strong> Markdown, JSON, or a prompt package for the next AI pass.</li>
+            <li><strong>Export</strong> Markdown, JSON, or a AI context package for the next AI pass.</li>
           </ol>
           <p className="muted">{lastAction}</p>
         </section>
@@ -944,7 +944,7 @@ function MarkdownDetail({ pageId, graph, onRefresh }: { pageId: string; graph: A
           <LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} />
         </details>
         <details open><summary>AI handoff</summary>
-          <p className="muted">Export this Markdown page with directly linked artifacts as one prompt package.</p>
+          <p className="muted">Export this Markdown page with directly linked artifacts as one AI context package.</p>
           <div className="button-row"><button onClick={exportMixedPromptPackage}>Export mixed package</button><button className="secondary" onClick={onRefresh}>Refresh graph</button></div>
           {exportText && <pre>{exportText}</pre>}
         </details>

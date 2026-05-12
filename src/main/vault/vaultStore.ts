@@ -293,26 +293,38 @@ export async function exportArtifactJson(root: string, id: string): Promise<stri
 
 export async function exportArtifactPromptPackage(root: string, id: string): Promise<string> {
   const bundle = await readArtifact(root, id);
+  const snapshots = await listSnapshots(root, id);
   const links = bundle.metadata.links.length ? bundle.metadata.links.map((link) => `- artifact://${link}`).join('\n') : '- none';
-  return `# Prompt package: ${bundle.metadata.title}\n\n` +
-    `Use this package to continue, critique, revise, or regenerate the HTML artifact while preserving provenance.\n\n` +
-    `## Artifact metadata\n\n` +
+  const snapshotHistory = snapshots.length
+    ? snapshots.slice(0, 12).map((snapshot) => `- ${snapshot.createdAt} — ${snapshot.id}`).join('\n')
+    : '- none recorded';
+  const visibleText = normalizeExtractedText(stripHtml(bundle.html));
+  return `# Artifact Context Package: ${bundle.metadata.title}\n\n` +
+    `Use this package to continue, critique, revise, or regenerate the artifact while preserving its current purpose, provenance, and local-first safety assumptions.\n\n` +
+    `## Artifact\n\n` +
+    `- Title: ${bundle.metadata.title}\n` +
     `- Artifact ID: ${bundle.metadata.id}\n` +
-    `- Trust level: ${bundle.metadata.trustLevel}\n` +
-    `- Source type: ${bundle.metadata.sourceType}\n` +
-    `- Created: ${bundle.metadata.createdAt}\n` +
-    `- Updated: ${bundle.metadata.updatedAt}\n` +
-    `- Provider/model: ${[bundle.metadata.provider, bundle.metadata.model].filter(Boolean).join(' / ') || 'not recorded'}\n` +
-    `- Source path: ${bundle.metadata.sourcePath || 'not recorded'}\n` +
     `- Project: ${bundle.metadata.project || 'not recorded'}\n` +
-    `- SHA-256: ${bundle.metadata.hashes.sha256Html}\n` +
     `- Tags: ${bundle.metadata.tags.join(', ') || 'none'}\n` +
+    `- Trust level: ${bundle.metadata.trustLevel}\n` +
+    `- Created: ${bundle.metadata.createdAt}\n` +
+    `- Last modified: ${bundle.metadata.updatedAt}\n` +
+    `- SHA-256: ${bundle.metadata.hashes.sha256Html}\n\n` +
+    `## Provenance\n\n` +
+    `- Source type: ${bundle.metadata.sourceType}\n` +
+    `- Source path: ${bundle.metadata.sourcePath || 'not recorded'}\n` +
+    `- Provider/model: ${[bundle.metadata.provider, bundle.metadata.model].filter(Boolean).join(' / ') || 'not recorded'}\n` +
+    `- Bundle path: ${bundle.bundlePath}\n` +
     `- Explicit artifact links:\n${links}\n\n` +
-    `## Original/source prompt\n\n${bundle.metadata.prompt || '_No source prompt recorded._'}\n\n` +
-    `## Sidecar notes\n\n${bundle.notes.trim() || '_No sidecar notes recorded._'}\n\n` +
+    `## Original prompt\n\n${bundle.metadata.prompt || '_No source prompt recorded._'}\n\n` +
+    `## Current notes\n\n${bundle.notes.trim() || '_No sidecar notes recorded._'}\n\n` +
+    `## Visible text extracted from HTML\n\n${visibleText || '_No visible text extracted._'}\n\n` +
+    `## Snapshot history\n\n${snapshotHistory}\n\n` +
     `## HTML artifact\n\n\`\`\`html\n${bundle.html}\n\`\`\`\n\n` +
-    `## Requested next pass\n\n` +
-    `Review the artifact for correctness, usefulness, accessibility, and security-sensitive behavior. Preserve local-first assumptions. Do not add network dependencies unless explicitly requested. Return either a revised self-contained HTML artifact or a concise critique with specific changes.\n`;
+    `## User request\n\n` +
+    `Continue improving this artifact while preserving its current purpose and constraints. Review it for correctness, usefulness, accessibility, and security-sensitive behavior. Do not add network dependencies unless explicitly requested. Return either a revised self-contained HTML artifact or a concise critique with specific changes.\n\n` +
+    `## Local-first safety reminder\n\n` +
+    `This context package was assembled from a local Imbas Artifact Vault bundle. Treat generated HTML as untrusted unless reviewed. Do not paste secrets into external AI tools.\n`;
 }
 
 export function extractArtifactLinks(value: string): string[] {
@@ -372,6 +384,10 @@ async function uniqueExportPath(destinationDirectory: string, basename: string) 
 
 function stripHtml(html: string) {
   return html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ');
+}
+
+function normalizeExtractedText(text: string) {
+  return text.replace(/\s+/g, ' ').trim().slice(0, 4000);
 }
 
 function safeTimestamp(value: string) {
