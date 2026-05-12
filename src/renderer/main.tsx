@@ -727,6 +727,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
         setMetadataProject(bundle.metadata.project ?? '');
         setMetadataStatus('Metadata is loaded from metadata.json. Save changes to update search, graph, and exports.');
         setNotesStatus('Sidecar notes live beside the artifact as notes.md and travel with exports.');
+        setSnapshotStatus('Snapshots preserve artifact.html, metadata.json, and notes.md before important changes. Restore is reversible because the current state is snapshotted first.');
       }
     });
     void window.artifactVault.listSnapshots(artifact.id).then((next) => {
@@ -770,12 +771,15 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
   }
 
   async function snapshot() {
-    await window.artifactVault.createSnapshot(artifact.id);
+    setSnapshotStatus('Creating snapshot…');
+    const created = await window.artifactVault.createSnapshot(artifact.id);
     setSnapshots(await window.artifactVault.listSnapshots(artifact.id));
     await onRefresh();
+    setSnapshotStatus(`Created snapshot ${created.id}. You can restore it later without losing the current state.`);
   }
 
   async function restoreSnapshot(snapshotId: string) {
+    setSnapshotStatus(`Restoring ${snapshotId}… the current state will be snapshotted first.`);
     const restored = await window.artifactVault.restoreSnapshot(artifact.id, snapshotId);
     setNotes(restored.notes);
     setMetadataTitle(restored.metadata.title);
@@ -789,6 +793,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
     onIndexDirty();
     setSnapshots(await window.artifactVault.listSnapshots(artifact.id));
     await onRefresh();
+    setSnapshotStatus(`Restored ${snapshotId}. A new safety snapshot was added, so the restore can be rolled back.`);
   }
 
   async function exportMarkdown() {
@@ -853,8 +858,15 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
         <textarea className="notes-editor" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="What matters about this artifact? Add review notes, links, follow-ups, or usage context." />
         <div className="button-row"><button onClick={saveNotes}>Save note</button><button className="secondary" onClick={snapshot}>Snapshot</button></div>
         </details>
-        <details><summary>Snapshots</summary>
-        <div className="snapshot-list">{snapshots.length ? snapshots.slice(0, 6).map((item) => <button className="secondary" key={item.id} onClick={() => restoreSnapshot(item.id)} title={item.htmlPath}>Restore {item.createdAt}</button>) : <p className="muted">No snapshots found.</p>}</div>
+        <details open><summary>Snapshot browser</summary>
+        <p className="metadata-status">{snapshotStatus}</p>
+        <div className="snapshot-list">{snapshots.length ? snapshots.slice(0, 8).map((item) => <article className="snapshot-card" key={item.id}>
+          <strong>{new Date(item.createdAt).toLocaleString()}</strong>
+          <span>ID <code>{item.id}</code></span>
+          <span>HTML <code>{item.htmlPath}</code></span>
+          <span>Metadata <code>{item.metadataPath}</code></span>
+          <button className="secondary" onClick={() => restoreSnapshot(item.id)}>Restore this snapshot</button>
+        </article>) : <p className="muted">No snapshots found. Use Snapshot beside the sidecar note before a risky edit or metadata change.</p>}</div>
         </details>
         <details open><summary>Export</summary>
         <div className="button-row"><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportPromptPackage}>Prompt package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed package</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button></div>
