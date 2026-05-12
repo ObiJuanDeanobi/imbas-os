@@ -14,6 +14,10 @@ The goal:
 
 Imbas OS uses a **dual-surface information architecture**: humans get readable UI/docs/review flows, while AI agents get compact structured context, stable IDs, provenance, and action contracts over the same source of truth.
 
+## Roadmap
+
+The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench. See [`docs/roadmap.md`](docs/roadmap.md) for the canonical roadmap and GitHub milestone plan.
+
 ## Current private-preview status
 
 This repo is currently seeded from the working Artifact Vault desktop app. It already includes:

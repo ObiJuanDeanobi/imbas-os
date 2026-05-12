@@ -1,6 +1,6 @@
 # Imbas OS private-preview implementation status
 
-This page tracks the current private-preview reality against the initial issue set. It is not a public roadmap or release promise.
+This page tracks the current private-preview reality against the initial issue set. It is not the roadmap; use [`roadmap.md`](roadmap.md) as the single source of truth for the HTML Artifact Vault first / Imbas OS public roadmap.
 
 ## Issue evidence matrix
 

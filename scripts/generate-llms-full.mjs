@@ -10,6 +10,7 @@ const sourcePaths = [
   'AGENTS.md',
   'skill.md',
   'docs/index.md',
+  'docs/roadmap.md',
   'docs/architecture/ai-first-os.md',
   'docs/architecture/dual-surface-information.md',
   'docs/implementation-status.md',
