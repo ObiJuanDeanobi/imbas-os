@@ -126,7 +126,8 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/release/fresh-system-1.0-gate.md` — mandatory clean-system public 1.0 gate.
 - `docs/setup/local-development.md` — local setup/run/verification/troubleshooting.
 - `docs/setup/android-companion.md` — Android build/install/pair/diagnostics.
-- `docs/how-to/use-imbas-os.md` — human desktop/mobile workflows.
+- `docs/how-to/use-artifact-vault.md` — public Artifact Vault alpha workflow.
+- `docs/private-preview/use-full-imbas-os.md` — broader private-preview desktop/mobile workflows.
 - `docs/how-to/lorekeeper-review.md` — proposal/diff/apply/snapshot/restore workflow.
 - `docs/mobile/android-companion.md` — Android companion MVP, pairing, scopes, and screen contract.
 - `docs/connectors/protocol.md` — connector/API design target.

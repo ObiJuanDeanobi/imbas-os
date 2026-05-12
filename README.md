@@ -217,7 +217,8 @@ This root `README.md` is the single canonical GitHub entrypoint. It should stay 
 - [`docs/index.md`](docs/index.md) — documentation library map and 1.0 documentation standard.
 - [`docs/setup/local-development.md`](docs/setup/local-development.md) — local setup, run, verification, and troubleshooting.
 - [`docs/setup/android-companion.md`](docs/setup/android-companion.md) — APK build/install/pair/diagnostics flow.
-- [`docs/how-to/use-imbas-os.md`](docs/how-to/use-imbas-os.md) — day-to-day desktop and companion workflows.
+- [`docs/how-to/use-artifact-vault.md`](docs/how-to/use-artifact-vault.md) — public Artifact Vault alpha workflow.
+- [`docs/private-preview/use-full-imbas-os.md`](docs/private-preview/use-full-imbas-os.md) — broader private-preview Imbas OS desktop/mobile workflows.
 - [`docs/ops/verification.md`](docs/ops/verification.md) — verification gates and live checks.
 - [`docs/release/documentation-1.0-gate.md`](docs/release/documentation-1.0-gate.md) — required docs bar before public 1.0.
 - [`docs/release/public-alpha-unveil-checklist.md`](docs/release/public-alpha-unveil-checklist.md) — final public-alpha presentation checklist.

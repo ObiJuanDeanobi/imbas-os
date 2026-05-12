@@ -155,11 +155,10 @@ function installNetworkBlocker() {
 }
 
 function installPermissionGuards() {
-  session.defaultSession.setPermissionRequestHandler((webContents, _permission, callback, details) => {
-    const currentUrl = webContents.getURL();
-    const requestingUrl = details.requestingUrl ?? '';
-    const fromArtifact = currentUrl.startsWith('artifact://') || requestingUrl.startsWith('artifact://');
-    callback(!fromArtifact && false);
+  session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
+    // Alpha policy: deny all runtime permission prompts. Future trusted-artifact
+    // permissions must be explicit, user-visible, scoped, and auditable.
+    callback(false);
   });
 }
 

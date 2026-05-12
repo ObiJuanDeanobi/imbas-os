@@ -224,7 +224,8 @@ This root `README.md` is the single canonical GitHub entrypoint. It should stay 
 - [`docs/index.md`](docs/index.md) — documentation library map and 1.0 documentation standard.
 - [`docs/setup/local-development.md`](docs/setup/local-development.md) — local setup, run, verification, and troubleshooting.
 - [`docs/setup/android-companion.md`](docs/setup/android-companion.md) — APK build/install/pair/diagnostics flow.
-- [`docs/how-to/use-imbas-os.md`](docs/how-to/use-imbas-os.md) — day-to-day desktop and companion workflows.
+- [`docs/how-to/use-artifact-vault.md`](docs/how-to/use-artifact-vault.md) — public Artifact Vault alpha workflow.
+- [`docs/private-preview/use-full-imbas-os.md`](docs/private-preview/use-full-imbas-os.md) — broader private-preview Imbas OS desktop/mobile workflows.
 - [`docs/ops/verification.md`](docs/ops/verification.md) — verification gates and live checks.
 - [`docs/release/documentation-1.0-gate.md`](docs/release/documentation-1.0-gate.md) — required docs bar before public 1.0.
 - [`docs/release/public-alpha-unveil-checklist.md`](docs/release/public-alpha-unveil-checklist.md) — final public-alpha presentation checklist.
@@ -368,7 +369,8 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/release/fresh-system-1.0-gate.md` — mandatory clean-system public 1.0 gate.
 - `docs/setup/local-development.md` — local setup/run/verification/troubleshooting.
 - `docs/setup/android-companion.md` — Android build/install/pair/diagnostics.
-- `docs/how-to/use-imbas-os.md` — human desktop/mobile workflows.
+- `docs/how-to/use-artifact-vault.md` — public Artifact Vault alpha workflow.
+- `docs/private-preview/use-full-imbas-os.md` — broader private-preview desktop/mobile workflows.
 - `docs/how-to/lorekeeper-review.md` — proposal/diff/apply/snapshot/restore workflow.
 - `docs/mobile/android-companion.md` — Android companion MVP, pairing, scopes, and screen contract.
 - `docs/connectors/protocol.md` — connector/API design target.
@@ -551,7 +553,8 @@ Imbas OS documentation has three jobs:
 
 ## How to use Imbas OS
 
-- [User guide](how-to/use-imbas-os.md) — day-to-day desktop, Agent Console, artifacts, wiki, and Runledger flows.
+- [Artifact Vault user guide](how-to/use-artifact-vault.md) — import/paste HTML, preview safely, metadata, notes, snapshots, search, and AI context export.
+- [Full Imbas OS private-preview workflow](private-preview/use-full-imbas-os.md) — Agent Console, Runledger, Lorekeeper, Android, and broader integration flows.
 - [Lorekeeper review workflow](how-to/lorekeeper-review.md) — propose, preview, approve, apply, snapshot, restore.
 - [Android companion guide](mobile/android-companion.md) — mobile concepts, scopes, endpoints, diagnostics, and current screen contract.
 - [Troubleshooting](troubleshooting.md) — common private-preview problems and expected behavior.
@@ -2374,7 +2377,7 @@ cd imbas-os
 npm install
 ```
 
-The repo is private preview. Do not publish packages, make the repo public, or announce releases without explicit approval.
+This repo is public, but package-registry publishing, hosted services, signed/binary distribution changes, and announcements still require explicit maintainer approval.
 
 ## Run the desktop app
 
@@ -2413,7 +2416,7 @@ npm test
 npm run build
 ```
 
-Standard private-preview gate:
+Standard local verification gate:
 
 ```bash
 npm run verify
@@ -2462,7 +2465,7 @@ That is expected without a scoped mobile session token. Pair Android first or us
 
 ### Restore/apply routes return 403 over HTTP
 
-That is expected. Sensitive desktop-only actions such as Lorekeeper apply/restore and Agent Console dispatch are blocked over tailnet HTTP in private preview.
+That is expected. Sensitive desktop-only actions such as Lorekeeper apply/restore and Agent Console dispatch are blocked over tailnet HTTP unless explicitly enabled by a reviewed private-preview flow.
 
 ---
 ## Source: docs/setup/android-companion.md
@@ -2559,11 +2562,105 @@ Open the Android Diagnostics tab and run checks. Expected results:
 - Public/mobile distribution and signing are not decided.
 
 ---
-## Source: docs/how-to/use-imbas-os.md
+## Source: docs/how-to/use-artifact-vault.md
 
-# How to use Imbas OS
+# How to use Imbas Artifact Vault
 
-This guide describes the intended private-preview workflow for humans using the desktop app and Android companion.
+This guide covers the public alpha surface: saving, replaying, reviewing, searching, snapshotting, and exporting AI-generated HTML artifacts locally.
+
+For broader private-preview Imbas OS workflows such as Agent Console, Conduit, Runledger, Lorekeeper, Android companion, Sanctum, and OpenClaw dispatch, see [`../private-preview/use-full-imbas-os.md`](../private-preview/use-full-imbas-os.md).
+
+## Start the desktop app
+
+```bash
+npm run dev
+```
+
+For a production-style local run from source:
+
+```bash
+npm run build
+npm start
+```
+
+## First 60 seconds
+
+1. Click **Seed demo vault** or import/paste an HTML file.
+2. Open an artifact in the sandboxed preview.
+3. Add a note and a tag.
+4. Record provenance such as prompt, provider/model, project, or source path when known.
+5. Create a snapshot before making risky changes.
+6. Click **Copy AI context**.
+7. Paste that context into an AI model and ask it to critique, revise, or extend the artifact.
+
+Success looks like this: the generated HTML is no longer trapped in a chat thread. It is a local artifact with metadata, notes, provenance, snapshots, searchability, and an AI-ready handoff.
+
+## Import or paste HTML
+
+Use Artifact Vault for single-file generated HTML outputs such as dashboards, explainers, reports, calculators, slides, compliance/evidence views, prototypes, and internal tools.
+
+Imported artifacts start as `untrusted`. Keep that trust level until you have reviewed what the artifact does and where it came from.
+
+## Preview safely
+
+Artifacts replay through the app's `artifact://` viewer. The alpha policy treats generated HTML like hostile active content:
+
+- no Node/Electron/system/filesystem access;
+- no direct app-shell bridge access;
+- artifact-origin network requests blocked by default;
+- runtime permission prompts denied;
+- popups/new windows denied;
+- artifact-initiated top-level navigation blocked.
+
+Do not store secrets, credentials, customer data, or sensitive personal information in artifact HTML, notes, prompts, or context packages.
+
+## Add metadata and notes
+
+Use metadata to make artifacts findable and reviewable:
+
+- title and project;
+- tags;
+- original prompt;
+- provider/model;
+- source path when known;
+- trust level and trust-review reason.
+
+Use notes for human context: why the artifact exists, what changed, follow-ups, caveats, review findings, links, and next AI instructions.
+
+## Snapshot before changing
+
+Create a snapshot before substantial edits or trust-level changes. Snapshot restore is designed to be reversible: restoring an older snapshot records the current state first, then restores the selected version.
+
+## Search and connect
+
+Artifact Vault searches artifact titles, tags, notes, prompts, and visible HTML text. Vault-owned Markdown pages and read-only external Markdown/wiki bridges can connect artifacts to project notes and backlinks.
+
+## Copy AI context
+
+**Copy AI context** creates a Markdown handoff containing:
+
+- artifact metadata;
+- provenance;
+- trust/audit context;
+- notes;
+- visible text extracted from the HTML;
+- snapshot history;
+- fenced HTML.
+
+Use it when you want another AI model to continue the artifact without losing the local context and safety assumptions.
+
+## Current alpha boundaries
+
+This public alpha is source-run desktop software. It does not yet provide signed installers, package-registry releases, hosted sync, or stable public APIs for the broader Imbas OS private-preview subsystems.
+
+---
+## Source: docs/private-preview/use-full-imbas-os.md
+
+# Full Imbas OS private-preview workflow
+
+This guide describes the broader private-preview workflow for humans using the desktop app, Agent Console, Conduit, Runledger, Lorekeeper, and Android companion.
+
+For the public Artifact Vault alpha workflow, use [`../how-to/use-artifact-vault.md`](../how-to/use-artifact-vault.md).
 
 ## Mental model
 
@@ -2575,7 +2672,7 @@ Imbas OS is the home base. Agents and apps connect to it through stable APIs. It
 npm run dev
 ```
 
-For phone testing, start with Conduit bound to a tailnet IP:
+For phone testing, start with Conduit bound to a tailnet/private IP:
 
 ```bash
 IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=127.0.0.1 IMBAS_OS_CONDUIT_PORT=3077 npm run dev

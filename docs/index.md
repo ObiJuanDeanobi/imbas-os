@@ -35,7 +35,8 @@ Imbas OS documentation has three jobs:
 
 ## How to use Imbas OS
 
-- [User guide](how-to/use-imbas-os.md) — day-to-day desktop, Agent Console, artifacts, wiki, and Runledger flows.
+- [Artifact Vault user guide](how-to/use-artifact-vault.md) — import/paste HTML, preview safely, metadata, notes, snapshots, search, and AI context export.
+- [Full Imbas OS private-preview workflow](private-preview/use-full-imbas-os.md) — Agent Console, Runledger, Lorekeeper, Android, and broader integration flows.
 - [Lorekeeper review workflow](how-to/lorekeeper-review.md) — propose, preview, approve, apply, snapshot, restore.
 - [Android companion guide](mobile/android-companion.md) — mobile concepts, scopes, endpoints, diagnostics, and current screen contract.
 - [Troubleshooting](troubleshooting.md) — common private-preview problems and expected behavior.

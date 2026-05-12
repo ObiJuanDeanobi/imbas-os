@@ -21,7 +21,8 @@ Imbas OS is alpha-stage software. The first public wedge is HTML Artifact Vault;
 - [Local development setup](docs/setup/local-development.md): clone, install, run, verify, troubleshoot.
 - [Android companion setup](docs/setup/android-companion.md): APK build/install, pairing, diagnostics, mobile flows.
 - [OpenClaw integration setup](docs/setup/openclaw-integration.md): private-preview OpenClaw/Conduit integration.
-- [User guide](docs/how-to/use-imbas-os.md): desktop, Agent Console, artifacts, wiki, Runledger, Android.
+- [Artifact Vault user guide](docs/how-to/use-artifact-vault.md): import/paste HTML, sandbox preview, metadata, notes, snapshots, search, AI context export.
+- [Full Imbas OS private-preview workflow](docs/private-preview/use-full-imbas-os.md): Agent Console, Runledger, Lorekeeper, Android, broader integration flows.
 - [Lorekeeper review workflow](docs/how-to/lorekeeper-review.md): proposals, diffs, apply, snapshots, restore.
 - [Verification gates](docs/ops/verification.md): test/build/smoke/package gates and live checks.
 - [Troubleshooting](docs/troubleshooting.md): common private-preview problems.

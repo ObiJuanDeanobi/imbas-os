@@ -1,6 +1,8 @@
-# How to use Imbas OS
+# Full Imbas OS private-preview workflow
 
-This guide describes the intended private-preview workflow for humans using the desktop app and Android companion.
+This guide describes the broader private-preview workflow for humans using the desktop app, Agent Console, Conduit, Runledger, Lorekeeper, and Android companion.
+
+For the public Artifact Vault alpha workflow, use [`../how-to/use-artifact-vault.md`](../how-to/use-artifact-vault.md).
 
 ## Mental model
 
@@ -12,7 +14,7 @@ Imbas OS is the home base. Agents and apps connect to it through stable APIs. It
 npm run dev
 ```
 
-For phone testing, start with Conduit bound to a tailnet IP:
+For phone testing, start with Conduit bound to a tailnet/private IP:
 
 ```bash
 IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=127.0.0.1 IMBAS_OS_CONDUIT_PORT=3077 npm run dev

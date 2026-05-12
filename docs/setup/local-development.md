@@ -19,7 +19,7 @@ cd imbas-os
 npm install
 ```
 
-The repo is private preview. Do not publish packages, make the repo public, or announce releases without explicit approval.
+This repo is public, but package-registry publishing, hosted services, signed/binary distribution changes, and announcements still require explicit maintainer approval.
 
 ## Run the desktop app
 
@@ -58,7 +58,7 @@ npm test
 npm run build
 ```
 
-Standard private-preview gate:
+Standard local verification gate:
 
 ```bash
 npm run verify
@@ -107,4 +107,4 @@ That is expected without a scoped mobile session token. Pair Android first or us
 
 ### Restore/apply routes return 403 over HTTP
 
-That is expected. Sensitive desktop-only actions such as Lorekeeper apply/restore and Agent Console dispatch are blocked over tailnet HTTP in private preview.
+That is expected. Sensitive desktop-only actions such as Lorekeeper apply/restore and Agent Console dispatch are blocked over tailnet HTTP unless explicitly enabled by a reviewed private-preview flow.
