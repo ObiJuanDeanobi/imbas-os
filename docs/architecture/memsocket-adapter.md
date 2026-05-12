@@ -4,8 +4,9 @@ The Memsocket adapter maps Imbas OS context events into Memsocket vNext `Context
 
 ## Boundary
 
-- Imbas OS owns connector protocol, artifacts, runs, wiki proposals, and Sanctum policy.
-- Memsocket owns event-sourced memory, projections, search, and context packs.
+- Imbas OS owns connector protocol, artifacts, runs, wiki proposals, Lorekeeper Markdown, and Sanctum policy.
+- Memsocket owns event-sourced contextual memory, projections, agentic search, and context packs.
+- Lorekeeper/wiki owns curated long-term human-readable knowledge; Memsocket indexes it and can propose updates, but does not silently replace it.
 - The adapter translates between Imbas `ImbasContextEventDraft` and Memsocket-compatible event payloads.
 
 ## Current private-preview slice
@@ -63,3 +64,6 @@ See also [`memsocket-agentmemory-patterns.md`](memsocket-agentmemory-patterns.md
 Private preview now includes a Memsocket CLI client boundary in `src/main/memsocket/cliClient.ts`. It shells out to `python3 -m memsocket.cli` by default and passes mapped/redacted Imbas events through JSON stdin. It also exposes search and context-pack (`brief`) calls.
 
 This is not the final public 1.0 merge shape; it is the first live boundary for dogfooding. Public 1.0 still requires Memsocket to be merged/integrated/tested as a first-class Imbas OS module.
+
+
+See also [`wiki-memsocket-boundary.md`](wiki-memsocket-boundary.md) for the Lorekeeper/wiki ↔ Memsocket source-of-truth boundary.

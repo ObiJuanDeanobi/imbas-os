@@ -81,6 +81,13 @@ Desired behavior:
 - Graph/search should include both vault-owned notes and read-only bridged notes, with source ownership clearly shown.
 - Approved wiki changes should produce Runledger evidence and preserve snapshots/restore paths.
 
+
+## Wiki and Memsocket
+
+The wiki should tie closely into Memsocket, but with distinct responsibilities. The wiki/Lorekeeper layer is the long-term human-readable knowledge base. Memsocket is the contextual memory, agentic search, retrieval, and context-pack engine.
+
+Wiki pages and managed blocks should index into Memsocket with stable source refs. Memsocket-derived evidence can propose wiki updates through Lorekeeper, but should not silently rewrite durable wiki pages. See [`wiki-memsocket-boundary.md`](wiki-memsocket-boundary.md).
+
 ## Agent artifact capture
 
 When an AI agent generates a durable HTML artifact, the ideal flow is:

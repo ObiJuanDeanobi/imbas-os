@@ -19,13 +19,14 @@ Imbas OS
 
 ## Memsocket
 
-Memory/context engine:
+Contextual memory and agentic retrieval engine:
 
 - append-only context events;
 - memory projections;
 - search and retrieval;
 - task-specific context packs;
-- provenance and visibility filters.
+- provenance and visibility filters;
+- indexing/search over curated wiki knowledge without replacing the wiki source of truth.
 
 ## Artifact Vault
 
@@ -40,14 +41,15 @@ Generated artifact workbench:
 
 ## Lorekeeper
 
-Living wiki system:
+Long-term human-readable knowledge/wiki system:
 
 - Markdown/wiki pages;
 - managed blocks;
 - project context;
 - ADRs/runbooks/entity pages;
 - wiki update proposals;
-- read-only bridge over external vaults.
+- read-only bridge over external vaults;
+- curated knowledge that indexes into Memsocket for retrieval/context packs.
 
 ## Conduit
 
@@ -127,6 +129,10 @@ See [`module-selection.md`](module-selection.md). Imbas OS should be modular: us
 ## AI-first OS principle
 
 See [`ai-first-os.md`](ai-first-os.md). Imbas OS should be treated as an AI-first operating layer: the durable agent world is the source of truth, and the UI is how humans see into, correct, approve, and steer that world.
+
+## Wiki and Memsocket boundary
+
+See [`wiki-memsocket-boundary.md`](wiki-memsocket-boundary.md). The wiki/Lorekeeper layer is the long-term human-readable knowledge base; Memsocket is the contextual memory, agentic search, and context-pack engine. They should be tightly linked without collapsing into one opaque system.
 
 ## Dual-surface information architecture
 

@@ -107,7 +107,7 @@ Beta success criteria:
 - The app is useful as a daily local vault for generated HTML artifacts.
 - Users can safely move artifacts between machines.
 - The human surface and AI surface both feel intentional.
-- Links/backlinks make artifacts, Markdown, and wiki knowledge feel connected rather than separate.
+- Links/backlinks make artifacts, Markdown, wiki knowledge, and later Memsocket context feel connected rather than separate.
 
 ### Lane C: Imbas OS private-preview integration
 
@@ -175,7 +175,7 @@ These are intended to become GitHub milestones/issues once approved.
 - [ ] Polish import/paste flow, including choosing where a new artifact lands in the folder tree.
 - [ ] Improve artifact detail page and metadata editing while keeping the filesystem bundle understandable.
 - [ ] Add provenance card.
-- [ ] Add Obsidian-style links, backlinks, unresolved-link reporting, and graph basics across notes/artifacts.
+- [ ] Add Obsidian-style links, backlinks, unresolved-link reporting, and graph basics across notes/artifacts/wiki pages.
 - [ ] Add “Copy AI context” for selected artifact.
 - [ ] Add artifact context-pack export.
 - [ ] Improve snapshot browser and restore explanation.
@@ -215,6 +215,7 @@ These are intended to become GitHub milestones/issues once approved.
 ### M5 — Memsocket first-class integration
 
 - [ ] Merge or vendor Memsocket into Imbas OS release story.
+- [ ] Integrate Lorekeeper/wiki as the curated long-term knowledge source that indexes into Memsocket.
 - [ ] Add memory/context event governance.
 - [ ] Add retrieval eval fixtures.
 - [ ] Add context pack quality tests.
@@ -241,7 +242,7 @@ These are intended to become GitHub milestones/issues once approved.
 
 ### M8 — Atlas, CLI, SyncCore, and recovery
 
-- [ ] Unified Atlas search across artifacts, wiki pages, runs, memory/context events, and projects.
+- [ ] Unified Atlas search across artifacts, wiki pages, Memsocket context events/projections, runs, and projects.
 - [ ] Graph/backlink navigation for artifacts, wiki, Runledger refs, and context packs.
 - [ ] CLI/admin commands for verification, import/export, context-pack generation, backup/restore, and diagnostics.
 - [ ] Machine-readable status output for automation and AI agents.

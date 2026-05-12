@@ -45,6 +45,7 @@ Imbas OS documentation has three jobs:
 - [Dual-surface information architecture](architecture/dual-surface-information.md)
 - [Human filesystem vault architecture](architecture/human-filesystem-vault.md)
 - [Wiki graph and agent artifact capture](architecture/wiki-graph-and-agent-capture.md)
+- [Wiki and Memsocket boundary](architecture/wiki-memsocket-boundary.md)
 - [Module selection and install profiles](architecture/module-selection.md)
 - [MemPalace → Imbas/Memsocket migration](architecture/memory-migration.md)
 - [Memsocket adapter](architecture/memsocket-adapter.md)
