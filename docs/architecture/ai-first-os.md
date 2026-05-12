@@ -97,7 +97,7 @@ Lorekeeper can now close the loop from agent proposal to durable wiki update wit
 
 ## Automation policy direction
 
-The long-term goal is not to make Johnathan approve every routine wiki or artifact update. Imbas OS should become self-maintaining inside explicit policy lanes: agents should be able to create, ingest, classify, link, summarize, and update low-risk knowledge automatically while keeping high-impact changes reviewable and dangerous changes gated.
+The long-term goal is not to make the maintainer approve every routine wiki or artifact update. Imbas OS should become self-maintaining inside explicit policy lanes: agents should be able to create, ingest, classify, link, summarize, and update low-risk knowledge automatically while keeping high-impact changes reviewable and dangerous changes gated.
 
 Automation should be tiered:
 

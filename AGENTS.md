@@ -18,9 +18,9 @@ Conduit = agent connector/API layer
 
 ## Public 1.0 rule
 
-Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit Johnathan approval.
+Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit maintainer approval.
 
-Do not remove MemPalace during early OpenClaw/Imbas dogfood. MemPalace remains the working OpenClaw/Hermes recall safety net until the staged migration criteria in `docs/architecture/memory-migration.md` pass and Johnathan explicitly approves retirement.
+Do not remove MemPalace during early OpenClaw/Imbas dogfood. MemPalace remains the working OpenClaw/Hermes recall safety net until the staged migration criteria in `docs/architecture/memory-migration.md` pass and the maintainer explicitly approves retirement.
 
 Public 1.0 also requires a fresh-system user experience gate: clean OpenClaw config, Imbas OS with all supported modules, companion app pairing, adapter dogfood, backup/restore, security smoke, and human review loop. See `docs/release/fresh-system-1.0-gate.md`.
 
@@ -73,7 +73,7 @@ npm run verify
 
 ## Important safety rules
 
-- Do not publish this repo/package publicly without explicit Johnathan approval.
+- Do not publish this repo/package publicly without explicit maintainer approval.
 - Do not remove sandboxing or network-block defaults for generated HTML artifacts.
 - Do not store raw secrets in artifacts, Markdown pages, Memsocket events, logs, or context packs.
 - Use Sanctum-style secret handles/capabilities for future sensitive operations.

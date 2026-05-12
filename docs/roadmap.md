@@ -152,7 +152,7 @@ Required before public 1.0:
 - Backup/restore/delete/forget behavior is tested across memory, artifacts, wiki, and Runledger.
 - Security/privacy audit passes.
 - Public repo/license/release posture is approved.
-- Johnathan explicitly approves public 1.0.
+- the maintainer explicitly approves public 1.0.
 
 ### Lane E: Hosted/team product later
 
@@ -272,7 +272,7 @@ Stretch/push-to-beta if needed:
 - [ ] Confirm public repo posture.
 - [ ] Confirm installer/package plan.
 - [ ] Confirm rollback/recovery plan.
-- [ ] Obtain explicit Johnathan approval.
+- [ ] Obtain explicit maintainer approval.
 
 ## Public alpha unveil assets
 
@@ -293,18 +293,19 @@ Before public unveil, replace or supplement the generated concept demo with at l
 
 Recommended next implementation slice:
 
-1. Finish the remaining **M1 — HTML Artifact Vault alpha** UX work:
-   - Obsidian-like human folder tree;
-   - links, backlinks, and graph basics across notes/artifacts;
+1. Finish the remaining **M1 — HTML Artifact Vault alpha** must-have UX work:
    - obvious first-run flow;
-   - polished import/paste flow with folder destination;
+   - polished paste/import flow with clear destination;
    - clearer artifact detail + metadata editing;
-   - provenance card;
-   - “Copy AI context” and artifact context-pack export;
+   - provenance card/panel;
+   - “Copy AI context” or artifact context-package export;
    - snapshot browser/restore explanation.
-2. Re-run the alpha gate: docs check, tests, build, smoke/security smoke, and `npm run package:dev`.
-3. Confirm GitHub README media renders well in dark/light.
-4. Stop for approval before making the repo public or announcing anything.
+2. Treat the deeper Obsidian-style folder tree and graph polish as stretch/beta work unless the alpha wedge is otherwise ready.
+3. Re-run the alpha gate: docs check, tests, build, smoke/security smoke, and `npm run package:dev`.
+4. Confirm GitHub README media renders well in dark/light.
+5. Stop for approval before making the repo public or announcing anything.
+
+Detailed operator plan: [`release/html-artifact-vault-alpha-finish-line.md`](release/html-artifact-vault-alpha-finish-line.md).
 
 ## Approval boundaries
 

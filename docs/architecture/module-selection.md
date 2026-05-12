@@ -18,7 +18,7 @@ Current Imbas OS repo includes:
 Current Memsocket code remains in its own repo:
 
 - `ObiJuanDeanobi/MemSocket`
-- local checkout: `/home/ubuntu/projects/memsocket`
+- local checkout: `/path/to/memsocket`
 - branch: `vnext-local-first`
 
 ## Product principle
@@ -79,7 +79,7 @@ Public 1.0 release posture:
 - Imbas OS docs explain Memsocket as the built-in memory/context module.
 - Users can choose whether to enable/configure Memsocket, but it is installed/tested as part of supported profiles.
 - End-to-end tests prove events, search, context packs, artifacts, wiki links, connectors, redaction, export/delete/forget, backup/restore, and upgrade paths work together.
-- Public release is blocked until this integration passes and Johnathan explicitly approves.
+- Public release is blocked until this integration passes and the maintainer explicitly approves.
 
 Reasons:
 

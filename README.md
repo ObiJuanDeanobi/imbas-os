@@ -50,9 +50,16 @@ If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or H
 - Not the full Imbas OS 1.0 agent operating layer.
 - Not a claim that Android, Memsocket, Conduit, or live agent dispatch are public-stable yet.
 
-## Roadmap
+## Simple roadmap
 
-The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench. See [`docs/roadmap.md`](docs/roadmap.md) for the canonical roadmap and GitHub milestone plan.
+The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench.
+
+1. **HTML Artifact Vault alpha** — save/import generated HTML, replay it safely, edit metadata/notes/provenance, snapshot versions, search, and export/copy AI context.
+2. **Artifact Vault beta** — make the vault feel daily-useful with better onboarding, drag/drop, portable bundles, richer graph/backlink polish, snapshot compare, and demo walkthroughs.
+3. **Imbas OS private-preview integration** — connect agents, Runledger, Lorekeeper, Sanctum, Memsocket, Android, and context packs behind stable local APIs.
+4. **Imbas OS public 1.0** — ship a coherent local-first agent workbench only after fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass.
+
+For the detailed milestone plan, see [`docs/roadmap.md`](docs/roadmap.md). For the operator checklist to get the alpha across the finish line, see [`docs/release/html-artifact-vault-alpha-finish-line.md`](docs/release/html-artifact-vault-alpha-finish-line.md).
 
 | State | Status |
 |---|---|

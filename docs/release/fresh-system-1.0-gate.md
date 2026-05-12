@@ -6,20 +6,20 @@ This is stricter than package verification. It is a human/product gate: can a ne
 
 ## Release rule
 
-No public 1.0 release, package publish, public repo launch, hosted service, or public announcement without explicit Johnathan approval after this gate passes.
+No public 1.0 release, package publish, public repo launch, hosted service, or public announcement without explicit maintainer approval after this gate passes.
 
 ## Test environment requirement
 
-Run the gate on a fresh environment, not the development VPS state.
+Run the gate on a fresh environment, not the development machine state.
 
 Acceptable environments:
 
-- a disposable VPS;
+- a disposable host;
 - a clean VM;
 - a clean container/desktop test image where GUI/mobile constraints are represented honestly;
 - a fresh user account only if it avoids inherited OpenClaw/Imbas/MemPalace config and secrets.
 
-The test must not depend on hidden local state from `/home/ubuntu/.openclaw`, existing MemPalace, existing Mattermost/Hermes setup, or developer-only shell history.
+The test must not depend on hidden local OpenClaw config, existing MemPalace, existing Mattermost/Hermes setup, or developer-only shell history.
 
 ## Required end-to-end scenario
 
@@ -135,7 +135,7 @@ The release candidate needs a completion report containing:
 - security smoke proof;
 - known issues;
 - rollback/recovery notes;
-- Johnathan approval record.
+- Maintainer approval record.
 
 ## Current status
 

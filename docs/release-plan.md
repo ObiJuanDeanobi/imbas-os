@@ -48,9 +48,9 @@ Expected result:
 - Electron smoke opens the built app and exits cleanly.
 - Security smoke imports the malicious fixture, renders it through `artifact://`, and prints `security smoke passed`.
 
-## VPS/headless Linux caveat
+## Headless Linux caveat
 
-The smoke scripts currently use Electron with `--no-sandbox` under `xvfb-run` because the VPS Chromium `chrome-sandbox` helper is not root-owned/mode `4755`. This is a host-level smoke-test workaround, not a relaxation of the artifact renderer policy. The app still uses context isolation, disables Node integration, uses Electron sandbox settings, wraps artifacts with CSP, and blocks artifact-origin network requests.
+The smoke scripts may use Electron with `--no-sandbox` under `xvfb-run` when the host Chromium `chrome-sandbox` helper is not root-owned/mode `4755`. This is a host-level smoke-test workaround, not a relaxation of the artifact renderer policy. The app still uses context isolation, disables Node integration, uses Electron sandbox settings, wraps artifacts with CSP, and blocks artifact-origin network requests.
 
 ## Do not release if any of these are true
 
@@ -64,7 +64,7 @@ The smoke scripts currently use Electron with `--no-sandbox` under `xvfb-run` be
 ## Next packaging decisions
 
 1. Decide whether the private tarball is enough for the next review, or choose Electron Forge/electron-builder for a real desktop installer.
-2. Decide app signing/notarization path later; not needed for private Linux/VPS developer preview.
+2. Decide app signing/notarization path later; not needed for private Linux developer preview.
 3. Capture screenshots/GIFs using `docs/demo-walkthrough.md`.
 4. Decide license/commercial posture before publishing any repository or binary.
 5. Add zip bundle import/export if folder-based portability proves too clunky for testers.

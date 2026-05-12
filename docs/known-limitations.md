@@ -12,7 +12,7 @@ This page is intentionally blunt. Imbas OS is private-preview software, not publ
 
 - Memsocket is not yet fully merged/integrated/tested as the first-class Imbas OS public 1.0 memory module.
 - MemPalace remains the working OpenClaw/Hermes recall safety net.
-- MemPalace must not be removed until migration criteria pass and Johnathan explicitly approves.
+- MemPalace must not be removed until migration criteria pass and the maintainer explicitly approves.
 
 ## Connectors
 

@@ -74,7 +74,7 @@ Exit criteria:
 
 Exit criteria:
 
-- Johnathan explicitly approves retirement.
+- the maintainer explicitly approves retirement.
 - Imbas/Memsocket has passed fresh-system and dogfood gates.
 - Rollback path is documented and tested.
 

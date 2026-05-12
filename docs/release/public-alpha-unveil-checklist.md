@@ -2,7 +2,7 @@
 
 Use this before making the Imbas OS repository public or announcing the HTML Artifact Vault alpha.
 
-Nothing in this checklist grants approval to publish. The final public-repo switch, package publishing, and announcements require explicit Johnathan approval.
+Nothing in this checklist grants approval to publish. The final public-repo switch, package publishing, and announcements require explicit maintainer approval.
 
 ## GitHub repository presentation
 
@@ -72,6 +72,10 @@ The README should answer, above the fold:
 - [x] No stale private-preview-only claims in public-facing README copy.
 - [x] No real secrets, tokens, private URLs, private hostnames, or personal data in tracked files; placeholder/test secret-like strings are documented or redaction fixtures.
 
+## Finish-line plan
+
+Use [`html-artifact-vault-alpha-finish-line.md`](html-artifact-vault-alpha-finish-line.md) as the structured operator plan before this final unveil checklist.
+
 ## Verification gate
 
 Run:
@@ -110,4 +114,4 @@ Do not unveil if:
 - public alpha cannot be run from a clean checkout;
 - tracked files include secrets/private infrastructure details;
 - license is undecided;
-- Johnathan has not approved the final public action.
+- maintainer approval for the final public action is missing.

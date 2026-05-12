@@ -4,8 +4,8 @@ Use this checklist during private beta and public 1.0 readiness testing.
 
 ## Environment
 
-- [ ] Fresh machine, VM, container, disposable VPS, or fresh user profile.
-- [ ] No inherited `/home/ubuntu/.openclaw` or Imbas OS state.
+- [ ] Fresh machine, VM, container, disposable host, or fresh user profile.
+- [ ] No inherited user OpenClaw config, previous Imbas OS vault, or developer-machine state.
 - [ ] No hidden shell aliases/history required.
 - [ ] Node/npm installed.
 - [ ] Android tooling installed only if APK build is in scope.

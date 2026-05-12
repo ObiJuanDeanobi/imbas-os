@@ -41,7 +41,7 @@ Non-OpenClaw live targets such as Hermes/Codex/Claude Code are blocked until con
 
 ## CLI path handling
 
-Desktop/noVNC GUI sessions may not have a complete shell `PATH`. The dispatcher resolves `/home/ubuntu/.npm-global/bin/openclaw` when present. Override with:
+Desktop/noVNC GUI sessions may not have a complete shell `PATH`. The dispatcher can use an explicit OpenClaw binary path when GUI/service environments have a sparse `PATH`. Override with:
 
 ```bash
 IMBAS_OS_OPENCLAW_COMMAND=/absolute/path/to/openclaw npm run dev

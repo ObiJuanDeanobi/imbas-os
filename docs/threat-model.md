@@ -62,7 +62,7 @@ The security smoke imports `test/fixtures/malicious-artifact.html`, renders it t
 - `typeof artifactVault bridge: undefined`
 - `network fetch: blocked`
 
-The VPS smoke command uses `--no-sandbox` because the downloaded Chromium sandbox helper is not root-owned/mode `4755` in this environment. This is a host-level smoke-test caveat, not a product decision to disable Electron/browser isolation for users.
+A headless smoke command may use `--no-sandbox` when the downloaded Chromium sandbox helper is not root-owned/mode `4755` in that environment. This is a host-level smoke-test caveat, not a product decision to disable Electron/browser isolation for users.
 
 ## Known gaps
 

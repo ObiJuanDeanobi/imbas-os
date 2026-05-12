@@ -43,4 +43,4 @@ The restore verifier checks that the tarball:
 
 ## Not a public release
 
-Do not publish this tarball, npm package, binary, repository, or announcement publicly without explicit Johnathan approval.
+Do not publish this tarball, npm package, binary, repository, or announcement publicly without explicit maintainer approval.

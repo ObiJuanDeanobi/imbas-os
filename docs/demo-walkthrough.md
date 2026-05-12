@@ -10,7 +10,7 @@ npm run verify
 npm start
 ```
 
-On the VPS/headless environment, use the existing smoke scripts rather than manual GUI capture.
+On headless environments, use the existing smoke scripts rather than manual GUI capture.
 
 ## Walkthrough beats
 
@@ -63,4 +63,4 @@ On the VPS/headless environment, use the existing smoke scripts rather than manu
 
 ## Safety callout
 
-Do not demo by disabling sandbox/security policy. The only `--no-sandbox` usage is the VPS Electron smoke-test host workaround under Xvfb; it is not a product policy change.
+Do not demo by disabling sandbox/security policy. The only `--no-sandbox` usage is the headless Electron smoke-test host workaround under Xvfb; it is not a product policy change.

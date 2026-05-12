@@ -7,7 +7,7 @@ This guide is for running Imbas OS from a source checkout.
 - Node.js 22+ recommended.
 - npm.
 - A Linux/macOS/Windows desktop capable of running Electron.
-- On headless Linux/VPS environments, Xvfb is useful for smoke tests.
+- On headless Linux environments, Xvfb is useful for smoke tests.
 
 For Android companion builds, see [Android companion setup](android-companion.md).
 
@@ -99,7 +99,7 @@ sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
 
 ### OpenClaw dispatch cannot find `openclaw`
 
-GUI environments may have a sparse `PATH`. The dispatcher resolves `/home/ubuntu/.npm-global/bin/openclaw` when available and supports `IMBAS_OS_OPENCLAW_COMMAND` for overrides. Prefer absolute paths in service/GUI environments.
+GUI environments may have a sparse `PATH`. The dispatcher supports `IMBAS_OS_OPENCLAW_COMMAND` for explicit binary overrides. Prefer absolute paths in service/GUI environments.
 
 ### Protected Conduit routes return 401
 

@@ -31,7 +31,7 @@ If you cannot change host permissions, smoke tests may use `--no-sandbox`, but a
 GUI sessions may have a sparse `PATH`. Use an absolute command override:
 
 ```bash
-IMBAS_OS_OPENCLAW_COMMAND=/home/ubuntu/.npm-global/bin/openclaw npm run dev
+IMBAS_OS_OPENCLAW_COMMAND=/path/to/openclaw npm run dev
 ```
 
 The dispatcher also tries that known OpenClaw path automatically when present.
@@ -100,4 +100,4 @@ The package verifier rejects unsafe or unwanted entries such as `node_modules/`,
 - Do not expose raw VNC publicly.
 - Do not publish APKs publicly during private preview.
 - Do not weaken generated HTML sandbox defaults without tests and review.
-- Do not remove MemPalace until migration exit criteria pass and Johnathan explicitly approves.
+- Do not remove MemPalace until migration exit criteria pass and the maintainer explicitly approves.

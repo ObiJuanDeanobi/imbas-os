@@ -48,17 +48,17 @@ Reasons:
 - easier native share sheet, notifications, biometrics, and QR scanning;
 - avoids coupling mobile to the Electron/React renderer.
 
-The repo now includes a buildable Kotlin/Compose Gradle project under `apps/android/`, with a debug APK build gate running through the checked-in Gradle wrapper on the VPS Android SDK.
+The repo now includes a buildable Kotlin/Compose Gradle project under `apps/android/`, with a debug APK build gate running through the checked-in Gradle wrapper and a local Android SDK.
 
 ## Pairing and session model
 
-For VPS phone testing, run the desktop app with Conduit bound to the tailnet IP, not a public interface, for example:
+For phone testing, run the desktop app with Conduit bound to a private LAN/tailnet IP, not a public interface, for example:
 
 ```bash
 IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=<your-lan-or-tailnet-ip> IMBAS_OS_CONDUIT_PORT=3077 npm run dev
 ```
 
-The Android debug build defaults to `http://10.0.2.2:3077` for emulator testing and lets the tester edit the URL in-app. For a physical phone, use your computer/VPS LAN or tailnet address, for example `http://<your-lan-or-tailnet-ip>:3077`.
+The Android debug build defaults to `http://10.0.2.2:3077` for emulator testing and lets the tester edit the URL in-app. For a physical phone, use your computer LAN or tailnet address, for example `http://<your-lan-or-tailnet-ip>:3077`.
 
 
 Implemented private-preview model lives in `src/main/mobile/pairing.ts` and Conduit endpoints.

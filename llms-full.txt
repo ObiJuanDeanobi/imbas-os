@@ -57,9 +57,16 @@ If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or H
 - Not the full Imbas OS 1.0 agent operating layer.
 - Not a claim that Android, Memsocket, Conduit, or live agent dispatch are public-stable yet.
 
-## Roadmap
+## Simple roadmap
 
-The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench. See [`docs/roadmap.md`](docs/roadmap.md) for the canonical roadmap and GitHub milestone plan.
+The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench.
+
+1. **HTML Artifact Vault alpha** — save/import generated HTML, replay it safely, edit metadata/notes/provenance, snapshot versions, search, and export/copy AI context.
+2. **Artifact Vault beta** — make the vault feel daily-useful with better onboarding, drag/drop, portable bundles, richer graph/backlink polish, snapshot compare, and demo walkthroughs.
+3. **Imbas OS private-preview integration** — connect agents, Runledger, Lorekeeper, Sanctum, Memsocket, Android, and context packs behind stable local APIs.
+4. **Imbas OS public 1.0** — ship a coherent local-first agent workbench only after fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass.
+
+For the detailed milestone plan, see [`docs/roadmap.md`](docs/roadmap.md). For the operator checklist to get the alpha across the finish line, see [`docs/release/html-artifact-vault-alpha-finish-line.md`](docs/release/html-artifact-vault-alpha-finish-line.md).
 
 | State | Status |
 |---|---|
@@ -220,9 +227,9 @@ Conduit = agent connector/API layer
 
 ## Public 1.0 rule
 
-Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit Johnathan approval.
+Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit maintainer approval.
 
-Do not remove MemPalace during early OpenClaw/Imbas dogfood. MemPalace remains the working OpenClaw/Hermes recall safety net until the staged migration criteria in `docs/architecture/memory-migration.md` pass and Johnathan explicitly approves retirement.
+Do not remove MemPalace during early OpenClaw/Imbas dogfood. MemPalace remains the working OpenClaw/Hermes recall safety net until the staged migration criteria in `docs/architecture/memory-migration.md` pass and the maintainer explicitly approves retirement.
 
 Public 1.0 also requires a fresh-system user experience gate: clean OpenClaw config, Imbas OS with all supported modules, companion app pairing, adapter dogfood, backup/restore, security smoke, and human review loop. See `docs/release/fresh-system-1.0-gate.md`.
 
@@ -275,7 +282,7 @@ npm run verify
 
 ## Important safety rules
 
-- Do not publish this repo/package publicly without explicit Johnathan approval.
+- Do not publish this repo/package publicly without explicit maintainer approval.
 - Do not remove sandboxing or network-block defaults for generated HTML artifacts.
 - Do not store raw secrets in artifacts, Markdown pages, Memsocket events, logs, or context packs.
 - Use Sanctum-style secret handles/capabilities for future sensitive operations.
@@ -496,6 +503,7 @@ Imbas OS documentation has three jobs:
 - [Private-preview implementation status](implementation-status.md) — current reality, evidence, and blockers.
 - [Fresh-system public 1.0 gate](release/fresh-system-1.0-gate.md) — mandatory release gate before public 1.0.
 - [Public alpha unveil checklist](release/public-alpha-unveil-checklist.md) — private presentation, asset, hygiene, and verification checklist before public alpha.
+- [HTML Artifact Vault alpha finish-line plan](release/html-artifact-vault-alpha-finish-line.md) — detailed operator plan for the remaining alpha work, gates, approval, and rollback.
 
 ## Setup and onboarding
 
@@ -720,7 +728,7 @@ Required before public 1.0:
 - Backup/restore/delete/forget behavior is tested across memory, artifacts, wiki, and Runledger.
 - Security/privacy audit passes.
 - Public repo/license/release posture is approved.
-- Johnathan explicitly approves public 1.0.
+- the maintainer explicitly approves public 1.0.
 
 ### Lane E: Hosted/team product later
 
@@ -840,7 +848,7 @@ Stretch/push-to-beta if needed:
 - [ ] Confirm public repo posture.
 - [ ] Confirm installer/package plan.
 - [ ] Confirm rollback/recovery plan.
-- [ ] Obtain explicit Johnathan approval.
+- [ ] Obtain explicit maintainer approval.
 
 ## Public alpha unveil assets
 
@@ -861,18 +869,19 @@ Before public unveil, replace or supplement the generated concept demo with at l
 
 Recommended next implementation slice:
 
-1. Finish the remaining **M1 — HTML Artifact Vault alpha** UX work:
-   - Obsidian-like human folder tree;
-   - links, backlinks, and graph basics across notes/artifacts;
+1. Finish the remaining **M1 — HTML Artifact Vault alpha** must-have UX work:
    - obvious first-run flow;
-   - polished import/paste flow with folder destination;
+   - polished paste/import flow with clear destination;
    - clearer artifact detail + metadata editing;
-   - provenance card;
-   - “Copy AI context” and artifact context-pack export;
+   - provenance card/panel;
+   - “Copy AI context” or artifact context-package export;
    - snapshot browser/restore explanation.
-2. Re-run the alpha gate: docs check, tests, build, smoke/security smoke, and `npm run package:dev`.
-3. Confirm GitHub README media renders well in dark/light.
-4. Stop for approval before making the repo public or announcing anything.
+2. Treat the deeper Obsidian-style folder tree and graph polish as stretch/beta work unless the alpha wedge is otherwise ready.
+3. Re-run the alpha gate: docs check, tests, build, smoke/security smoke, and `npm run package:dev`.
+4. Confirm GitHub README media renders well in dark/light.
+5. Stop for approval before making the repo public or announcing anything.
+
+Detailed operator plan: [`release/html-artifact-vault-alpha-finish-line.md`](release/html-artifact-vault-alpha-finish-line.md).
 
 ## Approval boundaries
 
@@ -992,7 +1001,7 @@ Lorekeeper can now close the loop from agent proposal to durable wiki update wit
 
 ## Automation policy direction
 
-The long-term goal is not to make Johnathan approve every routine wiki or artifact update. Imbas OS should become self-maintaining inside explicit policy lanes: agents should be able to create, ingest, classify, link, summarize, and update low-risk knowledge automatically while keeping high-impact changes reviewable and dangerous changes gated.
+The long-term goal is not to make the maintainer approve every routine wiki or artifact update. Imbas OS should become self-maintaining inside explicit policy lanes: agents should be able to create, ingest, classify, link, summarize, and update low-risk knowledge automatically while keeping high-impact changes reviewable and dangerous changes gated.
 
 Automation should be tiered:
 
@@ -1670,7 +1679,7 @@ Required controls:
 
 Lorekeeper/wiki and Memsocket should be tightly connected, but they are not the same subsystem.
 
-Johnathan's product direction:
+Product direction:
 
 > The wiki is the long-term human-readable knowledge base for AI and humans. Memsocket is the contextual memory, agentic search, retrieval, and context-pack engine.
 
@@ -2118,10 +2127,10 @@ This page tracks the current private-preview reality against the initial issue s
 | #1 | Naming/repo migration | Repo/package/docs now use Imbas OS as umbrella; Artifact Vault remains intentional subsystem/module terminology. Historical `ARTIFACT_VAULT_*` env aliases remain supported for smoke compatibility. | Final cleanup only where references are not historical/module terminology. |
 | #4 | Conduit/OpenClaw connector | Conduit loopback, durable JSONL store, OpenClaw shadow connector, events/runs/search/provenance-rich context-packs, run replay timeline, artifact save endpoint, optional Memsocket write-through, and Agent Console v0.1 live OpenClaw dispatch through a constrained local CLI adapter are implemented with Runledger request/reply capture. | Full connector SDKs for Hermes/Codex/Claude Code, richer approval UX, and production auth/capability model. |
 | #5 | Sanctum secret vault | Encrypted private-preview vault, handle/capability validation, redaction, policy-checked resolution, Conduit redaction audit, and Sanctum Runledger entries exist. | OS keyring/passphrase UX, approval UI, and real connector execution-boundary secret resolution. |
-| #6 | Android companion | Kotlin/Compose Gradle project, VPS Android SDK/JDK/Gradle wrapper, tabbed private-preview APK, live HTTP status/runledger/proposal fetch with offline demo fallback, desktop-created pairing challenge UI with QR payload, Android QR scan prefill, live pairing completion, Android Keystore-encrypted mobile token storage, authenticated session revoke, proposal approve/reject POSTs, proposal rationale/markdown/source preview, private note capture/voice draft POSTs, companion diagnostics, and server-side loopback guards for mobile-scoped reads/actions are implemented. | Photo capture, richer restore UX, and biometric/keychain polish remain. |
+| #6 | Android companion | Kotlin/Compose Gradle project, Android SDK/JDK/Gradle wrapper, tabbed private-preview APK, live HTTP status/runledger/proposal fetch with offline demo fallback, desktop-created pairing challenge UI with QR payload, Android QR scan prefill, live pairing completion, Android Keystore-encrypted mobile token storage, authenticated session revoke, proposal approve/reject POSTs, proposal rationale/markdown/source preview, private note capture/voice draft POSTs, companion diagnostics, and server-side loopback guards for mobile-scoped reads/actions are implemented. | Photo capture, richer restore UX, and biometric/keychain polish remain. |
 | #7 | Lorekeeper | Proposal-first workflow plus guarded managed-block apply with source citations, non-mutating before/after preview, desktop visual line diff, approve-before-apply action guard, on-disk markdown snapshot before apply, desktop snapshot listing/preview, Runledger audit, Command Center proposal summary, and Agent Console transcript-to-artifact/proposal path exist. | Tiered Lorekeeper automation policy implementation for safe auto-apply lanes versus approval-required lanes, plus guarded restore UI for saved markdown snapshots with safety snapshots before rollback. |
 | #8 | Installer/restore | Private-preview tarball, `npm run verify:preview`, restore/package docs, verification ops guide, and backup/restore/delete/forget readiness plan exist. | Real installer/signing/notarization require release decisions; clean-machine restore evidence still needed. |
-| #9 | Memsocket public 1.0 gate | Adapter, CLI client, optional write-through, status module, live smoke path, agentmemory pattern-harvest note, and explicit MemPalace→Imbas migration plan exist. | Public 1.0 still blocked until Memsocket is merged/integrated/tested under Imbas OS as first-class release module and Johnathan approves. MemPalace must remain active as a safety net until Imbas/Memsocket meets the migration exit criteria. Near-term design slices: deeper memory governance proposals, retrieval eval fixtures, and policy-controlled auto-maintenance for low-risk wiki/artifact updates. |
+| #9 | Memsocket public 1.0 gate | Adapter, CLI client, optional write-through, status module, live smoke path, agentmemory pattern-harvest note, and explicit MemPalace→Imbas migration plan exist. | Public 1.0 still blocked until Memsocket is merged/integrated/tested under Imbas OS as first-class release module and the maintainer approves. MemPalace must remain active as a safety net until Imbas/Memsocket meets the migration exit criteria. Near-term design slices: deeper memory governance proposals, retrieval eval fixtures, and policy-controlled auto-maintenance for low-risk wiki/artifact updates. |
 
 ## Current verification gates
 
@@ -2134,9 +2143,9 @@ This page tracks the current private-preview reality against the initial issue s
 
 ## Explicit blockers
 
-- No public release, publishing, or announcement without Johnathan's explicit approval.
+- No public release, publishing, or announcement without explicit maintainer approval.
 - No public 1.0 until the fresh-system gate in [`docs/release/fresh-system-1.0-gate.md`](release/fresh-system-1.0-gate.md) passes: brand-new OpenClaw config, Imbas OS with all supported modules, agent adapters, Android companion pairing, backup/restore, security smoke, and human review loop.
-- Do not remove/disable MemPalace until the staged migration criteria in [`docs/architecture/memory-migration.md`](architecture/memory-migration.md) pass and Johnathan approves retirement.
+- Do not remove/disable MemPalace until the staged migration criteria in [`docs/architecture/memory-migration.md`](architecture/memory-migration.md) pass and the maintainer approves retirement.
 - No production installer/signing/notarization decision has been made.
 
 ## Documentation library / 1.0 readiness
@@ -2159,7 +2168,7 @@ This guide is for running Imbas OS from a source checkout.
 - Node.js 22+ recommended.
 - npm.
 - A Linux/macOS/Windows desktop capable of running Electron.
-- On headless Linux/VPS environments, Xvfb is useful for smoke tests.
+- On headless Linux environments, Xvfb is useful for smoke tests.
 
 For Android companion builds, see [Android companion setup](android-companion.md).
 
@@ -2251,7 +2260,7 @@ sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
 
 ### OpenClaw dispatch cannot find `openclaw`
 
-GUI environments may have a sparse `PATH`. The dispatcher resolves `/home/ubuntu/.npm-global/bin/openclaw` when available and supports `IMBAS_OS_OPENCLAW_COMMAND` for overrides. Prefer absolute paths in service/GUI environments.
+GUI environments may have a sparse `PATH`. The dispatcher supports `IMBAS_OS_OPENCLAW_COMMAND` for explicit binary overrides. Prefer absolute paths in service/GUI environments.
 
 ### Protected Conduit routes return 401
 
@@ -2527,20 +2536,20 @@ This is stricter than package verification. It is a human/product gate: can a ne
 
 ## Release rule
 
-No public 1.0 release, package publish, public repo launch, hosted service, or public announcement without explicit Johnathan approval after this gate passes.
+No public 1.0 release, package publish, public repo launch, hosted service, or public announcement without explicit maintainer approval after this gate passes.
 
 ## Test environment requirement
 
-Run the gate on a fresh environment, not the development VPS state.
+Run the gate on a fresh environment, not the development machine state.
 
 Acceptable environments:
 
-- a disposable VPS;
+- a disposable host;
 - a clean VM;
 - a clean container/desktop test image where GUI/mobile constraints are represented honestly;
 - a fresh user account only if it avoids inherited OpenClaw/Imbas/MemPalace config and secrets.
 
-The test must not depend on hidden local state from `/home/ubuntu/.openclaw`, existing MemPalace, existing Mattermost/Hermes setup, or developer-only shell history.
+The test must not depend on hidden local OpenClaw config, existing MemPalace, existing Mattermost/Hermes setup, or developer-only shell history.
 
 ## Required end-to-end scenario
 
@@ -2656,7 +2665,7 @@ The release candidate needs a completion report containing:
 - security smoke proof;
 - known issues;
 - rollback/recovery notes;
-- Johnathan approval record.
+- Maintainer approval record.
 
 ## Current status
 
@@ -2747,13 +2756,175 @@ For each subsystem — Memsocket, Artifact Vault, Lorekeeper, Conduit, Runledger
 `llms-full.txt` must be generated from source docs with `npm run docs:llms`, and CI/local verification must pass `npm run docs:llms:check`.
 
 ---
+## Source: docs/release/html-artifact-vault-alpha-finish-line.md
+
+# HTML Artifact Vault alpha finish-line plan
+
+This is the shared operator plan for getting from the current private repo state to an approved public HTML Artifact Vault alpha.
+
+It is intentionally narrower than the full Imbas OS roadmap. The public alpha should prove one useful thing well: generated HTML artifacts can be saved, replayed safely, versioned, searched, documented, and handed back to AI with context.
+
+Nothing in this plan grants permission to publish. Public repo visibility changes, package publishing, announcements, hosted services, or paid offerings still require explicit maintainer approval.
+
+## Finish-line definition
+
+The alpha is ready to ask for final public approval when all of these are true:
+
+- A fresh developer can clone, install, run, import/paste an HTML artifact, replay it safely, edit metadata/notes/provenance, create/restore snapshots, search it, and export/copy context.
+- The README explains the product in under one minute without claiming full Imbas OS readiness.
+- The storage model is understandable on disk and has a documented migration posture toward human-readable folders and `.artifact/` bundles.
+- The generated HTML sandbox/security smoke tests pass.
+- No real secrets, private infrastructure details, private hostnames, private URLs, or personal data are tracked.
+- Public alpha assets render well in GitHub dark/light contexts.
+- The repo has license, security policy, contribution guide, issue/PR templates, roadmap, and AI-readable context files.
+- The final approval boundary is explicit and still respected.
+
+## Workstream A — Alpha product polish
+
+Must-have public-alpha UX:
+
+1. **First-run clarity**
+   - Explain what the vault is.
+   - Show where data lives locally.
+   - Offer a demo artifact or import action immediately.
+   - Gate: a new user can understand the first screen without reading architecture docs.
+
+2. **Import/paste flow polish**
+   - Paste/import generated HTML.
+   - Choose or see a clear destination.
+   - Default trust level remains `untrusted`.
+   - Gate: imported artifact appears in the vault and replays without confusing hidden steps.
+
+3. **Artifact detail and metadata**
+   - Title, project, tags, prompt, provider/model, source path, trust level, notes, and provenance are easy to inspect/edit.
+   - Gate: metadata edits persist and search/export reflects them.
+
+4. **Provenance card/panel**
+   - Show where the artifact came from and what is known/unknown.
+   - Gate: provenance is visible without opening raw JSON.
+
+5. **Snapshots and restore explanation**
+   - Create snapshots.
+   - Restore snapshots.
+   - Explain that restore remains reversible.
+   - Gate: restore creates evidence/a new snapshot path and does not silently destroy history.
+
+6. **Copy/export AI context**
+   - Copy or export a useful context package for the selected artifact.
+   - Gate: output includes metadata, notes, prompt/provenance, safety reminder, and artifact content where appropriate.
+
+Stretch/push-to-beta if schedule gets tight:
+
+- full Obsidian-like nested folder tree;
+- deeper unresolved-link workflows;
+- graph polish beyond basic artifact/Markdown relationships;
+- zip import/export;
+- snapshot visual diff;
+- browser extension/share target.
+
+## Workstream B — Public GitHub story
+
+Required public-facing materials:
+
+- `README.md` above-the-fold story: what it is, why now, what works, what is not yet done.
+- `docs/roadmap.md` simple staged roadmap plus detailed milestones.
+- `docs/release/public-alpha-unveil-checklist.md` final pre-public checklist.
+- Real app screenshot and workflow GIF in README.
+- `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, issue templates, PR template.
+- `llms.txt` and `llms-full.txt` current.
+
+Gate:
+
+```bash
+npm run docs:llms:check
+```
+
+Manual review:
+
+- README does not overclaim full Imbas OS.
+- Roadmap is understandable to a non-insider.
+- GitHub assets render in dark and light contexts.
+
+## Workstream C — Security, privacy, and cleanup
+
+Automated checks:
+
+```bash
+npm run check
+npm run package:dev
+git status --short
+git grep -n -E "tail[[:alnum:]]+\.ts\.net|100\.(6[4-9]|[78][0-9]|9[0-9]|1[01][0-9]|12[0-7])\.|api[_-]?key|secret|token|password|BEGIN .*PRIVATE|PRIVATE KEY" -- . ':!package-lock.json'
+```
+
+Manual review:
+
+- Any `token`, `secret`, or `password` hit is either a safe placeholder/test fixture or removed.
+- Docs use generic placeholders for machine-specific paths and private hosts.
+- Public docs say `maintainer approval`, not private chat/person-specific approval language.
+- Generated HTML cannot access Node/Electron bridge and cannot make artifact-origin network requests by default.
+
+## Workstream D — Fresh clone proof
+
+Before requesting final public approval:
+
+1. Use a clean checkout or disposable environment.
+2. Run setup from `README.md` and `docs/setup/local-development.md`.
+3. Import/paste an artifact.
+4. Test metadata, notes, snapshot, restore, search, and context export.
+5. Run the verification gate.
+6. Record any missing step as either a docs bug or product bug.
+
+Minimum gate:
+
+```bash
+npm install
+npm run docs:llms:check
+npm run check
+npm run package:dev
+```
+
+## Workstream E — Approval and release switch
+
+Only after Workstreams A-D pass:
+
+1. Prepare final summary:
+   - commit SHA;
+   - verification evidence;
+   - screenshot/GIF status;
+   - known limitations;
+   - rollback path;
+   - exact proposed public actions.
+2. Ask for explicit maintainer approval.
+3. If approved, perform only the approved public actions.
+4. After publishing, verify public README rendering and clone/setup path.
+
+Rollback path:
+
+- If public copy is wrong: push a corrective commit or temporarily revert repo visibility if needed.
+- If a secret/private detail is found: make repo private immediately if possible, remove/rotate the exposed material, rewrite only if necessary, and document the incident privately.
+- If package/build is bad: do not publish binaries/packages; keep the repo public only if source/docs are safe and clearly marked alpha.
+
+## Current recommended next slice
+
+Build the smallest cohesive alpha UX pass:
+
+1. First-run orientation.
+2. Import/paste destination clarity.
+3. Artifact detail/provenance panel polish.
+4. Snapshot browser/restore explanation.
+5. Copy/export AI context button.
+6. Re-run `npm run check` and `npm run package:dev`.
+
+Do not spend the next slice on full Imbas OS integration, Android polish, or Memsocket 1.0 work unless the alpha wedge is already ready for final approval.
+
+---
 ## Source: docs/release/public-alpha-unveil-checklist.md
 
 # Public alpha unveil checklist
 
 Use this before making the Imbas OS repository public or announcing the HTML Artifact Vault alpha.
 
-Nothing in this checklist grants approval to publish. The final public-repo switch, package publishing, and announcements require explicit Johnathan approval.
+Nothing in this checklist grants approval to publish. The final public-repo switch, package publishing, and announcements require explicit maintainer approval.
 
 ## GitHub repository presentation
 
@@ -2823,6 +2994,10 @@ The README should answer, above the fold:
 - [x] No stale private-preview-only claims in public-facing README copy.
 - [x] No real secrets, tokens, private URLs, private hostnames, or personal data in tracked files; placeholder/test secret-like strings are documented or redaction fixtures.
 
+## Finish-line plan
+
+Use [`html-artifact-vault-alpha-finish-line.md`](html-artifact-vault-alpha-finish-line.md) as the structured operator plan before this final unveil checklist.
+
 ## Verification gate
 
 Run:
@@ -2861,7 +3036,7 @@ Do not unveil if:
 - public alpha cannot be run from a clean checkout;
 - tracked files include secrets/private infrastructure details;
 - license is undecided;
-- Johnathan has not approved the final public action.
+- maintainer approval for the final public action is missing.
 
 ---
 ## Source: docs/known-limitations.md
@@ -2880,7 +3055,7 @@ This page is intentionally blunt. Imbas OS is private-preview software, not publ
 
 - Memsocket is not yet fully merged/integrated/tested as the first-class Imbas OS public 1.0 memory module.
 - MemPalace remains the working OpenClaw/Hermes recall safety net.
-- MemPalace must not be removed until migration criteria pass and Johnathan explicitly approves.
+- MemPalace must not be removed until migration criteria pass and the maintainer explicitly approves.
 
 ## Connectors
 

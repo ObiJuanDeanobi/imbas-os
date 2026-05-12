@@ -2,7 +2,7 @@
 
 Lorekeeper/wiki and Memsocket should be tightly connected, but they are not the same subsystem.
 
-Johnathan's product direction:
+Product direction:
 
 > The wiki is the long-term human-readable knowledge base for AI and humans. Memsocket is the contextual memory, agentic search, retrieval, and context-pack engine.
 
