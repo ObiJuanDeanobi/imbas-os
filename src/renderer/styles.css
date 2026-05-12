@@ -61,6 +61,11 @@ button.secondary { background: #27272a; color: #f4f4f5; border: 1px solid #3f3f4
 details { border: 1px solid #27272a; border-radius: 14px; padding: 10px; background: #111113; }
 summary { cursor: pointer; font-weight: 800; color: #f4f4f5; }
 details[open] summary { margin-bottom: 10px; }
+
+.metadata-status { border: 1px solid #27272a; border-radius: 12px; padding: 9px; margin: 0 0 10px; color: #d4d4d8; background: #18181b; font-size: 13px; line-height: 1.45; }
+.metadata-summary { display: grid; gap: 6px; margin-bottom: 10px; }
+.metadata-summary span { color: #d4d4d8; font-size: 13px; }
+
 .link-list { border: 1px solid #27272a; border-radius: 12px; padding: 10px; background: #111113; display: grid; gap: 6px; }
 .link-list p { margin: 0; font-size: 13px; }
 .link-list span { color: #a1a1aa; }

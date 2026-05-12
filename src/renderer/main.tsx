@@ -725,6 +725,8 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
         setMetadataProvider(bundle.metadata.provider);
         setMetadataSourcePath(bundle.metadata.sourcePath ?? '');
         setMetadataProject(bundle.metadata.project ?? '');
+        setMetadataStatus('Metadata is loaded from metadata.json. Save changes to update search, graph, and exports.');
+        setNotesStatus('Sidecar notes live beside the artifact as notes.md and travel with exports.');
       }
     });
     void window.artifactVault.listSnapshots(artifact.id).then((next) => {
@@ -734,13 +736,16 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
   }, [artifact.id]);
 
   async function saveNotes() {
+    setNotesStatus('Saving sidecar note…');
     const updated = await window.artifactVault.updateNotes(artifact.id, notes);
     setNotes(updated.notes);
     onIndexDirty();
     await onRefresh();
+    setNotesStatus('Saved notes.md. Search, Markdown export, JSON export, and AI handoff packages now include the latest note.');
   }
 
   async function saveMetadata() {
+    setMetadataStatus('Saving metadata…');
     const updated = await window.artifactVault.updateMetadata(artifact.id, {
       title: metadataTitle,
       tags: metadataTags.split(',').map((tag) => tag.trim()).filter(Boolean),
@@ -761,6 +766,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
     setMetadataProject(updated.metadata.project ?? '');
     onIndexDirty();
     await onRefresh();
+    setMetadataStatus('Saved metadata.json. Library search, graph labels, provenance, and exports now reflect these fields.');
   }
 
   async function snapshot() {
@@ -816,14 +822,20 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
         <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>SHA-256</dt><dd><code>{artifact.hashes.sha256Html}</code></dd><dt>Bundle</dt><dd><code>{artifact.bundlePath}</code></dd></dl>
         </details>
         <details open><summary>Metadata</summary>
-        <label>Title<input value={metadataTitle} onChange={(event) => setMetadataTitle(event.target.value)} /></label>
+        <p className="metadata-status">{metadataStatus}</p>
+        <div className="metadata-summary">
+          <span>Source: <code>{artifact.sourceType}</code></span>
+          <span>Trust: <code>{metadataTrust}</code></span>
+          <span>Project: <code>{metadataProject || 'none'}</code></span>
+        </div>
+        <label>Title<input value={metadataTitle} onChange={(event) => setMetadataTitle(event.target.value)} placeholder="Readable artifact title" /></label>
+        <label>Project<input value={metadataProject} onChange={(event) => setMetadataProject(event.target.value)} placeholder="project or collection" /></label>
         <label>Tags<input value={metadataTags} onChange={(event) => setMetadataTags(event.target.value)} placeholder="demo, review" /></label>
         <label>Trust level<select value={metadataTrust} onChange={(event) => setMetadataTrust(event.target.value as TrustLevel)}><option value="untrusted">untrusted</option><option value="reviewed">reviewed</option><option value="trusted">trusted</option></select></label>
         <label>Provider<input value={metadataProvider} onChange={(event) => setMetadataProvider(event.target.value)} placeholder="OpenAI, Anthropic…" /></label>
         <label>Model<input value={metadataModel} onChange={(event) => setMetadataModel(event.target.value)} placeholder="model name" /></label>
         <label>Source path<input value={metadataSourcePath} onChange={(event) => setMetadataSourcePath(event.target.value)} placeholder="optional local source path" /></label>
-        <label>Project<input value={metadataProject} onChange={(event) => setMetadataProject(event.target.value)} placeholder="project or collection" /></label>
-        <label>Source prompt<textarea className="prompt-editor" value={metadataPrompt} onChange={(event) => setMetadataPrompt(event.target.value)} /></label>
+        <label>Source prompt<textarea className="prompt-editor" value={metadataPrompt} onChange={(event) => setMetadataPrompt(event.target.value)} placeholder="Prompt or instruction that produced this artifact" /></label>
         <div className="button-row"><button onClick={saveMetadata}>Save metadata</button></div>
         </details>
         <details open><summary>Artifact map</summary>
@@ -831,7 +843,8 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
         <LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} />
         </details>
         <details open><summary>Sidecar note</summary>
-        <textarea className="notes-editor" value={notes} onChange={(event) => setNotes(event.target.value)} />
+        <p className="metadata-status">{notesStatus}</p>
+        <textarea className="notes-editor" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="What matters about this artifact? Add review notes, links, follow-ups, or usage context." />
         <div className="button-row"><button onClick={saveNotes}>Save note</button><button className="secondary" onClick={snapshot}>Snapshot</button></div>
         </details>
         <details><summary>Snapshots</summary>
