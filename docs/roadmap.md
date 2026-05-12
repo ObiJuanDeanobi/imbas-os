@@ -300,18 +300,21 @@ Before public unveil, replace or supplement the generated concept demo with at l
 
 Recommended next implementation slice:
 
-1. Keep the **M1 — HTML Artifact Vault alpha** gate green. The must-have UX work is implemented, but any shell redesign must preserve:
+1. Keep the **M1 — HTML Artifact Vault alpha** gate green. The must-have UX work is implemented and the M2.1 shell redesign has landed, so every follow-up must preserve:
    - obvious first-run flow;
    - polished paste/import flow with clear destination;
    - clear artifact detail + metadata editing;
    - provenance card/panel;
    - “Copy AI context” / artifact context-package export;
-   - snapshot browser/restore explanation.
-2. Start **M2.1 — Human-facing shell redesign** from [`design/human-facing-vault-shell.md`](design/human-facing-vault-shell.md): branded app frame, left vault navigation, artifact list, center workspace, and right inspector tabs.
-3. Treat deeper nested filesystem migration, graph polish, and Runledger-backed Runs as beta/private-preview work unless they can be shipped honestly without weakening the alpha.
-4. Re-run the gate after each UI slice: docs check, tests, build, smoke/security smoke, and `npm run package:dev` before release packaging.
-5. Confirm GitHub README media renders well in dark/light.
-6. Stop for approval before making the repo public or announcing anything.
+   - snapshot browser/restore explanation;
+   - branded shell navigation, safe replay workspace, and inspector tabs.
+2. Complete a final private readiness pass before requesting public-alpha approval:
+   - confirm README/media assets render well in GitHub dark/light contexts;
+   - consider replacing the README screenshot with the real M2 shell if it improves the first impression;
+   - run the full verification/package gate and review the private-marker audit;
+   - prepare the approval summary with exact proposed public actions and rollback path.
+3. Treat deeper nested filesystem migration, graph polish, smart taxonomy formalization, drag/drop import, zip import/export, snapshot diff, and Runledger-backed Runs as beta/private-preview work unless they can be shipped honestly without weakening the alpha.
+4. Stop for approval before making the repo public, publishing packages/binaries, announcing, creating hosted services, or changing any other public/external surface.
 
 Detailed operator plan: [`release/html-artifact-vault-alpha-finish-line.md`](release/html-artifact-vault-alpha-finish-line.md).
 

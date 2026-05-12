@@ -31,13 +31,13 @@ Recommended social preview image:
 
 Current prepared assets:
 
-- Real alpha screenshot: [`../assets/demo/html-artifact-vault-real-alpha.png`](../assets/demo/html-artifact-vault-real-alpha.png)
+- Real shell screenshot: [`../assets/demo/html-artifact-vault-shell.png`](../assets/demo/html-artifact-vault-shell.png)
 
 - Official full logo: [`../assets/brand/logo.png`](../assets/brand/logo.png)
 - Logo mark SVG: [`../assets/brand/logo-mark.svg`](../assets/brand/logo-mark.svg)
 - Official app icon PNG: [`../assets/brand/app-icon.png`](../assets/brand/app-icon.png)
 - Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
-- README hero image: [`../assets/demo/html-artifact-vault-real-alpha.png`](../assets/demo/html-artifact-vault-real-alpha.png)
+- README hero image: [`../assets/demo/html-artifact-vault-shell.png`](../assets/demo/html-artifact-vault-shell.png)
 - README flow image: [`../assets/demo/html-artifact-vault-flow.png`](../assets/demo/html-artifact-vault-flow.png)
 - Roadmap graphic: [`../assets/roadmap/roadmap.svg`](../assets/roadmap/roadmap.svg)
 
@@ -46,7 +46,7 @@ Before reveal:
 - [x] Capture at least one real app screenshot from the alpha build.
 - [x] Capture or generate a short workflow image: paste/import HTML → preview → metadata/snapshot/search/export.
 - [x] Keep concept art only if it accurately represents current behavior.
-- [ ] Confirm assets render in GitHub README dark/light contexts.
+- [x] Confirm assets render in GitHub README dark/light contexts.
 
 ## README check
 

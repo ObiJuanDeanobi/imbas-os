@@ -13,7 +13,7 @@
   <a href="llms.txt">llms.txt</a>
 </p>
 
-![HTML Artifact Vault real alpha screenshot](docs/assets/demo/html-artifact-vault-real-alpha.png)
+![HTML Artifact Vault shell screenshot](docs/assets/demo/html-artifact-vault-shell.png)
 
 ![HTML Artifact Vault promo panel](docs/assets/demo/html-artifact-vault-flow.png)
 

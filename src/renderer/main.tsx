@@ -96,7 +96,7 @@ function App() {
     setSelectedId(created.metadata.id);
     setSelectedWikiId(null);
     setActiveView('vault');
-    const message = `Imported ${created.metadata.title} as ${created.metadata.id}. Destination: ${created.metadata.bundlePath}. Trust level: ${created.metadata.trustLevel}.`;
+    const message = `Imported ${created.metadata.title} as ${created.metadata.id}. Destination: local artifact bundle artifacts/${created.metadata.id}. Trust level: ${created.metadata.trustLevel}.`;
     setImportStatus(message);
     setLastAction(`${message} It is rendered through the sandbox.`);
   }
@@ -109,7 +109,7 @@ function App() {
     setSelectedId(created.metadata.id);
     setSelectedWikiId(null);
     setActiveView('vault');
-    const message = `Imported ${created.metadata.title} from a local HTML file. Destination: ${created.metadata.bundlePath}. Trust level: ${created.metadata.trustLevel}.`;
+    const message = `Imported ${created.metadata.title} from a local HTML file. Destination: local artifact bundle artifacts/${created.metadata.id}. Trust level: ${created.metadata.trustLevel}.`;
     setImportStatus(message);
     setLastAction(`${message} Source-path provenance was preserved.`);
   }
@@ -122,7 +122,7 @@ function App() {
     setSelectedId(created.metadata.id);
     setSelectedWikiId(null);
     setActiveView('vault');
-    const message = `Imported portable bundle ${created.metadata.title}. Destination: ${created.metadata.bundlePath}. Trust level: ${created.metadata.trustLevel}.`;
+    const message = `Imported portable bundle ${created.metadata.title}. Destination: local artifact bundle artifacts/${created.metadata.id}. Trust level: ${created.metadata.trustLevel}.`;
     setImportStatus(message);
     setLastAction(`${message} It was copied into the local vault as a new artifact.`);
   }
@@ -214,7 +214,7 @@ function App() {
         </nav>
         <div className="vault-card">
           <strong>Vault</strong>
-          <code>{vault?.root ?? 'loading…'}</code>
+          <code title={vault?.root ?? ''}>{vault ? 'Local vault on this device' : 'loading…'}</code>
           <span>{artifacts.length} artifacts shown · {totalArtifactCount} artifacts · {totalWikiCount} markdown pages</span>
         </div>
         <section className="value-strip" aria-label="Artifact Vault values">
@@ -237,7 +237,7 @@ function App() {
           <div>
             <p className="eyebrow">capture</p>
             <h2>Import / paste HTML</h2>
-            <p className="muted">Destination: <code>{vault?.root ? `${vault.root}/artifacts/…` : 'loading vault path…'}</code></p>
+            <p className="muted">Destination: <code>local vault / artifacts/…</code></p>
             <p className="muted">Default trust: <code>untrusted</code> · replay opens in the sandbox immediately after import.</p>
           </div>
           <label>Artifact title<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
@@ -924,7 +924,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
             <span>Source: <code>{artifact.sourceType}</code></span>
             <span>Trust: <code>{metadataTrust}</code></span>
             <span>Project: <code>{metadataProject || 'none'}</code></span>
-            <span>Bundle: <code>{artifact.bundlePath}</code></span>
+            <span>Bundle: <code>artifacts/{artifact.id}</code></span>
           </div>
           <label>Title<input value={metadataTitle} onChange={(event) => setMetadataTitle(event.target.value)} placeholder="Readable artifact title" /></label>
           <label>Project<input value={metadataProject} onChange={(event) => setMetadataProject(event.target.value)} placeholder="project or collection" /></label>
@@ -949,7 +949,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
             <div><span>Safety posture</span><strong>{metadataTrust}</strong><p>Replays through <code>artifact://</code> with no Node bridge; artifact-origin network requests are blocked by default.</p></div>
             <div><span>Integrity</span><strong>{artifact.snapshotCount} snapshot{artifact.snapshotCount === 1 ? '' : 's'}</strong><p>HTML SHA-256 <code>{artifact.hashes.sha256Html}</code></p></div>
           </div>
-          <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>Source path</dt><dd>{artifact.sourcePath ? <code>{artifact.sourcePath}</code> : 'not recorded'}</dd><dt>Bundle</dt><dd><code>{artifact.bundlePath}</code></dd></dl>
+          <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>Source path</dt><dd>{artifact.sourcePath ? <code>{artifact.sourcePath}</code> : 'not recorded'}</dd><dt>Bundle</dt><dd><code>artifacts/{artifact.id}</code></dd></dl>
         </section>}
         {activeInspectorTab === 'snapshots' && <section className="inspector-section" role="tabpanel">
           <p className="metadata-status">{snapshotStatus}</p>

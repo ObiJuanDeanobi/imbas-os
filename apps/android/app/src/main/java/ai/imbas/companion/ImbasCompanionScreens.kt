@@ -272,7 +272,7 @@ private fun TabRow(selectedTab: CompanionTab, onSelect: (CompanionTab) -> Unit) 
 fun PairingScreen(mobileSession: ImbasMobileSession?, lastPairingMessage: String, scannedPairingPayload: String? = null, qrScanMessage: String? = null, onScanPairingQr: () -> Unit = {}, onServiceUrlChange: (String) -> Unit = {}, onPair: (ImbasPairingRequest) -> Unit, onForget: () -> Unit) {
     var challengeId by remember { mutableStateOf("") }
     var serviceCode by remember { mutableStateOf("") }
-    var deviceLabel by remember { mutableStateOf("Johnathan's Android") }
+    var deviceLabel by remember { mutableStateOf("Maintainer Android") }
     var parsedPairingMessage by remember { mutableStateOf("No QR pairing payload scanned yet") }
 
     LaunchedEffect(scannedPairingPayload) {
