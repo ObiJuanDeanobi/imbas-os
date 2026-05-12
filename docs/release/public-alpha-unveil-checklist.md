@@ -34,13 +34,13 @@ Current prepared assets:
 - Current app shell screenshot: [`../assets/ui/human-facing-vault-shell-target.png`](../assets/ui/human-facing-vault-shell-target.png)
 - Artifact Vault shell screenshot: [`../assets/demo/html-artifact-vault-shell.png`](../assets/demo/html-artifact-vault-shell.png)
 
-- Official full logo SVG: [`../assets/brand/logo.svg`](../assets/brand/logo.svg)
-- Official full logo PNG: [`../assets/brand/logo.png`](../assets/brand/logo.png)
+- Official full logo PNG: [`../assets/brand/imbasos_asset_pack/logos/primary-logo-lockup-dark.png`](../assets/brand/imbasos_asset_pack/logos/primary-logo-lockup-dark.png)
+- Canonical copied logo PNG: [`../assets/brand/logo.png`](../assets/brand/logo.png)
 - Logo mark SVG: [`../assets/brand/logo-mark.svg`](../assets/brand/logo-mark.svg)
 - Official app icon PNG: [`../assets/brand/app-icon.png`](../assets/brand/app-icon.png)
 - Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
 - README hero image: [`../assets/ui/human-facing-vault-shell-target.png`](../assets/ui/human-facing-vault-shell-target.png)
-- README flow image: [`../assets/demo/html-artifact-vault-flow@2x.png`](../assets/demo/html-artifact-vault-flow@2x.png)
+- README flow image: [`../assets/brand/imbasos_asset_pack/marketing/html-artifact-vault-promo-panel.png`](../assets/brand/imbasos_asset_pack/marketing/html-artifact-vault-promo-panel.png)
 - Roadmap graphic: [`../assets/roadmap/roadmap.svg`](../assets/roadmap/roadmap.svg)
 
 Before reveal:
