@@ -28,7 +28,7 @@
 
 <!-- M1 -->
 <circle cx="640" cy="250" r="32" fill="#38BDF8"/><text x="622" y="258" class="m">M1</text>
-<g transform="translate(80 205)"><rect width="470" height="142" rx="24" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/><text x="26" y="40" class="h">HTML Artifact Vault alpha</text><text x="26" y="72" class="d">Human folder tree, first-run clarity, import/paste polish</text><text x="26" y="100" class="d">Readable bundles, provenance, AI context export, snapshots</text><text x="26" y="124" class="small">Gate: package.dev + smoke/security smoke + public README clarity</text></g>
+<g transform="translate(80 205)"><rect width="470" height="142" rx="24" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/><text x="26" y="40" class="h">HTML Artifact Vault alpha</text><text x="26" y="72" class="d">Human folder tree, links/backlinks, import/paste polish</text><text x="26" y="100" class="d">Readable bundles, provenance, AI context export, snapshots</text><text x="26" y="124" class="small">Gate: package.dev + smoke/security smoke + public README clarity</text></g>
 
 <!-- M2 -->
 <circle cx="640" cy="390" r="32" fill="#22D3EE"/><text x="620" y="398" class="m">M2</text>
@@ -36,7 +36,7 @@
 
 <!-- M3 -->
 <circle cx="640" cy="530" r="32" fill="#60A5FA"/><text x="620" y="538" class="m">M3</text>
-<g transform="translate(80 485)"><rect width="470" height="142" rx="24" fill="#0F172A" stroke="#60A5FA" stroke-width="2"/><text x="26" y="40" class="h">Conduit + Runledger foundation</text><text x="26" y="72" class="d">Stable local connector API and OpenClaw path</text><text x="26" y="100" class="d">Run replay/export, human cards, AI JSON refs</text><text x="26" y="124" class="small">Gate: connector failure tests and durable audit timeline</text></g>
+<g transform="translate(80 485)"><rect width="470" height="142" rx="24" fill="#0F172A" stroke="#60A5FA" stroke-width="2"/><text x="26" y="40" class="h">Conduit + Runledger foundation</text><text x="26" y="72" class="d">Stable API, OpenClaw path, auto artifact capture</text><text x="26" y="100" class="d">Run replay/export, human cards, AI JSON refs</text><text x="26" y="124" class="small">Gate: connector failure tests and durable audit timeline</text></g>
 
 <!-- M4 -->
 <circle cx="640" cy="670" r="32" fill="#A78BFA"/><text x="619" y="678" class="m">M4</text>

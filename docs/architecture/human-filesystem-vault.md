@@ -92,6 +92,22 @@ Markdown should be first-class in the same tree:
 
 Artifact Vault should not force users into one flat `pages/` folder long term. The current `pages/` implementation is a stepping stone, not the desired final human layout.
 
+
+## Links, backlinks, and graph
+
+The human folder tree should also behave like a wiki. Markdown notes, artifact bundles, folders/projects, Runledger entries, and Lorekeeper-managed wiki blocks should map to each other through links, backlinks, and graph views.
+
+Minimum expectations:
+
+- Obsidian-style wikilinks work in Markdown notes.
+- Artifacts can be linked from notes and from other artifact notes.
+- Each note/artifact can show backlinks.
+- Unresolved links and orphan notes/artifacts are visible.
+- Moves/renames should preserve graph identity when stable IDs/frontmatter exist.
+- AI context-pack export can include a selected graph neighborhood.
+
+See [`wiki-graph-and-agent-capture.md`](wiki-graph-and-agent-capture.md).
+
 ## AI-facing layout
 
 AI agents should not rely on fragile human folder names as primary identity.

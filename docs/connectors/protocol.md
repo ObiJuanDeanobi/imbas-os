@@ -201,3 +201,15 @@ Conduit supports private-preview artifact capture for connectors:
 - `POST /v0/artifacts` — saves generated/imported HTML through the vault API as an untrusted artifact and records a Runledger entry.
 
 Connectors must treat generated HTML as untrusted by default. Conduit redacts secret-like content before artifact storage.
+
+
+### Automatic agent artifact capture target
+
+Long-term Imbas OS behavior: when an AI agent generates a durable HTML artifact, the connector should save it to Artifact Vault automatically at the end of the run, with run/session/task provenance and a Runledger entry.
+
+Staging boundary:
+
+- Standalone Artifact Vault public alpha should provide the local storage model, manual save/import flows, and a documented save seam for artifacts.
+- Imbas OS private-preview integration should own hardened automatic capture from OpenClaw/Hermes/Codex/Claude Code through Conduit, Runledger, Sanctum redaction, and user-configurable destination rules.
+
+Automatic capture must default saved generated HTML to `untrusted`, redact/block secret-like content before durable storage, and avoid silently collecting low-value scratch output unless the user configures that behavior.

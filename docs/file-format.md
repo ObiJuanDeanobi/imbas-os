@@ -132,7 +132,7 @@ Vault-owned pages support frontmatter, normal Markdown text, Obsidian-style wiki
 [[artifact:00000000-0000-0000-0000-000000000000]]
 ```
 
-They participate in unified search, graph edges, backlinks, sync manifests, and mixed Markdown + HTML prompt-package export.
+They participate in unified search, graph edges, backlinks, sync manifests, and mixed Markdown + HTML prompt-package export. The public direction is Obsidian-style linking across notes, artifacts, folders/projects, Runledger entries, and Lorekeeper-managed wiki blocks.
 
 Longer term, `pages/` should evolve into a general human folder tree where Markdown notes can live anywhere under project/area folders, closer to an Obsidian vault. The AI surface should continue resolving pages through stable IDs/frontmatter and manifests so user moves/renames remain safe.
 
@@ -154,7 +154,7 @@ Current bundle movement is folder-based. Zip import/export is intentionally left
 
 ## Read-only Markdown/wiki bridge
 
-The wiki bridge indexes an existing Markdown folder without rewriting source files. It creates runtime graph nodes for `.md` pages and extracts Obsidian-style wikilinks such as `[[Page]]`, `[[Page|label]]`, and `![[Embed]]`. Markdown pages can also link to artifacts with `[[artifact:<id>]]`; those edges appear in the mixed artifact/wiki graph when the referenced artifact exists in the vault.
+The wiki bridge indexes an existing Markdown folder without rewriting source files. It creates runtime graph nodes for `.md` pages and extracts Obsidian-style wikilinks such as `[[Page]]`, `[[Page|label]]`, and `![[Embed]]`. Markdown pages can also link to artifacts with `[[artifact:<id>]]`; those edges appear in the mixed artifact/wiki graph when the referenced artifact exists in the vault. Longer term, links should also resolve readable artifact references where possible while canonicalizing to stable IDs underneath.
 
 Bridge mode is an index/view layer only. Markdown files remain source-of-truth in their original vault until migration is explicitly proven worthwhile.
 

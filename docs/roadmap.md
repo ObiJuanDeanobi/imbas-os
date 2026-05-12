@@ -60,6 +60,7 @@ Scope:
 - Local artifact bundles with `artifact.html`, `metadata.json`, `notes.md`, and snapshots, arranged in a human-readable folder tree.
 - Metadata editing: title, project, tags, prompt, provider/model, trust level.
 - Search across title/tags/notes/prompt/visible HTML.
+- Obsidian-style links, backlinks, and graph basics across notes and artifacts.
 - Notes and provenance.
 - Snapshot create/restore.
 - Prompt-package/context export.
@@ -106,6 +107,7 @@ Beta success criteria:
 - The app is useful as a daily local vault for generated HTML artifacts.
 - Users can safely move artifacts between machines.
 - The human surface and AI surface both feel intentional.
+- Links/backlinks make artifacts, Markdown, and wiki knowledge feel connected rather than separate.
 
 ### Lane C: Imbas OS private-preview integration
 
@@ -168,11 +170,12 @@ These are intended to become GitHub milestones/issues once approved.
 
 ### M1 — HTML Artifact Vault alpha
 
-- [ ] Make the human-facing vault an Obsidian-like folder tree with folders, nested folders, Markdown notes, and readable `.artifact/` bundles.
+- [ ] Make the human-facing vault an Obsidian-like folder tree with folders, nested folders, Markdown notes, readable `.artifact/` bundles, and link/backlink behavior.
 - [ ] Make first-run flow obvious.
 - [ ] Polish import/paste flow, including choosing where a new artifact lands in the folder tree.
 - [ ] Improve artifact detail page and metadata editing while keeping the filesystem bundle understandable.
 - [ ] Add provenance card.
+- [ ] Add Obsidian-style links, backlinks, unresolved-link reporting, and graph basics across notes/artifacts.
 - [ ] Add “Copy AI context” for selected artifact.
 - [ ] Add artifact context-pack export.
 - [ ] Improve snapshot browser and restore explanation.
@@ -193,6 +196,7 @@ These are intended to become GitHub milestones/issues once approved.
 ### M3 — Conduit + Runledger foundation
 
 - [ ] Stabilize Conduit local API contracts.
+- [ ] Add automatic AI-generated artifact capture through Conduit with Runledger provenance and safe destination rules.
 - [ ] Document connector protocol.
 - [ ] Harden OpenClaw connector path.
 - [ ] Add run replay/export improvements.
@@ -278,6 +282,7 @@ Recommended next implementation slice:
 
 1. Finish the remaining **M1 — HTML Artifact Vault alpha** UX work:
    - Obsidian-like human folder tree;
+   - links, backlinks, and graph basics across notes/artifacts;
    - obvious first-run flow;
    - polished import/paste flow with folder destination;
    - clearer artifact detail + metadata editing;
