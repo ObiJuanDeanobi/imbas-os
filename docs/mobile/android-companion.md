@@ -55,10 +55,10 @@ The repo now includes a buildable Kotlin/Compose Gradle project under `apps/andr
 For VPS phone testing, run the desktop app with Conduit bound to the tailnet IP, not a public interface, for example:
 
 ```bash
-IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=100.81.12.30 IMBAS_OS_CONDUIT_PORT=3077 npm run dev
+IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=<your-lan-or-tailnet-ip> IMBAS_OS_CONDUIT_PORT=3077 npm run dev
 ```
 
-The Android debug build defaults to `http://100.81.12.30:3077` and lets the tester edit the URL in-app.
+The Android debug build defaults to `http://10.0.2.2:3077` for emulator testing and lets the tester edit the URL in-app. For a physical phone, use your computer/VPS LAN or tailnet address, for example `http://<your-lan-or-tailnet-ip>:3077`.
 
 
 Implemented private-preview model lives in `src/main/mobile/pairing.ts` and Conduit endpoints.

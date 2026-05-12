@@ -34,7 +34,7 @@
     "electron"
   ],
   "author": "",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "dependencies": {
     "@types/qrcode": "^1.5.6",
     "@vitejs/plugin-react": "latest",

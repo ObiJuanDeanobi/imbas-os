@@ -42,12 +42,12 @@ Bind Conduit to a tailnet/private IP, not a public interface:
 
 ```bash
 IMBAS_OS_CONDUIT_LOOPBACK=1 \
-IMBAS_OS_CONDUIT_HOST=100.81.12.30 \
+IMBAS_OS_CONDUIT_HOST=<your-lan-or-tailnet-ip> \
 IMBAS_OS_CONDUIT_PORT=3077 \
 npm run dev
 ```
 
-Android debug builds currently default to `http://100.81.12.30:3077`, and the URL is editable in-app.
+Android debug builds currently default to `http://10.0.2.2:3077` for emulator testing, and the URL is editable in-app. For a physical phone, set it to `http://<your-lan-or-tailnet-ip>:3077`.
 
 ## Verification gates
 

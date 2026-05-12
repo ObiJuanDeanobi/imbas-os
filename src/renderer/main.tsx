@@ -4,7 +4,7 @@ import QRCode from 'qrcode';
 import type { ArtifactGraph, ArtifactSnapshot, ArtifactSummary, SearchIndexStats, SyncStatus, TrustLevel, UnifiedSearchResult, VaultInfo, WikiBridgeReport, WikiPageBundle } from '../shared/types';
 import './styles.css';
 
-const MOBILE_DEFAULT_CONDUIT_URL = 'http://100.81.12.30:3077';
+const MOBILE_DEFAULT_CONDUIT_URL = 'http://127.0.0.1:3077';
 
 const defaultHtml = `<!doctype html>
 <html>

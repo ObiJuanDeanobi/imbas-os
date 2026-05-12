@@ -45,14 +45,14 @@ Android APK build:
 When Conduit is running for phone testing:
 
 ```bash
-curl http://100.81.12.30:3077/v0/status
+curl http://127.0.0.1:3077/v0/status
 ```
 
 Protected mobile reads should return `401` without a paired token:
 
 ```bash
-curl -i http://100.81.12.30:3077/v0/runledger
-curl -i http://100.81.12.30:3077/v0/wiki/proposals
+curl -i http://127.0.0.1:3077/v0/runledger
+curl -i http://127.0.0.1:3077/v0/wiki/proposals
 ```
 
 Sensitive desktop-only HTTP actions should stay blocked over tailnet HTTP.

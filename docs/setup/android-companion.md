@@ -30,7 +30,7 @@ Use tailnet/private binding only:
 
 ```bash
 IMBAS_OS_CONDUIT_LOOPBACK=1 \
-IMBAS_OS_CONDUIT_HOST=100.81.12.30 \
+IMBAS_OS_CONDUIT_HOST=<your-lan-or-tailnet-ip> \
 IMBAS_OS_CONDUIT_PORT=3077 \
 npm run dev
 ```
@@ -38,7 +38,7 @@ npm run dev
 Confirm status from the host:
 
 ```bash
-curl http://100.81.12.30:3077/v0/status
+curl http://<your-lan-or-tailnet-ip>:3077/v0/status
 ```
 
 Protected routes such as `/v0/runledger` should return `401` without a paired token.

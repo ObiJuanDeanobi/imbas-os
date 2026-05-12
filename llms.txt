@@ -2,7 +2,7 @@
 
 > Local-first home base for AI agents: artifacts, memory/context, living wiki pages, Runledger audit history, context packs, snapshots, mobile companion, and human approval flows.
 
-Imbas OS is private-preview software. Do not represent it as public-ready until the documentation and fresh-system 1.0 gates pass and Johnathan explicitly approves release.
+Imbas OS is alpha-stage software. The first public wedge is HTML Artifact Vault; do not represent the broader Imbas OS as public 1.0 until the documentation and fresh-system 1.0 gates pass and maintainers explicitly approve release.
 
 ## Core links
 
@@ -39,12 +39,12 @@ Imbas OS is private-preview software. Do not represent it as public-ready until 
 - [Sanctum](docs/sanctum/agent-secret-vault.md): secret/capability boundary.
 - [Threat model](docs/threat-model.md): generated artifact security model.
 
-## Current private-preview proof
+## Current alpha proof
 
 - Electron + React + TypeScript desktop workbench.
 - Local artifact/wiki vault and sandboxed generated HTML replay.
 - Conduit loopback/private API with durable JSONL records.
-- OpenClaw private-preview dispatch through constrained local CLI adapter.
+- OpenClaw alpha dispatch through constrained local CLI adapter.
 - Lorekeeper proposal-first wiki review, guarded managed-block apply, snapshots, restore.
 - Runledger audit timeline.
 - Android Kotlin/Compose companion with pairing, QR prefill, Keystore token storage, scoped reads/actions, diagnostics, filtering, capture, and voice-dictation drafts.
@@ -53,7 +53,7 @@ Imbas OS is private-preview software. Do not represent it as public-ready until 
 ## Safety and release boundaries
 
 - No public release/publishing/announcement without explicit approval.
-- Do not remove MemPalace until migration criteria pass and Johnathan approves.
+- Do not remove MemPalace until migration criteria pass and maintainers approve.
 - Do not expose raw secrets in artifacts, wiki, logs, Runledger, memory, or context packs.
 - Generated HTML sandbox/network-deny defaults must remain protected.
 - Tailnet HTTP is for scoped mobile reads/actions; sensitive apply/restore/dispatch paths stay desktop-guarded.

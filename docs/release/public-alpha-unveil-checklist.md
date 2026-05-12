@@ -31,19 +31,21 @@ Recommended social preview image:
 
 Current prepared assets:
 
+- Real alpha screenshot: [`../assets/demo/html-artifact-vault-real-alpha.png`](../assets/demo/html-artifact-vault-real-alpha.png)
+
 - Full logo: [`../assets/brand/logo.svg`](../assets/brand/logo.svg)
 - Logo mark SVG: [`../assets/brand/logo-mark.svg`](../assets/brand/logo-mark.svg)
 - Logo mark PNG: [`../assets/brand/logo-mark.png`](../assets/brand/logo-mark.png)
 - Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
-- README hero image: [`../assets/demo/html-artifact-vault-preview.png`](../assets/demo/html-artifact-vault-preview.png)
+- README hero image: [`../assets/demo/html-artifact-vault-real-alpha.png`](../assets/demo/html-artifact-vault-real-alpha.png)
 - README flow GIF: [`../assets/demo/html-artifact-vault-flow.gif`](../assets/demo/html-artifact-vault-flow.gif)
 - Roadmap graphic: [`../assets/roadmap/roadmap.svg`](../assets/roadmap/roadmap.svg)
 
 Before reveal:
 
-- [ ] Capture at least one real app screenshot from the alpha build.
+- [x] Capture at least one real app screenshot from the alpha build.
 - [ ] Capture or generate a short real workflow GIF: paste/import HTML → preview → metadata/snapshot/search/export.
-- [ ] Keep concept art only if it accurately represents current behavior.
+- [x] Keep concept art only if it accurately represents current behavior.
 - [ ] Confirm assets render in GitHub README dark/light contexts.
 
 ## README check
@@ -59,16 +61,16 @@ The README should answer, above the fold:
 
 ## Required repo hygiene
 
-- [ ] `LICENSE` present.
-- [ ] `SECURITY.md` present.
-- [ ] `CONTRIBUTING.md` present.
-- [ ] Issue templates present.
-- [ ] Pull request template present.
-- [ ] `docs/roadmap.md` current.
-- [ ] `llms.txt` current.
-- [ ] `llms-full.txt` regenerated with `npm run docs:llms`.
-- [ ] No stale private-preview-only claims in public-facing README copy.
-- [ ] No secrets, tokens, private URLs, private hostnames, or personal data in tracked files.
+- [x] `LICENSE` present.
+- [x] `SECURITY.md` present.
+- [x] `CONTRIBUTING.md` present.
+- [x] Issue templates present.
+- [x] Pull request template present.
+- [x] `docs/roadmap.md` current.
+- [x] `llms.txt` current.
+- [x] `llms-full.txt` regenerated with `npm run docs:llms`.
+- [x] No stale private-preview-only claims in public-facing README copy.
+- [x] No secrets, tokens, private URLs, private hostnames, or personal data in tracked files.
 
 ## Verification gate
 

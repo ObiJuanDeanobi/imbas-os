@@ -13,7 +13,7 @@
   <a href="llms.txt">llms.txt</a>
 </p>
 
-![HTML Artifact Vault preview](docs/assets/demo/html-artifact-vault-preview.png)
+![HTML Artifact Vault real alpha screenshot](docs/assets/demo/html-artifact-vault-real-alpha.png)
 
 ![HTML Artifact Vault flow demo](docs/assets/demo/html-artifact-vault-flow.gif)
 
@@ -27,9 +27,9 @@ Generated HTML is becoming a natural next output layer after raw text and Markdo
 
 The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench. See [`docs/roadmap.md`](docs/roadmap.md) for the canonical roadmap and GitHub milestone plan.
 
-## Current private-preview status
+## Current alpha status
 
-This repo is currently seeded from the working Artifact Vault desktop app. It already includes:
+This repo is currently an alpha-stage desktop app centered on HTML Artifact Vault. It already includes:
 
 - Electron + React + TypeScript desktop shell.
 - Local vault initialization.
@@ -44,14 +44,14 @@ This repo is currently seeded from the working Artifact Vault desktop app. It al
 - Demo vault with seven artifacts.
 - Security smoke test for generated HTML boundaries.
 
-Implemented as private-preview foundations, but not production complete yet:
+Implemented as alpha foundations, but not production complete yet:
 
 - Memsocket adapter/CLI boundary and optional Conduit write-through; public 1.0 still requires full first-class integration.
 - Local Conduit API/loopback service for status, events, runs, artifacts, search, context packs, Lorekeeper proposals/apply, and mobile pairing.
 - OpenClaw shadow connector; Hermes/Codex/Claude Code SDKs remain future work.
 - Sanctum encrypted local vault, handle/capability validation, redaction, policy-checked resolution, and audit foundations.
 - Android Kotlin/Compose companion with live pairing, QR prefill, Keystore-encrypted token storage, scoped reads/actions, diagnostics, Runledger filtering, share-sheet capture, and voice-dictation drafts.
-- Private-preview tarball/package restore gate; production installer remains future work.
+- Local dev-preview tarball/package restore gate; production installer remains future work.
 
 ## Quick start
 
@@ -96,7 +96,7 @@ Check Android companion scaffold files without requiring local Android build too
 npm run android:check
 ```
 
-This writes `release/imbas-os-dev-preview.tgz` and runs `npm run verify:preview` to check package contents/restorability. It is private/internal only; do not publish externally without an explicit release decision.
+This writes `release/imbas-os-dev-preview.tgz` and runs `npm run verify:preview` to check package contents/restorability. It is a local dev-preview package; do not publish package-registry releases or hosted/binary distributions without an explicit release decision.
 
 On headless Linux CI/VPS environments, Electron may require `--no-sandbox` unless the Chromium `chrome-sandbox` helper is root-owned and mode `4755`. The app still configures renderer security controls; the flag is only a host-level smoke-test workaround.
 
@@ -147,8 +147,12 @@ Required before public 1.0:
 - MemPalace retired only after the staged migration criteria pass; until then it remains a working safety net, not the public 1.0 memory dependency.
 - Documentation readiness gate and fresh-system user experience gate pass: clean OpenClaw config connected to Imbas OS with all supported modules, companion app paired, adapters tested, backup/restore tested, and security smoke verified. See [`docs/release/fresh-system-1.0-gate.md`](docs/release/fresh-system-1.0-gate.md).
 - Backup/restore/export/delete/forget behavior tested across memory, artifacts, and wiki.
-- Explicit Johnathan approval.
+- Explicit maintainer approval.
 
-## Private release boundary
+## License
 
-This repository is private preview only. No public release, package publishing, hosted service, or public announcement should happen without explicit Johnathan approval.
+Imbas OS is licensed under the [Apache License 2.0](LICENSE).
+
+## Release approval boundary
+
+No package publishing, hosted service, public 1.0 claim, or announcement should happen without explicit maintainer approval. The current public direction is an honest HTML Artifact Vault alpha, not a full Imbas OS 1.0 release.

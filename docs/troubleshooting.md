@@ -56,7 +56,7 @@ Check:
 2. Conduit is bound to the tailnet IP, not just loopback.
 3. Android is on the same tailnet/private network.
 4. The app's Conduit URL is correct.
-5. `curl http://100.81.12.30:3077/v0/status` works from a host with tailnet access.
+5. `curl http://<your-lan-or-tailnet-ip>:3077/v0/status` works from a host with tailnet access.
 
 Run the Android Diagnostics tab after pairing.
 

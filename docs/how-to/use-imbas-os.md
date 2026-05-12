@@ -15,7 +15,7 @@ npm run dev
 For phone testing, start with Conduit bound to a tailnet IP:
 
 ```bash
-IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=100.81.12.30 IMBAS_OS_CONDUIT_PORT=3077 npm run dev
+IMBAS_OS_CONDUIT_LOOPBACK=1 IMBAS_OS_CONDUIT_HOST=127.0.0.1 IMBAS_OS_CONDUIT_PORT=3077 npm run dev
 ```
 
 ## Command Center

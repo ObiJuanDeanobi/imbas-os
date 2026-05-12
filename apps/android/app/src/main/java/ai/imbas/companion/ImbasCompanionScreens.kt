@@ -45,7 +45,7 @@ enum class CompanionTab(val label: String) {
 @Composable
 fun ImbasCompanionApp(initialCaptureDraft: String? = null, scannedPairingPayload: String? = null, qrScanMessage: String? = null, voiceCaptureDraft: String? = null, voiceCaptureMessage: String? = null, onScanPairingQr: () -> Unit = {}, onStartVoiceCapture: () -> Unit = {}) {
     var selectedTab by remember { mutableStateOf(if (initialCaptureDraft.isNullOrBlank()) CompanionTab.Status else CompanionTab.Capture) }
-    var serviceUrl by remember { mutableStateOf("http://100.81.12.30:3077") }
+    var serviceUrl by remember { mutableStateOf("http://10.0.2.2:3077") }
     val context = LocalContext.current
     val sessionStore = remember { SecureSessionStore(context) }
     var mobileSession by remember { mutableStateOf<ImbasMobileSession?>(null) }
