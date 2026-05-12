@@ -22,7 +22,7 @@
 
 <text x="72" y="92" class="title">Imbas OS roadmap</text>
 <text x="75" y="132" class="subtitle">HTML Artifact Vault first — then memory, agents, mobile, sync, trust, and 1.0.</text>
-<text x="75" y="166" class="lane">Each milestone has its own scope and verification gate. No M0; alpha readiness lives inside M1.</text>
+<text x="75" y="166" class="lane">Each milestone has its own scope and verification gate. Alpha readiness lives inside M1.</text>
 
 <path d="M640 220 L640 1420" stroke="url(#rail)" stroke-width="10" stroke-linecap="round" filter="url(#glow)" opacity=".95"/>
 
