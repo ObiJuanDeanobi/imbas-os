@@ -18,11 +18,11 @@ test('Conduit exposes mobile pairing challenge and completion endpoints', async 
 
   const completeResponse = await handleConduitRequest(new Request('http://127.0.0.1/v0/mobile/pairing-challenges/complete', {
     method: 'POST',
-    body: JSON.stringify({ challengeId: challenge.id, code: challenge.code, deviceLabel: 'Johnathan Fold' })
+    body: JSON.stringify({ challengeId: challenge.id, code: challenge.code, deviceLabel: 'Maintainer Fold' })
   }), store);
   assert.equal(completeResponse.status, 200);
   const body = completeResponse.body as { session: { deviceLabel: string }; token: string };
-  assert.equal(body.session.deviceLabel, 'Johnathan Fold');
+  assert.equal(body.session.deviceLabel, 'Maintainer Fold');
   assert.match(body.token, /^imbas_mobile_/);
   assert.equal(JSON.stringify(store.mobile.sessions).includes(body.token), false);
 });

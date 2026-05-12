@@ -9,9 +9,9 @@ test('mobile pairing creates one-time challenge and returns token only on comple
   assert.equal(JSON.stringify(store).includes(challenge.code), true, 'private preview keeps display code in memory for desktop UI');
   assert.equal(JSON.stringify(store).includes('imbas_mobile_'), false);
 
-  const completed = await completePairingChallenge(store, { challengeId: challenge.id, code: challenge.code, deviceLabel: 'Johnathan Fold', now: new Date('2026-05-10T22:31:00Z') });
+  const completed = await completePairingChallenge(store, { challengeId: challenge.id, code: challenge.code, deviceLabel: 'Maintainer Fold', now: new Date('2026-05-10T22:31:00Z') });
   assert.match(completed.token, /^imbas_mobile_/);
-  assert.equal(authenticateMobileSession(store, completed.token, 'approvals.review')?.deviceLabel, 'Johnathan Fold');
+  assert.equal(authenticateMobileSession(store, completed.token, 'approvals.review')?.deviceLabel, 'Maintainer Fold');
   assert.equal(authenticateMobileSession(store, completed.token, 'capture.write'), null);
 });
 

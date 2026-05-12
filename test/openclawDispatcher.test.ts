@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 import { resolveOpenClawCommand } from '../src/main/openclaw/dispatcher.ts';
 
 test('OpenClaw dispatcher resolves absolute CLI path for GUI environments with sparse PATH', () => {
   const resolved = resolveOpenClawCommand({ PATH: '/usr/bin:/bin' });
-  if (existsSync('/home/ubuntu/.npm-global/bin/openclaw')) {
-    assert.equal(resolved, '/home/ubuntu/.npm-global/bin/openclaw');
+  const userInstall = join(homedir(), '.npm-global/bin/openclaw');
+  if (existsSync(userInstall)) {
+    assert.equal(resolved, userInstall);
   } else {
     assert.equal(resolved, 'openclaw');
   }

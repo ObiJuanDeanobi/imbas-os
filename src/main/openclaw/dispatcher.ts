@@ -97,7 +97,7 @@ function buildImbasDispatchPrompt(message: string, mode: 'chat' | 'task'): strin
   const intent = mode === 'task' ? 'task request' : 'chat request';
   return [
     'Imbas OS Agent Console private-preview dispatch.',
-    `Treat this as a local ${intent} from Johnathan via Imbas OS.`,
+    `Treat this as a local ${intent} from the Imbas OS operator via Imbas OS.`,
     'Safety boundary: do not send external communications, spend money, delete data, alter public/live service posture, or take irreversible/destructive actions unless the user explicitly approved that specific action in the message. If the request would require that, explain the approval needed instead.',
     'Keep the reply concise and useful for display in Imbas OS. Mention verification or blockers when relevant.',
     '',
