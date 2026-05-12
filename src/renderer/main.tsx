@@ -30,6 +30,7 @@ function App() {
   const [indexStats, setIndexStats] = useState<SearchIndexStats | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [lastAction, setLastAction] = useState('Seed the demo vault or import an HTML artifact to begin.');
+  const [importStatus, setImportStatus] = useState('Paste generated HTML below. New imports are copied into the local vault as untrusted artifacts.');
   const [conduitStatus, setConduitStatus] = useState<any>(null);
   const [aiWorldQuery, setAiWorldQuery] = useState('Imbas OS');
   const [aiWorldResult, setAiWorldResult] = useState<any>(null);
@@ -61,11 +62,15 @@ function App() {
   useEffect(() => { void refresh(); }, [query, projectFilter, indexStats]);
 
   async function importArtifact(sample?: string) {
-    const created = await window.artifactVault.createArtifact({ html: sample ?? html, title, sourceType: 'paste', tags: ['demo'] });
+    const created = await window.artifactVault.createArtifact({ html: sample ?? html, title, sourceType: 'paste', tags: ['imported', 'paste'] });
     setIndexStats(null);
     await refresh();
     setSelectedId(created.metadata.id);
-    setLastAction(`Imported ${created.metadata.title}. It is stored locally and rendered through the sandbox.`);
+    setSelectedWikiId(null);
+    setActiveView('vault');
+    const message = `Imported ${created.metadata.title} as ${created.metadata.id}. Destination: ${created.metadata.bundlePath}. Trust level: ${created.metadata.trustLevel}.`;
+    setImportStatus(message);
+    setLastAction(`${message} It is rendered through the sandbox.`);
   }
 
   async function importHtmlFile() {
@@ -74,7 +79,11 @@ function App() {
     setIndexStats(null);
     await refresh();
     setSelectedId(created.metadata.id);
-    setLastAction(`Imported ${created.metadata.title} from a local HTML file with source-path provenance.`);
+    setSelectedWikiId(null);
+    setActiveView('vault');
+    const message = `Imported ${created.metadata.title} from a local HTML file. Destination: ${created.metadata.bundlePath}. Trust level: ${created.metadata.trustLevel}.`;
+    setImportStatus(message);
+    setLastAction(`${message} Source-path provenance was preserved.`);
   }
 
   async function importBundleDirectory() {
@@ -83,7 +92,11 @@ function App() {
     setIndexStats(null);
     await refresh();
     setSelectedId(created.metadata.id);
-    setLastAction(`Imported portable bundle ${created.metadata.title}. It was copied into the local vault as a new artifact.`);
+    setSelectedWikiId(null);
+    setActiveView('vault');
+    const message = `Imported portable bundle ${created.metadata.title}. Destination: ${created.metadata.bundlePath}. Trust level: ${created.metadata.trustLevel}.`;
+    setImportStatus(message);
+    setLastAction(`${message} It was copied into the local vault as a new artifact.`);
   }
 
   async function importMaliciousFixture() {
@@ -175,14 +188,18 @@ function App() {
           <p className="muted">{lastAction}</p>
         </section>
         <section className="import-panel">
-          <h2>Import HTML</h2>
-          <label>Title<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <label>HTML<textarea value={html} onChange={(event) => setHtml(event.target.value)} /></label>
-          <button onClick={() => importArtifact()}>Import artifact</button>
-          <button className="secondary" onClick={importHtmlFile}>Import .html file</button>
-          <button className="secondary" onClick={importBundleDirectory}>Import bundle folder</button>
-          <button className="secondary" onClick={importMaliciousFixture}>Import malicious fixture</button>
-          <button className="secondary" onClick={seedDemoVault}>Seed demo vault</button>
+          <div>
+            <p className="eyebrow">capture</p>
+            <h2>Import / paste HTML</h2>
+            <p className="muted">Destination: <code>{vault?.root ? `${vault.root}/artifacts/…` : 'loading vault path…'}</code></p>
+            <p className="muted">Default trust: <code>untrusted</code> · replay opens in the sandbox immediately after import.</p>
+          </div>
+          <label>Artifact title<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+          <label>Paste generated HTML<textarea value={html} onChange={(event) => setHtml(event.target.value)} /></label>
+          <button onClick={() => importArtifact()} disabled={!html.trim()}>Import pasted HTML</button>
+          <div className="button-row compact"><button className="secondary" onClick={importHtmlFile}>Import .html file</button><button className="secondary" onClick={importBundleDirectory}>Import bundle folder</button></div>
+          <div className="button-row compact"><button className="secondary" onClick={importMaliciousFixture}>Import malicious fixture</button><button className="secondary" onClick={seedDemoVault}>Seed demo vault</button></div>
+          <p className="import-status">{importStatus}</p>
         </section>
         <section className="import-panel">
           <h2>Create Markdown</h2>
