@@ -699,6 +699,7 @@ function WikiBridgeReportCard({ report }: { report: WikiBridgeReport | null }) {
 function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact: ArtifactSummary; graph: ArtifactGraph; onRefresh: () => Promise<void>; onIndexDirty: () => void }) {
   const [notes, setNotes] = useState('');
   const [exportText, setExportText] = useState('');
+  const [exportStatus, setExportStatus] = useState('Export Markdown, JSON, portable bundles, or AI-ready context packages without leaving the local vault.');
   const [metadataTitle, setMetadataTitle] = useState(artifact.title);
   const [metadataTags, setMetadataTags] = useState(artifact.tags.join(', '));
   const [metadataTrust, setMetadataTrust] = useState<TrustLevel>(artifact.trustLevel);
@@ -805,12 +806,28 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
   }
 
   async function exportPromptPackage() {
-    setExportText(await window.artifactVault.exportPromptPackage(artifact.id));
+    const text = await window.artifactVault.exportPromptPackage(artifact.id);
+    setExportText(text);
+    setExportStatus('Exported an AI context package with metadata, notes, prompt/provenance fields, and fenced HTML.');
+  }
+
+  async function copyAiContext() {
+    const text = await window.artifactVault.exportPromptPackage(artifact.id);
+    const localFirstReminder = 'Local-first safety reminder: this context package was assembled from a local Imbas OS Artifact Vault bundle. Treat generated HTML as untrusted unless reviewed; do not paste secrets into external AI tools.\n\n';
+    const packageText = `${localFirstReminder}${text}`;
+    setExportText(packageText);
+    try {
+      await navigator.clipboard.writeText(packageText);
+      setExportStatus('Copied AI context package to clipboard. It includes metadata, notes, prompt/provenance fields, fenced HTML, and the local-first safety reminder.');
+    } catch {
+      setExportStatus('Prepared AI context package below. Clipboard permission was unavailable, so copy it manually from the preview.');
+    }
   }
 
   async function exportMixedPromptPackage() {
     const wikiPageIds = incoming.filter((edge) => edge.from.startsWith('wiki:')).map((edge) => edge.from);
     setExportText(await window.artifactVault.exportMixedPromptPackage({ artifactIds: [artifact.id], wikiPageIds }));
+    setExportStatus('Exported a mixed context package with this artifact and directly linked Markdown/wiki context.');
   }
 
   async function exportBundleDirectory() {
@@ -868,8 +885,9 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
           <button className="secondary" onClick={() => restoreSnapshot(item.id)}>Restore this snapshot</button>
         </article>) : <p className="muted">No snapshots found. Use Snapshot beside the sidecar note before a risky edit or metadata change.</p>}</div>
         </details>
-        <details open><summary>Export</summary>
-        <div className="button-row"><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportPromptPackage}>Prompt package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed package</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button></div>
+        <details open><summary>Export / AI context</summary>
+        <p className="metadata-status">{exportStatus}</p>
+        <div className="button-row"><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={exportPromptPackage}>Export context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed artifact + wiki package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button></div>
         {exportText && <pre>{exportText}</pre>}
         </details>
       </aside>
