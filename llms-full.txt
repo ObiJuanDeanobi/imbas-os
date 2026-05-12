@@ -3416,11 +3416,11 @@ git grep -n -E "tail[[:alnum:]]+\.ts\.net|100\.(6[4-9]|[78][0-9]|9[0-9]|1[01][0-
 Prepared release-candidate assets:
 
 - `imbas-os-v0.1.0-alpha.0-dev-preview.tgz` — verified local dev-preview package/restore artifact.
-  - SHA256: `9532a504c7f599f612b4a583461f6d0e46c0c26cd4386018c88edbdfe3e8b526`
-- `imbas-os-v0.1.0-alpha.0-linux-x64.tar.gz` — unsigned Linux x64 Electron app bundle.
-  - SHA256: `ed68fd8e9597164de437ff2015f173380e6d015f9564789ad02611cb7a3e9103`
+- `imbas-os-v0.1.0-alpha.0-dev-preview.tgz.sha256` — checksum for the dev-preview package.
+- `imbas-os-v0.1.0-alpha.0-linux-x64.tar.gz` — unsigned Linux x64 Electron app bundle, when produced by the release-prep pass.
+- `imbas-os-v0.1.0-alpha.0-linux-x64.tar.gz.sha256` — checksum for the unsigned Linux x64 bundle.
 
-The Linux bundle passed Electron smoke and security smoke locally with `--no-sandbox`. It is unsigned and not a production installer. Package-registry publishing, signed installers, notarization, and hosted/binary distribution beyond GitHub release assets require separate explicit release decisions.
+The Linux bundle should pass Electron smoke and security smoke locally with `--no-sandbox` before attachment. It is unsigned and not a production installer. Package-registry publishing, signed installers, notarization, and hosted/binary distribution beyond GitHub release assets require separate explicit release decisions.
 
 ---
 ## Source: docs/known-limitations.md
