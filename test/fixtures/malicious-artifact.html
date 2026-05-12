@@ -14,6 +14,12 @@
     report('typeof process', typeof window.process);
     report('typeof require', typeof window.require);
     report('typeof artifactVault bridge', typeof window.artifactVault);
+    const popup = window.open('https://example.com/popup');
+    report('window open', popup ? 'unexpected success' : 'blocked');
+    setTimeout(() => {
+      window.location.href = 'https://example.com/navigate';
+      report('top navigation', 'attempted');
+    }, 50);
     fetch('https://example.com/should-be-blocked').then(
       () => report('network fetch', 'unexpected success'),
       () => report('network fetch', 'blocked')

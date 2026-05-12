@@ -28,6 +28,19 @@ let conduitService: ConduitLoopbackService | null = null;
 let conduitStore: ConduitRecordStore = createConduitRecordStore();
 const appIconPath = path.resolve(process.cwd(), 'docs/assets/brand/imbasos_hq_asset_pack/png/hq/imbasos_app_icon_dark.png');
 
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'artifact',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: false,
+      corsEnabled: false,
+      stream: false
+    }
+  }
+]);
+
 async function prepareRuntime() {
   vaultRoot = defaultVaultRoot(app.getPath('userData'));
   await initVault(vaultRoot);
@@ -38,6 +51,7 @@ async function prepareRuntime() {
   configureOpenClawDispatcher();
   installArtifactProtocol();
   installNetworkBlocker();
+  installPermissionGuards();
   await maybeStartConduitLoopback();
 }
 
@@ -96,6 +110,8 @@ async function createWindow() {
     }
   });
 
+  installWindowGuards(win);
+
   if (capturePath) {
     await seedDemoVault(vaultRoot);
   }
@@ -135,6 +151,23 @@ function installNetworkBlocker() {
     const referrer = typeof details.referrer === 'string' ? details.referrer : '';
     const fromArtifact = initiator.startsWith('artifact://') || referrer.startsWith('artifact://');
     callback({ cancel: Boolean(fromArtifact && shouldBlockArtifactRequest(details.url)) });
+  });
+}
+
+function installPermissionGuards() {
+  session.defaultSession.setPermissionRequestHandler((webContents, _permission, callback, details) => {
+    const currentUrl = webContents.getURL();
+    const requestingUrl = details.requestingUrl ?? '';
+    const fromArtifact = currentUrl.startsWith('artifact://') || requestingUrl.startsWith('artifact://');
+    callback(!fromArtifact && false);
+  });
+}
+
+function installWindowGuards(win: BrowserWindow) {
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.on('will-navigate', (event, targetUrl) => {
+    const currentUrl = win.webContents.getURL();
+    if (currentUrl.startsWith('artifact://') && targetUrl !== currentUrl) event.preventDefault();
   });
 }
 
@@ -241,10 +274,11 @@ async function runSecuritySmoke() {
       sandbox: true
     }
   });
+  installWindowGuards(win);
   await win.loadURL(`artifact://${created.metadata.id}/`);
   await new Promise((resolve) => setTimeout(resolve, 750));
   const bodyText = await win.webContents.executeJavaScript('document.body.innerText');
-  const required = ['typeof process: undefined', 'typeof require: undefined', 'typeof artifactVault bridge: undefined', 'network fetch: blocked'];
+  const required = ['typeof process: undefined', 'typeof require: undefined', 'typeof artifactVault bridge: undefined', 'window open: blocked', 'top navigation: attempted', 'network fetch: blocked'];
   const missing = required.filter((item) => !bodyText.includes(item));
   if (missing.length) {
     console.error(`Security smoke failed; missing: ${missing.join(', ')}`);

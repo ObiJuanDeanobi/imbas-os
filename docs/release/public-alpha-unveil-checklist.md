@@ -32,7 +32,7 @@ Recommended social preview image:
 Current prepared assets:
 
 - README logo: [`../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_logo_horizontal_dark_2x.png`](../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_logo_horizontal_dark_2x.png)
-- README shell/concept image: [`../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png`](../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png)
+- README real app screenshot: [`../assets/demo/artifact-vault-alpha-screenshot.png`](../assets/demo/artifact-vault-alpha-screenshot.png)
 - README Artifact Vault marketing image: [`../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png`](../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png)
 - App icon: [`../assets/brand/imbasos_hq_asset_pack/png/hq/imbasos_app_icon_dark.png`](../assets/brand/imbasos_hq_asset_pack/png/hq/imbasos_app_icon_dark.png)
 - SVG source assets: [`../assets/brand/imbasos_hq_asset_pack/svg/`](../assets/brand/imbasos_hq_asset_pack/svg/)

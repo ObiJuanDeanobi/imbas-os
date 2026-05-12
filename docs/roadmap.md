@@ -285,7 +285,8 @@ Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/huma
 The repo should be prepared for a clean GitHub reveal before it is made public. Required visual/story assets:
 
 - `docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_logo_horizontal_dark_2x.png` — README/header logo.
-- `docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png` — high-resolution shell/concept board image for README/docs.
+- `docs/assets/demo/artifact-vault-alpha-screenshot.png` — current captured Artifact Vault app screenshot for README/docs.
+- `docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png` — high-resolution concept board for roadmap/vision docs.
 - `docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png` — high-resolution Artifact Vault marketing/showcase image.
 - `docs/assets/brand/imbasos_hq_asset_pack/png/hq/imbasos_app_icon_dark.png` — app icon / raster mark for app surfaces.
 - `docs/assets/brand/imbasos_hq_asset_pack/svg/` — SVG marks and showcase sources.
