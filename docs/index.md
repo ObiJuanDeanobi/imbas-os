@@ -16,8 +16,10 @@ Imbas OS documentation has three jobs:
 - [llms-full.txt](../llms-full.txt) — fuller AI context bundle for important docs.
 - [skill.md](../skill.md) — actionable workflow instructions for AI agents.
 - [Public roadmap](roadmap.md) — canonical plan for HTML Artifact Vault first, then full Imbas OS.
+- [Public alpha unveil assets](roadmap.md#public-alpha-unveil-assets) — logo, demo image/GIF, social card, and roadmap graphic inventory.
 - [Private-preview implementation status](implementation-status.md) — current reality, evidence, and blockers.
 - [Fresh-system public 1.0 gate](release/fresh-system-1.0-gate.md) — mandatory release gate before public 1.0.
+- [Public alpha unveil checklist](release/public-alpha-unveil-checklist.md) — private presentation, asset, hygiene, and verification checklist before public alpha.
 
 ## Setup and onboarding
 

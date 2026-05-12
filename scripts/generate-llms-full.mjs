@@ -20,6 +20,7 @@ const sourcePaths = [
   'docs/how-to/lorekeeper-review.md',
   'docs/release/fresh-system-1.0-gate.md',
   'docs/release/documentation-1.0-gate.md',
+  'docs/release/public-alpha-unveil-checklist.md',
   'docs/known-limitations.md'
 ];
 

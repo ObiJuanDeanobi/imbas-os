@@ -1,18 +1,27 @@
+<p align="center">
+  <img src="docs/assets/brand/logo.svg" alt="Imbas OS — local-first vault for AI-generated artifacts" width="760">
+</p>
+
+<p align="center">
+  <strong>Save, replay, version, search, and export AI-generated HTML artifacts — locally.</strong>
+</p>
+
+<p align="center">
+  <a href="docs/roadmap.md">Roadmap</a> ·
+  <a href="docs/setup/local-development.md">Local setup</a> ·
+  <a href="docs/architecture/dual-surface-information.md">Dual-surface architecture</a> ·
+  <a href="llms.txt">llms.txt</a>
+</p>
+
+![HTML Artifact Vault preview](docs/assets/demo/html-artifact-vault-preview.png)
+
+![HTML Artifact Vault flow demo](docs/assets/demo/html-artifact-vault-flow.gif)
+
 # Imbas OS
 
-Local-first operating layer for AI memory, context, artifacts, living wiki pages, and agent handoffs.
+**Imbas OS is launching with HTML Artifact Vault first:** a free/open-source local-first workbench for AI-generated HTML artifacts.
 
-Imbas OS is the combined product direction for what started as **Artifact Vault** plus **Memsocket**:
-
-- **Memsocket** stores memory/context events, projections, search, and context packs.
-- **Artifact Vault** stores generated artifacts, Markdown/wiki knowledge, snapshots, provenance, and safe replay.
-- **Imbas OS** wraps those pieces into one private system for humans and AI agents.
-
-The goal:
-
-> Connect your agents once; Imbas OS captures what they know and make, then feeds the right context back when they work.
-
-Imbas OS uses a **dual-surface information architecture**: humans get readable UI/docs/review flows, while AI agents get compact structured context, stable IDs, provenance, and action contracts over the same source of truth.
+Generated HTML is becoming a natural next output layer after raw text and Markdown. Imbas OS gives those artifacts a durable home: sandboxed replay, metadata, notes, provenance, snapshots, search, and AI-context export.
 
 ## Roadmap
 
@@ -106,6 +115,7 @@ This root `README.md` is the single canonical GitHub entrypoint. It should stay 
 - [`docs/how-to/use-imbas-os.md`](docs/how-to/use-imbas-os.md) — day-to-day desktop and companion workflows.
 - [`docs/ops/verification.md`](docs/ops/verification.md) — verification gates and live checks.
 - [`docs/release/documentation-1.0-gate.md`](docs/release/documentation-1.0-gate.md) — required docs bar before public 1.0.
+- [`docs/release/public-alpha-unveil-checklist.md`](docs/release/public-alpha-unveil-checklist.md) — private checklist before making the alpha public.
 
 ## Subsystems
 

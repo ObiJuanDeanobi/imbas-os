@@ -1,5 +1,7 @@
 # Imbas OS public roadmap
 
+![Imbas OS roadmap](assets/roadmap/roadmap.svg)
+
 This is the single source of truth for getting Imbas OS off the ground as free/open-source software.
 
 The near-term wedge is **HTML Artifact Vault first**: make AI-generated HTML artifacts easy to save, inspect, replay, version, search, export, and share locally. The broader Imbas OS roadmap grows from that base into memory, wiki, agents, mobile, sync, trust, and team/cloud capabilities.
@@ -246,6 +248,21 @@ These are intended to become GitHub milestones/issues once approved.
 - [ ] Confirm installer/package plan.
 - [ ] Confirm rollback/recovery plan.
 - [ ] Obtain explicit Johnathan approval.
+
+## Public alpha unveil assets
+
+The repo should be prepared for a clean GitHub reveal before it is made public. Required visual/story assets:
+
+- `docs/assets/brand/logo.svg` — full logo for README/header use.
+- `docs/assets/brand/logo-mark.svg` — square icon/mark.
+- `docs/assets/brand/logo-mark.png` — raster mark for surfaces that prefer PNG.
+- `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
+- `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.
+- `docs/assets/demo/html-artifact-vault-flow.gif` — short animated flow demo.
+- `docs/assets/roadmap/roadmap.svg` — roadmap graphic for README/docs/GitHub discussion.
+- [`docs/release/public-alpha-unveil-checklist.md`](release/public-alpha-unveil-checklist.md) — repository presentation and final pre-public checklist.
+
+Before public unveil, replace or supplement the generated concept demo with at least one real app screenshot/GIF captured from the alpha build. Keep generated concept art only if it accurately represents current behavior.
 
 ## Immediate next slice
 

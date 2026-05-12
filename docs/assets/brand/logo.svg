@@ -1,0 +1,13 @@
+<svg width="960" height="240" viewBox="0 0 960 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+<title id="title">Imbas OS logo</title><desc id="desc">A luminous vault-window mark with the words Imbas OS.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="960" y2="240"><stop stop-color="#080B18"/><stop offset="1" stop-color="#111827"/></linearGradient><linearGradient id="g1" x1="73" y1="49" x2="193" y2="191"><stop stop-color="#7DD3FC"/><stop offset=".48" stop-color="#A78BFA"/><stop offset="1" stop-color="#F472B6"/></linearGradient><linearGradient id="g2" x1="107" y1="78" x2="160" y2="160"><stop stop-color="#ECFEFF"/><stop offset="1" stop-color="#67E8F9"/></linearGradient></defs>
+<rect width="960" height="240" rx="36" fill="url(#bg)"/>
+<path d="M133 40L202 80V160L133 200L64 160V80L133 40Z" stroke="url(#g1)" stroke-width="10" stroke-linejoin="round"/>
+<path d="M94 88H172C179 88 185 94 185 101V163H81V101C81 94 87 88 94 88Z" fill="#0B1020" stroke="url(#g1)" stroke-width="6"/>
+<path d="M105 102H161C167 102 171 106 171 112V149H95V112C95 106 99 102 105 102Z" fill="url(#g2)" fill-opacity=".16" stroke="#93C5FD" stroke-width="3"/>
+<path d="M133 75V166M101 130H165" stroke="#E0F2FE" stroke-width="5" stroke-linecap="round"/>
+<circle cx="133" cy="130" r="13" fill="#F8FAFC"/><circle cx="133" cy="130" r="5" fill="#7C3AED"/>
+<text x="260" y="116" fill="#F8FAFC" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="74" font-weight="800" letter-spacing="-3">Imbas OS</text>
+<text x="264" y="158" fill="#A5B4FC" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600">local-first vault for AI-generated artifacts</text>
+<text x="264" y="190" fill="#94A3B8" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="18" font-weight="500">HTML Artifact Vault first → memory, wiki, agents, mobile, sync</text>
+</svg>
