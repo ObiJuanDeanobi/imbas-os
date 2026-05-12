@@ -11,9 +11,7 @@
   <a href="docs/setup/local-development.md">Local setup</a> ·
   <a href="docs/architecture/dual-surface-information.md">Dual-surface architecture</a> ·
   <a href="llms.txt">llms.txt</a>
-</p>
-
-![Current Imbas OS shell screenshot](docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png)
+</p
 
 ![HTML Artifact Vault promo panel](docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png)
 
