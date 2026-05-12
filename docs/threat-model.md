@@ -23,15 +23,16 @@ Implemented in the skeleton:
 - Artifact viewer uses iframe sandbox:
   - `sandbox="allow-scripts"`
   - deliberately no `allow-same-origin`
-- Artifact HTML is served through an `artifact://<id>/` protocol handler.
-- Render policy injects CSP:
+- Artifact HTML is served through an `artifact://<id>/` protocol handler registered as a secure standard scheme before Electron app ready.
+- Artifact permission requests, popup windows, and artifact-initiated top-level navigation are denied.
+- Render policy normalizes existing CSP meta tags and injects the vault CSP:
   - `default-src 'none'`
   - `connect-src 'none'`
   - `base-uri 'none'`
   - `form-action 'none'`
   - `frame-ancestors 'none'`
 - Web request hook blocks remote `http`, `https`, `ws`, and `wss` requests when initiated by artifact origin/referrer.
-- Test fixture attempts to read `process`, `require`, the app bridge, and make a remote fetch.
+- Test fixture attempts to read `process`, `require`, the app bridge, open a popup, navigate the top-level frame, and make a remote fetch.
 - Portable bundle imports reset trust to `untrusted` rather than accepting source bundle trust metadata.
 - Read-only Markdown/wiki bridge indexes selected folders without rewriting source files.
 
@@ -41,7 +42,7 @@ Automated tests cover:
 
 - default untrusted policy denies network and same-origin privileges;
 - network blocker predicate cancels remote requests by default;
-- CSP injection occurs;
+- CSP injection occurs and replaces existing CSP meta tags;
 - artifact IDs reject path traversal;
 - portable bundle creation writes expected files;
 - portable bundle import resets inherited trust metadata to `untrusted`;
@@ -60,16 +61,18 @@ The security smoke imports `test/fixtures/malicious-artifact.html`, renders it t
 - `typeof process: undefined`
 - `typeof require: undefined`
 - `typeof artifactVault bridge: undefined`
+- `window open: blocked`
+- `top navigation: attempted`
 - `network fetch: blocked`
 
 A headless smoke command may use `--no-sandbox` when the downloaded Chromium sandbox helper is not root-owned/mode `4755` in that environment. This is a host-level smoke-test caveat, not a product decision to disable Electron/browser isolation for users.
 
 ## Known gaps
 
-- Security smoke covers one live malicious fixture, but broader hostile fixture coverage is still needed.
-- Network-blocking is based on Electron request metadata; this needs more cross-platform testing.
-- CSP policy is injected but not yet normalized against existing CSP tags.
-- No trust-promotion workflow beyond direct metadata editing yet.
+- Security smoke covers one live malicious fixture, but broader hostile fixture coverage is still needed. Tracked in [#11](https://github.com/ObiJuanDeanobi/imbas-os/issues/11).
+- Network-blocking is based on Electron request metadata; Linux smoke is automated, and Windows/macOS validation still needs real runner evidence. Tracked in [#12](https://github.com/ObiJuanDeanobi/imbas-os/issues/12).
+- CSP meta-tag normalization is implemented for current wrapper behavior; keep expanding fixtures for edge cases. Tracked in [#13](https://github.com/ObiJuanDeanobi/imbas-os/issues/13).
+- Trust-promotion now requires a review reason and records local audit history; keep refining UX and review criteria. Tracked in [#14](https://github.com/ObiJuanDeanobi/imbas-os/issues/14).
 - Wiki bridge currently trusts local filesystem selection; it now reports unresolved links/orphans, but still needs broader dry-run testing before broad vault migration.
 - No packaged build/hardened distribution yet.
 

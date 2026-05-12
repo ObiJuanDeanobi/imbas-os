@@ -58,6 +58,7 @@ Imbas OS documentation has three jobs:
 - [Connector protocol](connectors/protocol.md)
 - [Sanctum agent secret vault](sanctum/agent-secret-vault.md)
 - [Threat model](threat-model.md)
+- [Cross-platform security validation](security-cross-platform-validation.md) — Windows/macOS/Linux evidence needed for artifact sandbox/network gates.
 - [File format](file-format.md)
 
 ## Strategy and go-to-market

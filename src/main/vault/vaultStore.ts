@@ -45,7 +45,8 @@ export async function createArtifact(root: string, input: CreateArtifactInput): 
     tags: input.tags ?? [],
     hashes: { sha256Html: sha256(input.html) },
     links: extractArtifactLinks(`${input.html}\n${notes}\n${input.prompt ?? ''}`),
-    snapshotCount: 1
+    snapshotCount: 1,
+    trustAudit: [{ at: now, from: 'untrusted', to: 'untrusted', reason: 'Artifact imported into the vault as untrusted by default.' }]
   };
 
   const bundlePath = path.join(vault.artifactsDir, id);
@@ -156,17 +157,26 @@ export async function updateArtifactMetadata(root: string, id: string, input: Up
   assertSafeId(id);
   if (input.trustLevel && !['untrusted', 'reviewed', 'trusted'].includes(input.trustLevel)) throw new Error('Invalid trust level');
   const bundle = await readArtifact(root, id);
+  const now = new Date().toISOString();
+  const nextTrustLevel = input.trustLevel ?? bundle.metadata.trustLevel;
+  const trustAudit = bundle.metadata.trustAudit ?? [];
+  if (nextTrustLevel !== bundle.metadata.trustLevel) {
+    const reason = input.trustReason?.trim();
+    if (!reason) throw new Error('Trust level changes require a review reason');
+    trustAudit.push({ at: now, from: bundle.metadata.trustLevel, to: nextTrustLevel, reason: reason.slice(0, 500) });
+  }
   const updatedMetadata: ArtifactMetadata = {
     ...bundle.metadata,
     title: input.title === undefined ? bundle.metadata.title : sanitizeTitle(input.title),
     tags: input.tags === undefined ? bundle.metadata.tags : normalizeTags(input.tags),
-    trustLevel: input.trustLevel ?? bundle.metadata.trustLevel,
+    trustLevel: nextTrustLevel,
     prompt: input.prompt ?? bundle.metadata.prompt,
     model: input.model ?? bundle.metadata.model,
     provider: input.provider ?? bundle.metadata.provider,
     sourcePath: input.sourcePath ?? bundle.metadata.sourcePath,
     project: input.project ?? bundle.metadata.project,
-    updatedAt: new Date().toISOString()
+    updatedAt: now,
+    trustAudit
   };
   updatedMetadata.links = extractArtifactLinks(`${bundle.html}\n${bundle.notes}\n${updatedMetadata.prompt}`);
   await writeFile(path.join(bundle.bundlePath, METADATA_JSON), JSON.stringify(updatedMetadata, null, 2));
@@ -276,6 +286,7 @@ export async function exportArtifactMarkdown(root: string, id: string): Promise<
   return `# ${bundle.metadata.title}\n\n` +
     `- Artifact ID: ${bundle.metadata.id}\n` +
     `- Trust level: ${bundle.metadata.trustLevel}\n` +
+    `- Trust audit entries: ${bundle.metadata.trustAudit?.length ?? 0}\n` +
     `- Created: ${bundle.metadata.createdAt}\n` +
     `- Updated: ${bundle.metadata.updatedAt}\n` +
     `- SHA-256: ${bundle.metadata.hashes.sha256Html}\n` +
@@ -307,6 +318,7 @@ export async function exportArtifactPromptPackage(root: string, id: string): Pro
     `- Project: ${bundle.metadata.project || 'not recorded'}\n` +
     `- Tags: ${bundle.metadata.tags.join(', ') || 'none'}\n` +
     `- Trust level: ${bundle.metadata.trustLevel}\n` +
+    `- Trust audit entries: ${bundle.metadata.trustAudit?.length ?? 0}\n` +
     `- Created: ${bundle.metadata.createdAt}\n` +
     `- Last modified: ${bundle.metadata.updatedAt}\n` +
     `- SHA-256: ${bundle.metadata.hashes.sha256Html}\n\n` +
@@ -319,6 +331,7 @@ export async function exportArtifactPromptPackage(root: string, id: string): Pro
     `## Original prompt\n\n${bundle.metadata.prompt || '_No source prompt recorded._'}\n\n` +
     `## Current notes\n\n${bundle.notes.trim() || '_No sidecar notes recorded._'}\n\n` +
     `## Visible text extracted from HTML\n\n${visibleText || '_No visible text extracted._'}\n\n` +
+    `## Trust audit\n\n${formatTrustAudit(bundle.metadata.trustAudit)}\n\n` +
     `## Snapshot history\n\n${snapshotHistory}\n\n` +
     `## HTML artifact\n\n\`\`\`html\n${bundle.html}\n\`\`\`\n\n` +
     `## User request\n\n` +
@@ -384,6 +397,11 @@ async function uniqueExportPath(destinationDirectory: string, basename: string) 
 
 function stripHtml(html: string) {
   return html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ');
+}
+
+function formatTrustAudit(entries: NonNullable<ArtifactMetadata['trustAudit']> = []) {
+  if (!entries.length) return '- none recorded';
+  return entries.map((entry) => `- ${entry.at}: ${entry.from} → ${entry.to} — ${entry.reason}`).join('\n');
 }
 
 function normalizeExtractedText(text: string) {

@@ -758,6 +758,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
   const [metadataProvider, setMetadataProvider] = useState(artifact.provider);
   const [metadataSourcePath, setMetadataSourcePath] = useState(artifact.sourcePath ?? '');
   const [metadataProject, setMetadataProject] = useState(artifact.project ?? '');
+  const [metadataTrustReason, setMetadataTrustReason] = useState('');
   const [snapshots, setSnapshots] = useState<ArtifactSnapshot[]>([]);
 
   const outgoing = graph.edges.filter((edge) => edge.from === artifact.id);
@@ -776,6 +777,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
         setMetadataProvider(bundle.metadata.provider);
         setMetadataSourcePath(bundle.metadata.sourcePath ?? '');
         setMetadataProject(bundle.metadata.project ?? '');
+        setMetadataTrustReason('');
         setMetadataStatus('Metadata is loaded from metadata.json. Save changes to update search, graph, and exports.');
         setNotesStatus('Sidecar notes live beside the artifact as notes.md and travel with exports.');
         setSnapshotStatus('Snapshots preserve artifact.html, metadata.json, and notes.md before important changes. Restore is reversible because the current state is snapshotted first.');
@@ -806,7 +808,8 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
       model: metadataModel,
       provider: metadataProvider,
       sourcePath: metadataSourcePath,
-      project: metadataProject
+      project: metadataProject,
+      trustReason: metadataTrustReason
     });
     setMetadataTitle(updated.metadata.title);
     setMetadataTags(updated.metadata.tags.join(', '));
@@ -816,6 +819,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
     setMetadataProvider(updated.metadata.provider);
     setMetadataSourcePath(updated.metadata.sourcePath ?? '');
     setMetadataProject(updated.metadata.project ?? '');
+    setMetadataTrustReason('');
     onIndexDirty();
     await onRefresh();
     setMetadataStatus('Saved metadata.json. Library search, graph labels, provenance, and exports now reflect these fields.');
@@ -841,6 +845,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
     setMetadataProvider(restored.metadata.provider);
     setMetadataSourcePath(restored.metadata.sourcePath ?? '');
     setMetadataProject(restored.metadata.project ?? '');
+    setMetadataTrustReason('');
     onIndexDirty();
     setSnapshots(await window.artifactVault.listSnapshots(artifact.id));
     await onRefresh();
@@ -930,6 +935,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
           <label>Project<input value={metadataProject} onChange={(event) => setMetadataProject(event.target.value)} placeholder="project or collection" /></label>
           <label>Tags<input value={metadataTags} onChange={(event) => setMetadataTags(event.target.value)} placeholder="dashboard, report, tool" /></label>
           <label>Trust level<select value={metadataTrust} onChange={(event) => setMetadataTrust(event.target.value as TrustLevel)}><option value="untrusted">untrusted</option><option value="reviewed">reviewed</option><option value="trusted">trusted</option></select></label>
+          {metadataTrust !== artifact.trustLevel && <label>Trust review reason<textarea className="prompt-editor" value={metadataTrustReason} onChange={(event) => setMetadataTrustReason(event.target.value)} placeholder="Required when changing trust level. What did you review, and why is this transition appropriate?" /></label>}
           <label>Provider<input value={metadataProvider} onChange={(event) => setMetadataProvider(event.target.value)} placeholder="OpenAI, Anthropic…" /></label>
           <label>Model<input value={metadataModel} onChange={(event) => setMetadataModel(event.target.value)} placeholder="model name" /></label>
           <label>Source path<input value={metadataSourcePath} onChange={(event) => setMetadataSourcePath(event.target.value)} placeholder="optional local source path" /></label>
@@ -947,9 +953,11 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
             <div><span>Capture source</span><strong>{artifact.sourceType}</strong><p>{artifact.sourcePath ? 'Imported from a local source path.' : 'Created inside the vault from paste or generated content.'}</p></div>
             <div><span>AI generator</span><strong>{artifact.provider || 'unknown provider'}{artifact.model ? ` / ${artifact.model}` : ''}</strong><p>{artifact.prompt ? artifact.prompt.slice(0, 240) : 'No source prompt recorded yet.'}</p></div>
             <div><span>Safety posture</span><strong>{metadataTrust}</strong><p>Replays through <code>artifact://</code> with no Node bridge; artifact-origin network requests are blocked by default.</p></div>
+            <div><span>Trust audit</span><strong>{artifact.trustAudit?.length ?? 0} entries</strong><p>{artifact.trustAudit?.at(-1)?.reason ?? 'Imported artifacts start untrusted until reviewed.'}</p></div>
             <div><span>Integrity</span><strong>{artifact.snapshotCount} snapshot{artifact.snapshotCount === 1 ? '' : 's'}</strong><p>HTML SHA-256 <code>{artifact.hashes.sha256Html}</code></p></div>
           </div>
           <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>Source path</dt><dd>{artifact.sourcePath ? <code>{artifact.sourcePath}</code> : 'not recorded'}</dd><dt>Bundle</dt><dd><code>artifacts/{artifact.id}</code></dd></dl>
+          <div className="snapshot-list">{artifact.trustAudit?.slice().reverse().map((entry) => <article className="snapshot-card" key={`${entry.at}-${entry.from}-${entry.to}`}><strong>{entry.from} → {entry.to}</strong><span>{new Date(entry.at).toLocaleString()}</span><p>{entry.reason}</p></article>)}</div>
         </section>}
         {activeInspectorTab === 'snapshots' && <section className="inspector-section" role="tabpanel">
           <p className="metadata-status">{snapshotStatus}</p>

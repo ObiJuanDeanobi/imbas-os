@@ -187,6 +187,7 @@ Must-have before public alpha:
 - [ ] Improve snapshot browser and restore explanation.
 - [x] Document artifact bundle file format.
 - [x] Verify sandbox/security smoke.
+- [x] Add explicit protocol registration, permission/window/navigation guards, CSP meta normalization, and trust-promotion audit trail.
 
 Stretch/push-to-beta if needed:
 
@@ -203,6 +204,9 @@ Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/huma
 - [x] M2.3 inspector tabs: Details, Notes, Provenance, Snapshots, and AI Context backed by real artifact data.
 - [ ] M2.4 human vault navigation: Pages, Projects, Tags, Graph, with Runs hidden/disabled/private-preview-labelled until Runledger is ready.
 - [ ] M2.5 polish and accessibility: keyboard navigation, focus states, empty/error states, narrow-window behavior, and visual verification.
+- [ ] Expand hostile artifact fixture suite beyond the current live malicious fixture ([#11](https://github.com/ObiJuanDeanobi/imbas-os/issues/11)).
+- [ ] Validate artifact network blocking/security smoke across Windows and macOS runners/devices ([#12](https://github.com/ObiJuanDeanobi/imbas-os/issues/12)).
+- [ ] Refine trust-promotion UX/review criteria beyond the current required reason + audit history ([#14](https://github.com/ObiJuanDeanobi/imbas-os/issues/14)).
 - [ ] Add drag/drop import.
 - [ ] Add zip bundle import/export.
 - [ ] Add snapshot diff/compare.
@@ -293,7 +297,7 @@ The repo should be prepared for a clean GitHub reveal before it is made public. 
 - `docs/assets/source/imbasos_hq_asset_pack_2026-05-12.zip` — archived source HQ asset pack.
 - [`docs/release/public-alpha-unveil-checklist.md`](release/public-alpha-unveil-checklist.md) — repository presentation and final pre-public checklist.
 
-Before public unveil, replace or supplement the generated concept demo with at least one real app screenshot/image captured from the alpha build. Keep generated concept art only if it accurately represents current behavior.
+The README now uses a captured real app screenshot above the fold. Generated concept art remains in roadmap/vision contexts only.
 
 ## Immediate next slice
 

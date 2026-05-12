@@ -37,9 +37,14 @@ export function shouldBlockArtifactRequest(url: string, networkAllowed = false) 
 
 export function wrapHtmlForSandbox(html: string, policy: ArtifactRenderPolicy) {
   const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${escapeAttribute(policy.csp)}">`;
-  if (/<head[^>]*>/i.test(html)) return html.replace(/<head([^>]*)>/i, `<head$1>${cspMeta}`);
-  if (/<html[^>]*>/i.test(html)) return html.replace(/<html([^>]*)>/i, `<html$1><head>${cspMeta}</head>`);
-  return `<!doctype html><html><head>${cspMeta}</head><body>${html}</body></html>`;
+  const withoutExistingCsp = stripExistingCspMeta(html);
+  if (/<head[^>]*>/i.test(withoutExistingCsp)) return withoutExistingCsp.replace(/<head([^>]*)>/i, `<head$1>${cspMeta}`);
+  if (/<html[^>]*>/i.test(withoutExistingCsp)) return withoutExistingCsp.replace(/<html([^>]*)>/i, `<html$1><head>${cspMeta}</head>`);
+  return `<!doctype html><html><head>${cspMeta}</head><body>${withoutExistingCsp}</body></html>`;
+}
+
+function stripExistingCspMeta(html: string) {
+  return html.replace(/<meta\b(?=[^>]*http-equiv=["']?Content-Security-Policy["']?)[^>]*>/gi, '');
 }
 
 function escapeAttribute(value: string) {

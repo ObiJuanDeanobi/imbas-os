@@ -1,6 +1,13 @@
 export type TrustLevel = 'untrusted' | 'reviewed' | 'trusted';
 export type SourceType = 'paste' | 'file' | 'url' | 'generated';
 
+export type TrustAuditEntry = {
+  at: string;
+  from: TrustLevel;
+  to: TrustLevel;
+  reason: string;
+};
+
 export type ArtifactMetadata = {
   id: string;
   title: string;
@@ -17,6 +24,7 @@ export type ArtifactMetadata = {
   hashes: { sha256Html: string };
   links: string[];
   snapshotCount: number;
+  trustAudit?: TrustAuditEntry[];
 };
 
 export type ArtifactSummary = ArtifactMetadata & {
@@ -50,6 +58,7 @@ export type UpdateArtifactMetadataInput = {
   title?: string;
   tags?: string[];
   trustLevel?: TrustLevel;
+  trustReason?: string;
   prompt?: string;
   model?: string;
   provider?: string;

@@ -25,3 +25,11 @@ test('wrapHtmlForSandbox injects CSP into existing head', () => {
   assert.match(wrapped, /Content-Security-Policy/);
   assert.match(wrapped, /connect-src 'none'/);
 });
+
+test('wrapHtmlForSandbox replaces existing CSP meta tags', () => {
+  const policy = renderPolicyForTrustLevel('untrusted');
+  const wrapped = wrapHtmlForSandbox('<html><head><meta http-equiv="Content-Security-Policy" content="default-src *"><title>x</title></head><body></body></html>', policy);
+  assert.equal((wrapped.match(/Content-Security-Policy/g) ?? []).length, 1);
+  assert.doesNotMatch(wrapped, /default-src \*/);
+  assert.match(wrapped, /default-src 'none'/);
+});

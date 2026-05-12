@@ -13,6 +13,7 @@ test('updateArtifactMetadata edits title tags provenance and trust level', async
       title: ' New title ',
       tags: ['Review', 'demo', 'review', '  '],
       trustLevel: 'reviewed',
+      trustReason: 'Reviewed for metadata edit test.',
       prompt: `See [[artifact:${created.metadata.id}]]`,
       provider: 'OpenAI',
       model: 'gpt-test',
@@ -64,4 +65,19 @@ test('updateArtifactMetadata rejects invalid trust levels from IPC callers', asy
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test('trust promotion requires a reason and records audit history', async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'imbas-trust-'));
+  t.after(async () => rm(root, { recursive: true, force: true }));
+  const bundle = await createArtifact(root, { title: 'Trust review', html: '<h1>safe after review</h1>' });
+  await assert.rejects(
+    updateArtifactMetadata(root, bundle.metadata.id, { trustLevel: 'reviewed' }),
+    /Trust level changes require a review reason/
+  );
+  const updated = await updateArtifactMetadata(root, bundle.metadata.id, { trustLevel: 'reviewed', trustReason: 'Reviewed source, no network dependencies, no credential handling.' });
+  assert.equal(updated.metadata.trustLevel, 'reviewed');
+  assert.equal(updated.metadata.trustAudit?.at(-1)?.from, 'untrusted');
+  assert.equal(updated.metadata.trustAudit?.at(-1)?.to, 'reviewed');
+  assert.match(await exportArtifactPromptPackage(root, bundle.metadata.id), /Trust audit/);
 });

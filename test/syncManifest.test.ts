@@ -46,7 +46,7 @@ test('getSyncStatus reports local changes and conflict candidates without silent
     await rebuildSyncManifest(root, 'remote-node');
 
     await updateArtifactNotes(root, artifact.metadata.id, '# Conflict Artifact\n\nLocal edit.');
-    await updateArtifactMetadata(root, artifact.metadata.id, { trustLevel: 'reviewed' });
+    await updateArtifactMetadata(root, artifact.metadata.id, { trustLevel: 'reviewed', trustReason: 'Reviewed for sync conflict detection test.' });
 
     const status = await getSyncStatus(root, localNode.id);
     assert.ok(status.changedFiles.some((file) => file.path === `artifacts/${artifact.metadata.id}/notes.md` && file.logicalType === 'artifact-notes'));
