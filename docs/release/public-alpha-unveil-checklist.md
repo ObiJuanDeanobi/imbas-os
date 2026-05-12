@@ -38,13 +38,13 @@ Current prepared assets:
 - Official app icon PNG: [`../assets/brand/app-icon.png`](../assets/brand/app-icon.png)
 - Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
 - README hero image: [`../assets/demo/html-artifact-vault-real-alpha.png`](../assets/demo/html-artifact-vault-real-alpha.png)
-- README flow GIF: [`../assets/demo/html-artifact-vault-flow.gif`](../assets/demo/html-artifact-vault-flow.gif)
+- README flow image: [`../assets/demo/html-artifact-vault-flow.png`](../assets/demo/html-artifact-vault-flow.png)
 - Roadmap graphic: [`../assets/roadmap/roadmap.svg`](../assets/roadmap/roadmap.svg)
 
 Before reveal:
 
 - [x] Capture at least one real app screenshot from the alpha build.
-- [x] Capture or generate a short workflow GIF: paste/import HTML → preview → metadata/snapshot/search/export.
+- [x] Capture or generate a short workflow image: paste/import HTML → preview → metadata/snapshot/search/export.
 - [x] Keep concept art only if it accurately represents current behavior.
 - [ ] Confirm assets render in GitHub README dark/light contexts.
 

@@ -71,7 +71,7 @@ Scope:
 - Notes, provenance, snapshot create/restore, and AI context package/context export.
 - A readable-storage path toward an Obsidian-like folder tree, with stable IDs/indexes underneath.
 - Basic Markdown/artifact link and backlink foundations; deeper graph polish can move to beta if it threatens alpha focus.
-- Demo artifacts and screenshots/GIFs.
+- Demo artifacts and screenshots/images.
 - Root `README.md`, `llms.txt`, `llms-full.txt`, `AGENTS.md`, `skill.md`, `SECURITY.md`, `CONTRIBUTING.md`, license, roadmap.
 
 Non-goals for alpha:
@@ -104,7 +104,7 @@ Candidate work:
 - “Copy AI context” / “Export AI context pack” for artifacts.
 - Zip import/export for portable bundles.
 - Better snapshot diff/compare UX.
-- Demo walkthrough video/GIF.
+- Demo walkthrough video/image.
 - More robust search filters and graph navigation.
 - Optional browser-extension/share target research.
 - More security tests around CSP, navigation, downloads, and local file boundaries.
@@ -283,11 +283,11 @@ The repo should be prepared for a clean GitHub reveal before it is made public. 
 - `docs/assets/brand/app-icon.png` — official square app icon / raster mark for app surfaces.
 - `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
 - `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.
-- `docs/assets/demo/html-artifact-vault-flow.gif` — short animated flow demo.
+- `docs/assets/demo/html-artifact-vault-flow.png` — official HTML Artifact Vault promo/flow image.
 - `docs/assets/roadmap/roadmap.svg` — roadmap graphic for README/docs/GitHub discussion.
 - [`docs/release/public-alpha-unveil-checklist.md`](release/public-alpha-unveil-checklist.md) — repository presentation and final pre-public checklist.
 
-Before public unveil, replace or supplement the generated concept demo with at least one real app screenshot/GIF captured from the alpha build. Keep generated concept art only if it accurately represents current behavior.
+Before public unveil, replace or supplement the generated concept demo with at least one real app screenshot/image captured from the alpha build. Keep generated concept art only if it accurately represents current behavior.
 
 ## Immediate next slice
 

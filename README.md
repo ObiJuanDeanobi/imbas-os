@@ -15,7 +15,7 @@
 
 ![HTML Artifact Vault real alpha screenshot](docs/assets/demo/html-artifact-vault-real-alpha.png)
 
-![HTML Artifact Vault flow demo](docs/assets/demo/html-artifact-vault-flow.gif)
+![HTML Artifact Vault promo panel](docs/assets/demo/html-artifact-vault-flow.png)
 
 # Imbas OS
 

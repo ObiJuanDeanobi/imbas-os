@@ -1,6 +1,6 @@
 # Demo walkthrough
 
-Use this to capture screenshots/GIFs or walk someone through the private preview.
+Use this to capture screenshots/images or walk someone through the private preview.
 
 ## Setup
 
@@ -51,7 +51,7 @@ On headless environments, use the existing smoke scripts rather than manual GUI 
    - Export **Bundle folder**.
    - Re-import that folder into another vault/root later.
 
-## Screenshot/GIF checklist
+## Screenshot/image checklist
 
 - Sidebar with 60-second tour and demo vault list.
 - Sandboxed artifact viewer with PR review.

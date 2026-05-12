@@ -69,7 +69,7 @@ Required public-facing materials:
 - `README.md` above-the-fold story: what it is, why now, what works, what is not yet done.
 - `docs/roadmap.md` simple staged roadmap plus detailed milestones.
 - `docs/release/public-alpha-unveil-checklist.md` final pre-public checklist.
-- Real app screenshot and workflow GIF in README.
+- Real app screenshot and workflow image in README.
 - `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, issue templates, PR template.
 - `llms.txt` and `llms-full.txt` current.
 
@@ -130,7 +130,7 @@ Only after Workstreams A-D pass:
 1. Prepare final summary:
    - commit SHA;
    - verification evidence;
-   - screenshot/GIF status;
+   - screenshot/image status;
    - known limitations;
    - rollback path;
    - exact proposed public actions.

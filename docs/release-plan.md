@@ -65,7 +65,7 @@ The smoke scripts may use Electron with `--no-sandbox` under `xvfb-run` when the
 
 1. Decide whether the private tarball is enough for the next review, or choose Electron Forge/electron-builder for a real desktop installer.
 2. Decide app signing/notarization path later; not needed for private Linux developer preview.
-3. Capture screenshots/GIFs using `docs/demo-walkthrough.md`.
+3. Capture screenshots/images using `docs/demo-walkthrough.md`.
 4. Decide license/commercial posture before publishing any repository or binary.
 5. Add zip bundle import/export if folder-based portability proves too clunky for testers.
 
