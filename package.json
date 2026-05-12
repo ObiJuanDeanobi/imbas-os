@@ -2,7 +2,7 @@
   "name": "imbas-os",
   "version": "0.1.0",
   "private": true,
-  "description": "Local-first operating layer for AI memory, context, artifacts, living wiki, and agent handoffs.",
+  "description": "Local-first vault for AI-generated HTML artifacts — save, sandbox, version, search, and export interactive LLM outputs.",
   "type": "module",
   "main": "dist/main/app.js",
   "scripts": {

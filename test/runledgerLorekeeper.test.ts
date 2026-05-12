@@ -12,14 +12,14 @@ test('Runledger entries are durable timeline records with searchable summaries',
 test('Lorekeeper proposals redact sensitive content and require explicit status transitions', () => {
   const proposal = createLorekeeperProposal({
     title: 'Sprint 4 note',
-    markdown: '# Note\n\ntoken=ghp_abcdefghijklmnopqrstuvwxyz123456',
+    markdown: '# Note\n\ntoken=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456',
     rationale: 'Promote sprint decision into wiki.',
     connector: 'OpenClaw',
     agent: 'main',
     sources: ['openclaw://runs/run-1']
   });
   assert.equal(proposal.status, 'proposed');
-  assert.equal(proposal.markdown.includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(proposal.markdown.includes('FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456'), false);
   assert.equal(searchLorekeeperProposals([proposal], 'Sprint 4').length, 1);
   assert.equal(transitionLorekeeperProposal(proposal, 'approved').status, 'approved');
 });

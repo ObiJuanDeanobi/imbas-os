@@ -19,13 +19,13 @@ test('Conduit local API accepts and redacts context events', async () => {
       type: 'observation',
       layer: 'episodic',
       visibility: 'private',
-      text: 'Use secret://github/token but never expose token=ghp_abcdefghijklmnopqrstuvwxyz123456.'
+      text: 'Use secret://github/token but never expose token=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456.'
     })
   }), store);
   assert.equal(response.status, 202);
   assert.equal(store.events.length, 1);
   assert.equal(store.events[0].text.includes('secret://github/token'), false);
-  assert.equal(store.events[0].text.includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(store.events[0].text.includes('FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456'), false);
 });
 
 test('Conduit local API rejects invalid secret pointer events', async () => {
@@ -100,7 +100,7 @@ test('Conduit local API builds a run replay timeline across runs, events, ledger
   const store = createConduitRecordStore();
   await handleConduitRequest(new Request('http://127.0.0.1:0/v0/events', {
     method: 'POST',
-    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', runId: 'run-replay-1', type: 'observation', layer: 'episodic', visibility: 'private', text: 'Replay event with token=ghp_abcdefghijklmnopqrstuvwxyz123456.' })
+    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', runId: 'run-replay-1', type: 'observation', layer: 'episodic', visibility: 'private', text: 'Replay event with token=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456.' })
   }), store);
   await handleConduitRequest(new Request('http://127.0.0.1:0/v0/runs', {
     method: 'POST',
@@ -164,17 +164,17 @@ test('Conduit dispatches Agent Console messages to configured OpenClaw dispatche
 
   const response = await handleConduitRequest(new Request('http://127.0.0.1:0/v0/agents/openclaw/dispatch', {
     method: 'POST',
-    body: JSON.stringify({ agent: 'OpenClaw', mode: 'chat', message: 'Please inspect token=ghp_abcdefghijklmnopqrstuvwxyz123456 and summarize.' })
+    body: JSON.stringify({ agent: 'OpenClaw', mode: 'chat', message: 'Please inspect token=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456 and summarize.' })
   }), store);
 
   assert.equal(response.status, 200);
   assert.equal(received.length, 1);
-  assert.equal(received[0].includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(received[0].includes('FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456'), false);
   assert.equal(store.runs.length, 1);
   assert.equal(store.runs[0].outcome, 'completed');
   assert.equal(store.runs[0].summary, 'OpenClaw reply: next safe task is to verify the connector.');
   assert.equal(store.runledger.some((entry) => entry.title.startsWith('Agent Console dispatch:')), true);
-  assert.equal(JSON.stringify(response.body).includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(JSON.stringify(response.body).includes('FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456'), false);
 });
 
 test('Conduit blocks non-OpenClaw Agent Console live dispatch targets', async () => {

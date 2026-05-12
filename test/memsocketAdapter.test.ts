@@ -35,11 +35,11 @@ test('redacts Sanctum handles and raw secret-like values before Memsocket payloa
     type: 'secret_access',
     layer: 'episodic',
     visibility: 'secret_pointer',
-    text: 'Used secret://github/token with token=ghp_abcdefghijklmnopqrstuvwxyz123456.'
+    text: 'Used secret://github/token with token=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456.'
   });
 
   assert.equal(payload.text.includes('secret://github/token'), false);
-  assert.equal(payload.text.includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(payload.text.includes('FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456'), false);
   assert.match(payload.text, /\[secret-handle:redacted\]/);
   assert.match(payload.text, /\[raw-secret:redacted\]/);
 });

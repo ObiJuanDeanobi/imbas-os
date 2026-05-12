@@ -27,7 +27,7 @@ test('Conduit redaction audit also writes Sanctum Runledger entries', async () =
   const store = createConduitRecordStore();
   await handleConduitRequest(new Request('http://127.0.0.1/v0/events', {
     method: 'POST',
-    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', type: 'observation', layer: 'episodic', visibility: 'private', text: 'Never leak token=ghp_abcdefghijklmnopqrstuvwxyz123456.' })
+    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', type: 'observation', layer: 'episodic', visibility: 'private', text: 'Never leak token=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456.' })
   }), store);
   assert.equal(store.sanctumAudit.length, 1);
   assert.equal(store.runledger.some((entry) => entry.kind === 'sanctum' && entry.outcome === 'redacted'), true);

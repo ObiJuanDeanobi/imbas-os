@@ -10,12 +10,12 @@ test('Conduit records Sanctum audit entries when input is redacted', async () =>
   const store = createConduitRecordStore();
   const response = await handleConduitRequest(new Request('http://127.0.0.1/v0/events', {
     method: 'POST',
-    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', type: 'observation', layer: 'episodic', visibility: 'private', text: 'token=ghp_abcdefghijklmnopqrstuvwxyz123456' })
+    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', type: 'observation', layer: 'episodic', visibility: 'private', text: 'token=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456' })
   }), store);
   assert.equal(response.status, 202);
   assert.equal(store.sanctumAudit.length, 1);
   assert.equal(store.sanctumAudit[0].action, 'redacted_input');
-  assert.equal(JSON.stringify(store.sanctumAudit).includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(JSON.stringify(store.sanctumAudit).includes('FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456'), false);
 });
 
 test('durable Conduit store reloads Sanctum audit entries', async () => {
@@ -23,7 +23,7 @@ test('durable Conduit store reloads Sanctum audit entries', async () => {
   const store = await createDurableConduitRecordStore({ dir });
   await handleConduitRequest(new Request('http://127.0.0.1/v0/runs', {
     method: 'POST',
-    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', runId: 'run-audit', task: 'Use token=ghp_abcdefghijklmnopqrstuvwxyz123456', outcome: 'completed', summary: 'Redaction happened' })
+    body: JSON.stringify({ connector: 'OpenClaw', agent: 'main', runId: 'run-audit', task: 'Use token=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456', outcome: 'completed', summary: 'Redaction happened' })
   }), store);
   const reloaded = await createDurableConduitRecordStore({ dir });
   assert.equal(reloaded.sanctumAudit.length, 1);

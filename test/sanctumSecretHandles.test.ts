@@ -14,9 +14,9 @@ test('extracts unique sensitive handles for audit references', () => {
 });
 
 test('redacts handles and common raw secret-like values', () => {
-  const text = 'token=ghp_abcdefghijklmnopqrstuvwxyz123456 and secret://github/token with api_key=supersecretvalue';
+  const text = 'token=FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456 and secret://github/token with api_key=supersecretvalue';
   const redacted = redactSensitiveText(text);
-  assert.equal(redacted.includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(redacted.includes('FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456'), false);
   assert.equal(redacted.includes('supersecretvalue'), false);
   assert.equal(redacted.includes('secret://github/token'), false);
   assert.match(redacted, /\[secret-handle:redacted\]/);

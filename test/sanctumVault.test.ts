@@ -10,7 +10,7 @@ test('Sanctum vault stores encrypted secret values and reloads metadata by handl
   const vault = await createSanctumVault({ file: path.join(dir, 'vault.json'), passphrase: 'test-passphrase' });
   await vault.putSecret({
     handle: 'secret://github/token',
-    value: 'ghp_abcdefghijklmnopqrstuvwxyz123456',
+    value: 'FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456',
     label: 'GitHub token',
     allowedConnectors: ['OpenClaw'],
     allowedTools: ['github'],
@@ -18,12 +18,12 @@ test('Sanctum vault stores encrypted secret values and reloads metadata by handl
   });
 
   const rawFile = await readFile(path.join(dir, 'vault.json'), 'utf8');
-  assert.equal(rawFile.includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.equal(rawFile.includes('FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456'), false);
   assert.equal(rawFile.includes('GitHub token'), true);
 
   const reloaded = await createSanctumVault({ file: path.join(dir, 'vault.json'), passphrase: 'test-passphrase' });
   assert.deepEqual((await reloaded.listSecrets()).map((secret) => secret.handle), ['secret://github/token']);
-  assert.equal(await reloaded.resolveSecret('secret://github/token', { connector: 'OpenClaw', tool: 'github', purpose: 'private repo creation', approved: true }), 'ghp_abcdefghijklmnopqrstuvwxyz123456');
+  assert.equal(await reloaded.resolveSecret('secret://github/token', { connector: 'OpenClaw', tool: 'github', purpose: 'private repo creation', approved: true }), 'FAKE_TEST_TOKEN_abcdefghijklmnopqrstuvwxyz123456');
 });
 
 test('Sanctum vault denies unapproved or out-of-policy secret resolution and audits attempts', async () => {

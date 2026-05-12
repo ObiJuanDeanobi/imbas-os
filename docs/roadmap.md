@@ -174,12 +174,12 @@ These are intended to become GitHub milestones/issues once approved.
 - [ ] Add `CONTRIBUTING.md`.
 - [ ] Add issue templates.
 - [ ] Add pull request template.
-- [ ] Update README around HTML Artifact Vault alpha positioning.
-- [ ] Add screenshots/GIFs and demo walkthrough.
-- [ ] Add public alpha status section.
-- [ ] Run secret scan and private URL audit.
-- [ ] Run `npm run package:dev`.
-- [ ] Produce public-alpha launch checklist.
+- [x] Update README around HTML Artifact Vault alpha positioning.
+- [x] Add screenshots/GIFs and demo walkthrough.
+- [x] Add public alpha status section.
+- [x] Run secret scan and private URL audit.
+- [x] Run `npm run package:dev`.
+- [x] Produce public-alpha launch checklist.
 
 ### M1 — HTML Artifact Vault alpha
 
@@ -190,8 +190,8 @@ These are intended to become GitHub milestones/issues once approved.
 - [ ] Add “Copy AI context” for selected artifact.
 - [ ] Add artifact context-pack export.
 - [ ] Improve snapshot browser and restore explanation.
-- [ ] Document artifact bundle file format.
-- [ ] Verify sandbox/security smoke.
+- [x] Document artifact bundle file format.
+- [x] Verify sandbox/security smoke.
 
 ### M2 — HTML Artifact Vault beta
 

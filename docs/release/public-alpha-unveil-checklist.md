@@ -44,7 +44,7 @@ Current prepared assets:
 Before reveal:
 
 - [x] Capture at least one real app screenshot from the alpha build.
-- [ ] Capture or generate a short real workflow GIF: paste/import HTML → preview → metadata/snapshot/search/export.
+- [x] Capture or generate a short workflow GIF: paste/import HTML → preview → metadata/snapshot/search/export.
 - [x] Keep concept art only if it accurately represents current behavior.
 - [ ] Confirm assets render in GitHub README dark/light contexts.
 
@@ -70,7 +70,7 @@ The README should answer, above the fold:
 - [x] `llms.txt` current.
 - [x] `llms-full.txt` regenerated with `npm run docs:llms`.
 - [x] No stale private-preview-only claims in public-facing README copy.
-- [x] No secrets, tokens, private URLs, private hostnames, or personal data in tracked files.
+- [x] No real secrets, tokens, private URLs, private hostnames, or personal data in tracked files; placeholder/test secret-like strings are documented or redaction fixtures.
 
 ## Verification gate
 
@@ -86,7 +86,7 @@ Recommended extra audit before public switch:
 
 ```bash
 git status --short
-git grep -n "starhawk\|tail8464be\|100\.81\.12\.30\|secret\|token\|password\|BEGIN .*PRIVATE\|PRIVATE KEY" -- . ':!package-lock.json'
+git grep -n -E "tail[[:alnum:]]+\.ts\.net|100\.(6[4-9]|[78][0-9]|9[0-9]|1[01][0-9]|12[0-7])\.|api[_-]?key|secret|token|password|BEGIN .*PRIVATE|PRIVATE KEY" -- . ':!package-lock.json'
 ```
 
 Any hit must be reviewed. Some words like `token` may be legitimate in docs/code, but public/private infrastructure details and real secrets must not ship.

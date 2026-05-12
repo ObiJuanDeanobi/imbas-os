@@ -19,9 +19,28 @@
 
 # Imbas OS
 
-**Imbas OS is launching with HTML Artifact Vault first:** a free/open-source local-first workbench for AI-generated HTML artifacts.
+**Imbas OS is launching with HTML Artifact Vault first:** a free/open-source local-first desktop workbench for AI-generated HTML artifacts.
 
 Generated HTML is becoming a natural next output layer after raw text and Markdown. Imbas OS gives those artifacts a durable home: sandboxed replay, metadata, notes, provenance, snapshots, search, and AI-context export.
+
+If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or HTML report, HTML Artifact Vault is the place to keep it instead of losing it in a chat thread or downloads folder.
+
+## What you can do in the alpha
+
+- Paste or import generated HTML and replay it locally.
+- Inspect artifacts inside a sandboxed `artifact://` viewer with network access blocked by default.
+- Add title/project/tags/prompt/provider metadata, notes, provenance, and trust level.
+- Create and restore snapshots as the artifact evolves.
+- Search artifact titles, tags, notes, prompts, and visible HTML.
+- Export prompt/context packages for the next AI pass.
+- Keep vault-owned Markdown notes alongside artifacts, with read-only bridge support for external Markdown/wiki pages.
+
+## What this is not yet
+
+- Not a hosted cloud service.
+- Not a production signed/notarized installer.
+- Not the full Imbas OS 1.0 agent operating layer.
+- Not a claim that Android, Memsocket, Conduit, or live agent dispatch are public-stable yet.
 
 ## Roadmap
 
