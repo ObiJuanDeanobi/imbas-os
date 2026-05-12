@@ -34,6 +34,10 @@ const sourcePaths = [
   'docs/known-limitations.md'
 ];
 
+function normalizeNewlines(value) {
+  return value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+}
+
 const missing = sourcePaths.filter((sourcePath) => !existsSync(resolve(sourcePath)));
 if (missing.length) {
   console.error(`Cannot generate llms-full.txt; missing sources: ${missing.join(', ')}`);
@@ -42,7 +46,7 @@ if (missing.length) {
 
 const sections = await Promise.all(
   sourcePaths.map(async (sourcePath) => {
-    const content = (await readFile(resolve(sourcePath), 'utf8')).trim();
+    const content = normalizeNewlines(await readFile(resolve(sourcePath), 'utf8')).trim();
     return ['---', `## Source: ${sourcePath}`, '', content, ''].join('\n');
   })
 );
@@ -56,7 +60,7 @@ const generated = [
 ].join('\n');
 
 if (checkOnly) {
-  const current = existsSync(outputPath) ? await readFile(outputPath, 'utf8') : '';
+  const current = existsSync(outputPath) ? normalizeNewlines(await readFile(outputPath, 'utf8')) : '';
   if (!isDeepStrictEqual(current, generated)) {
     console.error('llms-full.txt is stale. Run `npm run docs:llms` and commit the result.');
     process.exit(1);
