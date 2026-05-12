@@ -280,7 +280,7 @@ The repo should be prepared for a clean GitHub reveal before it is made public. 
 
 - `docs/assets/brand/logo.png` — official full logo lockup for README/header use.
 - `docs/assets/brand/logo-mark.svg` — legacy/source square icon/mark.
-- `docs/assets/brand/logo-mark.png` — raster mark for surfaces that prefer PNG.
+- `docs/assets/brand/app-icon.png` — official square app icon / raster mark for app surfaces.
 - `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
 - `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.
 - `docs/assets/demo/html-artifact-vault-flow.gif` — short animated flow demo.

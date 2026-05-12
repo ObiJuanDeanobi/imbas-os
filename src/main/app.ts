@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, session } from 'electron';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createArtifact, createArtifactFromFile, createSnapshot, defaultVaultRoot, exportArtifactBundleToDirectory, exportArtifactJson, exportArtifactMarkdown, exportArtifactPromptPackage, getArtifactGraph, importArtifactBundleFromDirectory, initVault, listArtifacts, listSnapshots, readArtifact, restoreSnapshot, searchArtifacts, updateArtifactMetadata, updateArtifactNotes } from './vault/vaultStore.js';
@@ -23,6 +24,7 @@ let vaultRoot = '';
 let wikiBridgeRoot = '';
 let conduitService: ConduitLoopbackService | null = null;
 let conduitStore: ConduitRecordStore = createConduitRecordStore();
+const appIconPath = path.resolve(process.cwd(), 'docs/assets/brand/app-icon.png');
 
 async function prepareRuntime() {
   vaultRoot = defaultVaultRoot(app.getPath('userData'));
@@ -83,6 +85,7 @@ async function createWindow() {
     width: 1280,
     height: 860,
     title: 'Imbas OS',
+    ...(existsSync(appIconPath) ? { icon: appIconPath } : {}),
     webPreferences: {
       preload: path.join(__dirname, '../preload/api.cjs'),
       contextIsolation: true,

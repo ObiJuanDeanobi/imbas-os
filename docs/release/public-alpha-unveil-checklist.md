@@ -35,7 +35,7 @@ Current prepared assets:
 
 - Official full logo: [`../assets/brand/logo.png`](../assets/brand/logo.png)
 - Logo mark SVG: [`../assets/brand/logo-mark.svg`](../assets/brand/logo-mark.svg)
-- Logo mark PNG: [`../assets/brand/logo-mark.png`](../assets/brand/logo-mark.png)
+- Official app icon PNG: [`../assets/brand/app-icon.png`](../assets/brand/app-icon.png)
 - Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
 - README hero image: [`../assets/demo/html-artifact-vault-real-alpha.png`](../assets/demo/html-artifact-vault-real-alpha.png)
 - README flow GIF: [`../assets/demo/html-artifact-vault-flow.gif`](../assets/demo/html-artifact-vault-flow.gif)

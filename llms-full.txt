@@ -938,7 +938,7 @@ The repo should be prepared for a clean GitHub reveal before it is made public. 
 
 - `docs/assets/brand/logo.png` — official full logo lockup for README/header use.
 - `docs/assets/brand/logo-mark.svg` — legacy/source square icon/mark.
-- `docs/assets/brand/logo-mark.png` — raster mark for surfaces that prefer PNG.
+- `docs/assets/brand/app-icon.png` — official square app icon / raster mark for app surfaces.
 - `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
 - `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.
 - `docs/assets/demo/html-artifact-vault-flow.gif` — short animated flow demo.
@@ -3039,7 +3039,7 @@ Current prepared assets:
 
 - Official full logo: [`../assets/brand/logo.png`](../assets/brand/logo.png)
 - Logo mark SVG: [`../assets/brand/logo-mark.svg`](../assets/brand/logo-mark.svg)
-- Logo mark PNG: [`../assets/brand/logo-mark.png`](../assets/brand/logo-mark.png)
+- Official app icon PNG: [`../assets/brand/app-icon.png`](../assets/brand/app-icon.png)
 - Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
 - README hero image: [`../assets/demo/html-artifact-vault-real-alpha.png`](../assets/demo/html-artifact-vault-real-alpha.png)
 - README flow GIF: [`../assets/demo/html-artifact-vault-flow.gif`](../assets/demo/html-artifact-vault-flow.gif)
