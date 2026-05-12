@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/brand/imbasos_asset_pack/logos/primary-logo-lockup-dark.png" alt="Imbas OS — local-first vault for AI-generated artifacts" width="760">
+  <img src="docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_logo_horizontal_dark_2x.png" alt="Imbas OS — local-first vault for AI-generated artifacts" width="760">
 </p>
 
 <p align="center">
@@ -13,9 +13,9 @@
   <a href="llms.txt">llms.txt</a>
 </p>
 
-![Current Imbas OS shell screenshot](docs/assets/ui/human-facing-vault-shell-target.png)
+![Current Imbas OS shell screenshot](docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png)
 
-![HTML Artifact Vault promo panel](docs/assets/brand/imbasos_asset_pack/marketing/html-artifact-vault-promo-panel.png)
+![HTML Artifact Vault promo panel](docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png)
 
 # Imbas OS
 

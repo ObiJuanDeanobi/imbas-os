@@ -26,7 +26,7 @@ let vaultRoot = '';
 let wikiBridgeRoot = '';
 let conduitService: ConduitLoopbackService | null = null;
 let conduitStore: ConduitRecordStore = createConduitRecordStore();
-const appIconPath = path.resolve(process.cwd(), 'docs/assets/brand/app-icon.png');
+const appIconPath = path.resolve(process.cwd(), 'docs/assets/brand/imbasos_hq_asset_pack/png/hq/imbasos_app_icon_dark.png');
 
 async function prepareRuntime() {
   vaultRoot = defaultVaultRoot(app.getPath('userData'));

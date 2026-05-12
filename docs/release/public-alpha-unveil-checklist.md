@@ -25,23 +25,17 @@ Recommended topics:
 
 Recommended social preview image:
 
-- `docs/assets/brand/social-card.png`
+- `docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png`
 
 ## Visual assets
 
 Current prepared assets:
 
-- Current app shell screenshot: [`../assets/ui/human-facing-vault-shell-target.png`](../assets/ui/human-facing-vault-shell-target.png)
-- Artifact Vault shell screenshot: [`../assets/demo/html-artifact-vault-shell.png`](../assets/demo/html-artifact-vault-shell.png)
-
-- Official full logo PNG: [`../assets/brand/imbasos_asset_pack/logos/primary-logo-lockup-dark.png`](../assets/brand/imbasos_asset_pack/logos/primary-logo-lockup-dark.png)
-- Canonical copied logo PNG: [`../assets/brand/logo.png`](../assets/brand/logo.png)
-- Logo mark SVG: [`../assets/brand/logo-mark.svg`](../assets/brand/logo-mark.svg)
-- Official app icon PNG: [`../assets/brand/app-icon.png`](../assets/brand/app-icon.png)
-- Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
-- README hero image: [`../assets/ui/human-facing-vault-shell-target.png`](../assets/ui/human-facing-vault-shell-target.png)
-- README flow image: [`../assets/brand/imbasos_asset_pack/marketing/html-artifact-vault-promo-panel.png`](../assets/brand/imbasos_asset_pack/marketing/html-artifact-vault-promo-panel.png)
-- Roadmap graphic: [`../assets/roadmap/roadmap.svg`](../assets/roadmap/roadmap.svg)
+- README logo: [`../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_logo_horizontal_dark_2x.png`](../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_logo_horizontal_dark_2x.png)
+- README shell/concept image: [`../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png`](../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png)
+- README Artifact Vault marketing image: [`../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png`](../assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png)
+- App icon: [`../assets/brand/imbasos_hq_asset_pack/png/hq/imbasos_app_icon_dark.png`](../assets/brand/imbasos_hq_asset_pack/png/hq/imbasos_app_icon_dark.png)
+- SVG source assets: [`../assets/brand/imbasos_hq_asset_pack/svg/`](../assets/brand/imbasos_hq_asset_pack/svg/)
 
 Before reveal:
 

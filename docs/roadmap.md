@@ -1,6 +1,6 @@
 # Imbas OS public roadmap
 
-![Imbas OS roadmap](assets/roadmap/roadmap.svg)
+![Imbas OS brand and UI concept board](assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png)
 
 This is the single source of truth for getting Imbas OS off the ground as free/open-source software.
 
@@ -284,14 +284,12 @@ Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/huma
 
 The repo should be prepared for a clean GitHub reveal before it is made public. Required visual/story assets:
 
-- `docs/assets/brand/logo.png` — official full logo lockup for README/header use.
-- `docs/assets/brand/logo-mark.svg` — legacy/source square icon/mark.
-- `docs/assets/brand/app-icon.png` — official square app icon / raster mark for app surfaces.
-- `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
-- `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.
-- `docs/assets/demo/html-artifact-vault-flow.png` — official HTML Artifact Vault promo/flow image.
-- `docs/assets/ui/human-facing-vault-shell-target.png` — current captured Imbas OS shell screenshot, aligned with the human-facing Artifact Vault shell direction.
-- `docs/assets/roadmap/roadmap.svg` — roadmap graphic for README/docs/GitHub discussion.
+- `docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_logo_horizontal_dark_2x.png` — README/header logo.
+- `docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/imbasos_brand_ui_concept_board_2x.png` — high-resolution shell/concept board image for README/docs.
+- `docs/assets/brand/imbasos_hq_asset_pack/png/upscaled_2x/artifact_vault_showcase_banner_2x.png` — high-resolution Artifact Vault marketing/showcase image.
+- `docs/assets/brand/imbasos_hq_asset_pack/png/hq/imbasos_app_icon_dark.png` — app icon / raster mark for app surfaces.
+- `docs/assets/brand/imbasos_hq_asset_pack/svg/` — SVG marks and showcase sources.
+- `docs/assets/source/imbasos_hq_asset_pack_2026-05-12.zip` — archived source HQ asset pack.
 - [`docs/release/public-alpha-unveil-checklist.md`](release/public-alpha-unveil-checklist.md) — repository presentation and final pre-public checklist.
 
 Before public unveil, replace or supplement the generated concept demo with at least one real app screenshot/image captured from the alpha build. Keep generated concept art only if it accurately represents current behavior.
