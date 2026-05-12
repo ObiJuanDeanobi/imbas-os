@@ -136,6 +136,7 @@ Goal: ship one coherent local-first Imbas OS distribution.
 
 Required before public 1.0:
 
+- Public 1.0 module coverage: Artifact Vault, Memsocket, Conduit, Runledger, Lorekeeper, Sanctum, Atlas, SyncCore, Desktop, Android/Mobile, and CLI each have a documented human surface, AI surface, source of truth, verification gate, and recovery/rollback story.
 - Memsocket is fully merged/integrated/tested as a first-class Imbas OS module.
 - Fresh-system gate passes from a clean environment.
 - Documentation readiness gate passes.
@@ -143,6 +144,23 @@ Required before public 1.0:
 - Security/privacy audit passes.
 - Public repo/license/release posture is approved.
 - Johnathan explicitly approves public 1.0.
+
+### Lane E: Hosted/team product later
+
+Goal: keep the free local core trustworthy while eventually offering paid convenience and business-grade controls. This is explicitly after the local core is useful and should not block HTML Artifact Vault alpha.
+
+Potential later scope:
+
+- hosted sync and managed backup;
+- browser-accessible workspace;
+- team/org workspaces;
+- shared review queues;
+- admin controls and audit retention;
+- compliance evidence exports;
+- hosted connector infrastructure;
+- managed agent runner options.
+
+This lane is not Patreon. Patreon/supporter tiers may fund development and early access, but team/business operations should be a separate product line.
 
 ## GitHub roadmap milestones
 
@@ -231,8 +249,12 @@ These are intended to become GitHub milestones/issues once approved.
 - [ ] Add notification/approval research.
 - [ ] Document APK/install/update flow.
 
-### M8 — SyncCore and recovery
+### M8 — Atlas, CLI, SyncCore, and recovery
 
+- [ ] Unified Atlas search across artifacts, wiki pages, runs, memory/context events, and projects.
+- [ ] Graph/backlink navigation for artifacts, wiki, Runledger refs, and context packs.
+- [ ] CLI/admin commands for verification, import/export, context-pack generation, backup/restore, and diagnostics.
+- [ ] Machine-readable status output for automation and AI agents.
 - [ ] Backup/restore UI.
 - [ ] Portable export/import polish.
 - [ ] Conflict detection UX.
