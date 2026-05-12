@@ -40,6 +40,10 @@ Repo: https://github.com/ObiJuanDeanobi/imbas-os
 
 Opening the public alpha for Imbas Artifact Vault.
 
+Built entirely with my AI agents — I’m not a professional software developer, as you can see I’m learning/building in public, so feedback is very welcome.
+
+After seeing this article from @trq212, I was inspired to build a tool that helps push better AI artifacts forward: https://x.com/trq212/status/2052809885763747935
+
 Chats are temporary. Artifacts should be durable.
 
 It’s a local-first desktop vault for AI-generated HTML artifacts: save, sandbox, version, search, annotate, and export context for the next AI pass.
