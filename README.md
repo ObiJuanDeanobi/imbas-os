@@ -27,7 +27,7 @@ The bigger Imbas OS vision is a local-first agent workbench, but the public alph
 
 ## Why this exists
 
-AI models increasingly produce interactive HTML: dashboards, visual explainers, slide decks, simulations, calculators, internal tools, reports, prototypes, and compliance/evidence views. Those outputs are useful, but they are usually treated as disposable chat attachments.
+AI models will increasingly produce interactive HTML: dashboards, visual explainers, slide decks, simulations, calculators, internal tools, reports, prototypes, and compliance/evidence views. Those outputs are useful, but they are usually treated as disposable chat attachments.
 
 Imbas Artifact Vault turns those outputs into durable project objects:
 
@@ -255,21 +255,6 @@ Imbas OS
 ├─ Mobile           Android companion
 └─ CLI              terminal + automation interface
 ```
-
-## Public 1.0 release rule
-
-Before Imbas OS is released publicly as 1.0, **Memsocket must be fully integrated, merged into the Imbas OS release story, and tested as a first-class module**. Users may still choose whether to enable Memsocket at runtime, but public 1.0 should not ship as a loosely related Artifact Vault app plus an external memory repo.
-
-Required before public 1.0:
-
-- Memsocket included in supported install/profile story.
-- End-to-end events/search/context-pack flow.
-- OpenClaw/Hermes connector dogfood.
-- Sanctum redaction/secret-handle safety across memory/context packs.
-- MemPalace retired only after the staged migration criteria pass; until then it remains a working safety net, not the public 1.0 memory dependency.
-- Documentation readiness gate and fresh-system user experience gate pass: clean OpenClaw config connected to Imbas OS with all supported modules, companion app paired, adapters tested, backup/restore tested, and security smoke verified. See [`docs/release/fresh-system-1.0-gate.md`](docs/release/fresh-system-1.0-gate.md).
-- Backup/restore/export/delete/forget behavior tested across memory, artifacts, and wiki.
-- Explicit maintainer approval.
 
 ## License
 
