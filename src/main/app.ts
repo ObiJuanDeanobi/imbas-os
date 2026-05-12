@@ -20,6 +20,8 @@ import { createOpenClawCliDispatcher } from './openclaw/dispatcher.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const devServerUrl = process.env.IMBAS_OS_DEV_SERVER_URL ?? process.env.ARTIFACT_VAULT_DEV_SERVER_URL;
 const capturePath = process.env.IMBAS_OS_CAPTURE_PATH ?? process.env.ARTIFACT_VAULT_CAPTURE_PATH;
+const captureWidth = process.env.IMBAS_OS_CAPTURE_WIDTH ? Number(process.env.IMBAS_OS_CAPTURE_WIDTH) : undefined;
+const captureHeight = process.env.IMBAS_OS_CAPTURE_HEIGHT ? Number(process.env.IMBAS_OS_CAPTURE_HEIGHT) : undefined;
 let vaultRoot = '';
 let wikiBridgeRoot = '';
 let conduitService: ConduitLoopbackService | null = null;
@@ -82,8 +84,8 @@ function configureMemsocketModule() {
 
 async function createWindow() {
   const win = new BrowserWindow({
-    width: 1280,
-    height: 860,
+    width: captureWidth && Number.isFinite(captureWidth) ? captureWidth : 1280,
+    height: captureHeight && Number.isFinite(captureHeight) ? captureHeight : 860,
     title: 'Imbas OS',
     ...(existsSync(appIconPath) ? { icon: appIconPath } : {}),
     webPreferences: {

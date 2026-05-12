@@ -949,7 +949,7 @@ The repo should be prepared for a clean GitHub reveal before it is made public. 
 - `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
 - `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.
 - `docs/assets/demo/html-artifact-vault-flow.png` — official HTML Artifact Vault promo/flow image.
-- `docs/assets/ui/human-facing-vault-shell-target.png` — human-facing Artifact Vault shell design target.
+- `docs/assets/ui/human-facing-vault-shell-target.png` — current captured Imbas OS shell screenshot, aligned with the human-facing Artifact Vault shell direction.
 - `docs/assets/roadmap/roadmap.svg` — roadmap graphic for README/docs/GitHub discussion.
 - [`docs/release/public-alpha-unveil-checklist.md`](release/public-alpha-unveil-checklist.md) — repository presentation and final pre-public checklist.
 
@@ -998,11 +998,11 @@ OpenClaw must not, without explicit approval:
 
 # Human-facing Artifact Vault shell
 
-This is the target human-facing shell for Artifact Vault as it moves from a useful alpha into a product that feels like a real local-first workbench.
+This is the implemented human-facing shell direction for Artifact Vault as it moves from a useful alpha into a product that feels like a real local-first workbench.
 
-![Human-facing vault shell target](../assets/ui/human-facing-vault-shell-target.png)
+![Current Imbas OS shell screenshot](../assets/ui/human-facing-vault-shell-target.png)
 
-This mockup is a design north star, not a claim that every section is currently implemented. The goal is to make the vault feel like an Obsidian/filesystem-style archive for AI-generated artifacts while keeping the AI-facing layer stable, indexed, and automatable.
+This screenshot is captured from the current local UI and replaces the earlier mockup as the design reference. The goal is to make the vault feel like an Obsidian/filesystem-style archive for AI-generated artifacts while keeping the AI-facing layer stable, indexed, and automatable.
 
 ## Product intent
 

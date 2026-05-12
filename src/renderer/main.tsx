@@ -209,7 +209,7 @@ function App() {
           <button onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Tags</button>
           <button onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Graph</button>
           <p className="eyebrow nav-gap">System</p>
-          <button disabled title="Runledger-backed Runs are private-preview until the public surface is ready.">Runs · private preview</button>
+          <button disabled title="Runledger-backed Runs are staged until the public surface is ready.">Runs · staged</button>
           <button onClick={() => setActiveView('command')}>Settings / status</button>
         </nav>
         <div className="vault-card">
@@ -371,7 +371,7 @@ function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mob
           <strong>{run.title ?? run.task}</strong>
           <span>{run.outcome ?? run.status} · {run.connector ?? 'conduit'} / {run.agent ?? 'agent'}</span>
           <p>{run.summary ?? run.task}</p>
-        </article>) : <p className="muted">No runs recorded yet. The OpenClaw dogfood connector will start filling this in.</p>}
+        </article>) : <p className="muted">No runs recorded yet. Agent integration history will appear here when connectors record work.</p>}
       </Panel>
 
       <Panel title="Lorekeeper proposals" eyebrow="review queue">

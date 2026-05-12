@@ -1,10 +1,10 @@
 # Human-facing Artifact Vault shell
 
-This is the target human-facing shell for Artifact Vault as it moves from a useful alpha into a product that feels like a real local-first workbench.
+This is the implemented human-facing shell direction for Artifact Vault as it moves from a useful alpha into a product that feels like a real local-first workbench.
 
-![Human-facing vault shell target](../assets/ui/human-facing-vault-shell-target.png)
+![Current Imbas OS shell screenshot](../assets/ui/human-facing-vault-shell-target.png)
 
-This mockup is a design north star, not a claim that every section is currently implemented. The goal is to make the vault feel like an Obsidian/filesystem-style archive for AI-generated artifacts while keeping the AI-facing layer stable, indexed, and automatable.
+This screenshot is captured from the current local UI and replaces the earlier mockup as the design reference. The goal is to make the vault feel like an Obsidian/filesystem-style archive for AI-generated artifacts while keeping the AI-facing layer stable, indexed, and automatable.
 
 ## Product intent
 

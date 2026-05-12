@@ -290,7 +290,7 @@ The repo should be prepared for a clean GitHub reveal before it is made public. 
 - `docs/assets/brand/social-card.png` — share/OpenGraph-style card.
 - `docs/assets/demo/html-artifact-vault-preview.png` — static README hero preview.
 - `docs/assets/demo/html-artifact-vault-flow.png` — official HTML Artifact Vault promo/flow image.
-- `docs/assets/ui/human-facing-vault-shell-target.png` — human-facing Artifact Vault shell design target.
+- `docs/assets/ui/human-facing-vault-shell-target.png` — current captured Imbas OS shell screenshot, aligned with the human-facing Artifact Vault shell direction.
 - `docs/assets/roadmap/roadmap.svg` — roadmap graphic for README/docs/GitHub discussion.
 - [`docs/release/public-alpha-unveil-checklist.md`](release/public-alpha-unveil-checklist.md) — repository presentation and final pre-public checklist.
 
