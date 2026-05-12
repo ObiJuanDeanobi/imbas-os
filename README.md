@@ -34,6 +34,7 @@ If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or H
 - Search artifact titles, tags, notes, prompts, and visible HTML.
 - Export prompt/context packages for the next AI pass.
 - Keep vault-owned Markdown notes alongside artifacts, with read-only bridge support for external Markdown/wiki pages.
+- Move toward an Obsidian-like human folder tree: folders, nested folders, notes, and readable artifact bundles, while AI agents use stable IDs/indexes underneath.
 
 ## What this is not yet
 

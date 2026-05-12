@@ -39,6 +39,25 @@ If either surface is bolted on later, the system becomes fragile: humans lose tr
 
 ## Examples
 
+
+### Human filesystem vault
+
+Human surface:
+
+- Obsidian-like folder tree;
+- folders inside folders;
+- Markdown notes beside artifact bundles;
+- readable `.artifact/` directories;
+- app-private machinery hidden under `.imbas/` or `.vault/`.
+
+AI surface:
+
+- stable IDs in metadata/frontmatter;
+- path-to-ID manifests;
+- rebuildable indexes;
+- sync manifests and conflict records;
+- context packs and Conduit APIs.
+
 ### Repository docs
 
 Human surface:

@@ -28,7 +28,7 @@
 
 <!-- M1 -->
 <circle cx="640" cy="250" r="32" fill="#38BDF8"/><text x="622" y="258" class="m">M1</text>
-<g transform="translate(80 205)"><rect width="470" height="142" rx="24" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/><text x="26" y="40" class="h">HTML Artifact Vault alpha</text><text x="26" y="72" class="d">First-run clarity, paste/import polish, artifact detail UX</text><text x="26" y="100" class="d">Provenance card, AI context copy/export, snapshot restore</text><text x="26" y="124" class="small">Gate: package.dev + smoke/security smoke + public README clarity</text></g>
+<g transform="translate(80 205)"><rect width="470" height="142" rx="24" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/><text x="26" y="40" class="h">HTML Artifact Vault alpha</text><text x="26" y="72" class="d">Human folder tree, first-run clarity, import/paste polish</text><text x="26" y="100" class="d">Readable bundles, provenance, AI context export, snapshots</text><text x="26" y="124" class="small">Gate: package.dev + smoke/security smoke + public README clarity</text></g>
 
 <!-- M2 -->
 <circle cx="640" cy="390" r="32" fill="#22D3EE"/><text x="620" y="398" class="m">M2</text>

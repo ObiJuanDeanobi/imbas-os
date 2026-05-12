@@ -2,6 +2,8 @@
 
 Artifact Vault uses local folder-per-artifact bundles for generated HTML artifacts and read-only bridge records for external Markdown/wiki pages. The filesystem is the source of truth; indexes are rebuildable caches.
 
+Public-product direction: the human-facing vault should become an Obsidian-like folder tree with folders inside folders, Markdown notes beside artifact bundles, and readable `.artifact/` directories. Stable AI identity should live in metadata/frontmatter and hidden indexes, not in opaque folder names. See [`architecture/human-filesystem-vault.md`](architecture/human-filesystem-vault.md).
+
 ## Vault root
 
 ```text
@@ -112,7 +114,7 @@ Sync status compares the current filesystem against the saved manifest and repor
 
 ## Vault-owned Markdown pages
 
-Artifact Vault-owned Markdown pages live under:
+Current private-preview implementation: Artifact Vault-owned Markdown pages live under:
 
 ```text
 vault-root/pages/<slug>.md
@@ -131,6 +133,8 @@ Vault-owned pages support frontmatter, normal Markdown text, Obsidian-style wiki
 ```
 
 They participate in unified search, graph edges, backlinks, sync manifests, and mixed Markdown + HTML prompt-package export.
+
+Longer term, `pages/` should evolve into a general human folder tree where Markdown notes can live anywhere under project/area folders, closer to an Obsidian vault. The AI surface should continue resolving pages through stable IDs/frontmatter and manifests so user moves/renames remain safe.
 
 ## Prompt package export
 

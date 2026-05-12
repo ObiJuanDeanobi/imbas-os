@@ -38,7 +38,7 @@ The local core should be free/open-source and useful on its own.
 Free local core includes:
 
 - HTML Artifact Vault desktop app;
-- local folder-based vault storage;
+- local folder-based vault storage with a human-readable Obsidian-like tree;
 - sandboxed replay for generated HTML;
 - metadata, notes, provenance, snapshots, search, and export;
 - docs and AI-readable project context;
@@ -57,7 +57,7 @@ Scope:
 - Electron desktop app.
 - Paste/import AI-generated HTML.
 - Safe sandboxed replay.
-- Local artifact bundles with `artifact.html`, `metadata.json`, `notes.md`, and snapshots.
+- Local artifact bundles with `artifact.html`, `metadata.json`, `notes.md`, and snapshots, arranged in a human-readable folder tree.
 - Metadata editing: title, project, tags, prompt, provider/model, trust level.
 - Search across title/tags/notes/prompt/visible HTML.
 - Notes and provenance.
@@ -78,7 +78,7 @@ Non-goals for alpha:
 
 Alpha success criteria:
 
-- A new developer can clone, install, run, import an HTML artifact, inspect metadata, create/restore snapshots, search, export a prompt package, and understand the security model.
+- A new developer can clone, install, run, import an HTML artifact, place it in a human-readable folder tree, inspect metadata, create/restore snapshots, search, export a prompt package, and understand the security model.
 - No secrets/private URLs/private user data are present.
 - Security smoke proves untrusted HTML cannot access Node/Electron bridge and cannot make artifact-origin network requests by default.
 - README makes the value obvious in under one minute.
@@ -89,7 +89,7 @@ Goal: make the HTML vault feel genuinely functional, not merely a demo.
 
 Candidate work:
 
-- Better first-run onboarding.
+- Better first-run onboarding, including vault/folder tree orientation.
 - Drag/drop import and paste polish.
 - Gallery/list/detail UX improvements.
 - Rich provenance cards.
@@ -168,9 +168,10 @@ These are intended to become GitHub milestones/issues once approved.
 
 ### M1 — HTML Artifact Vault alpha
 
+- [ ] Make the human-facing vault an Obsidian-like folder tree with folders, nested folders, Markdown notes, and readable `.artifact/` bundles.
 - [ ] Make first-run flow obvious.
-- [ ] Polish import/paste flow.
-- [ ] Improve artifact detail page and metadata editing.
+- [ ] Polish import/paste flow, including choosing where a new artifact lands in the folder tree.
+- [ ] Improve artifact detail page and metadata editing while keeping the filesystem bundle understandable.
 - [ ] Add provenance card.
 - [ ] Add “Copy AI context” for selected artifact.
 - [ ] Add artifact context-pack export.
@@ -184,7 +185,7 @@ These are intended to become GitHub milestones/issues once approved.
 - [ ] Add zip bundle import/export.
 - [ ] Add snapshot diff/compare.
 - [ ] Improve gallery/list filters.
-- [ ] Add graph/backlink polish.
+- [ ] Add graph/backlink polish across nested Markdown folders and artifact bundles.
 - [ ] Add richer demo vault.
 - [ ] Add browser/share workflow research note.
 - [ ] Add installation/package path decision.
@@ -276,8 +277,9 @@ Before public unveil, replace or supplement the generated concept demo with at l
 Recommended next implementation slice:
 
 1. Finish the remaining **M1 — HTML Artifact Vault alpha** UX work:
+   - Obsidian-like human folder tree;
    - obvious first-run flow;
-   - polished import/paste flow;
+   - polished import/paste flow with folder destination;
    - clearer artifact detail + metadata editing;
    - provenance card;
    - “Copy AI context” and artifact context-pack export;
