@@ -31,13 +31,14 @@ Recommended social preview image:
 
 Current prepared assets:
 
-- Real shell screenshot: [`../assets/demo/html-artifact-vault-shell.png`](../assets/demo/html-artifact-vault-shell.png)
+- Current app shell screenshot: [`../assets/ui/human-facing-vault-shell-target.png`](../assets/ui/human-facing-vault-shell-target.png)
+- Artifact Vault shell screenshot: [`../assets/demo/html-artifact-vault-shell.png`](../assets/demo/html-artifact-vault-shell.png)
 
 - Official full logo: [`../assets/brand/logo.png`](../assets/brand/logo.png)
 - Logo mark SVG: [`../assets/brand/logo-mark.svg`](../assets/brand/logo-mark.svg)
 - Official app icon PNG: [`../assets/brand/app-icon.png`](../assets/brand/app-icon.png)
 - Social card: [`../assets/brand/social-card.png`](../assets/brand/social-card.png)
-- README hero image: [`../assets/demo/html-artifact-vault-shell.png`](../assets/demo/html-artifact-vault-shell.png)
+- README hero image: [`../assets/ui/human-facing-vault-shell-target.png`](../assets/ui/human-facing-vault-shell-target.png)
 - README flow image: [`../assets/demo/html-artifact-vault-flow.png`](../assets/demo/html-artifact-vault-flow.png)
 - Roadmap graphic: [`../assets/roadmap/roadmap.svg`](../assets/roadmap/roadmap.svg)
 

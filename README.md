@@ -13,7 +13,7 @@
   <a href="llms.txt">llms.txt</a>
 </p>
 
-![HTML Artifact Vault shell screenshot](docs/assets/demo/html-artifact-vault-shell.png)
+![Current Imbas OS shell screenshot](docs/assets/ui/human-facing-vault-shell-target.png)
 
 ![HTML Artifact Vault promo panel](docs/assets/demo/html-artifact-vault-flow.png)
 
@@ -137,7 +137,7 @@ For the detailed milestone plan, see [`docs/roadmap.md`](docs/roadmap.md). For t
 | State | Status |
 |---|---|
 | Imbas Artifact Vault alpha | Public target after approval: focused local desktop vault for generated HTML artifacts. |
-| Imbas OS private preview | Internal/dogfood integration lane for Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket, and OpenClaw dispatch. |
+| Imbas OS private preview | Integration lane for Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket, and OpenClaw dispatch. |
 | Imbas OS public 1.0 | Blocked until fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass. |
 
 ## What this is not yet

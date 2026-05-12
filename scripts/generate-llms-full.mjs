@@ -29,6 +29,8 @@ const sourcePaths = [
   'docs/release/documentation-1.0-gate.md',
   'docs/release/html-artifact-vault-alpha-finish-line.md',
   'docs/release/public-alpha-unveil-checklist.md',
+  'docs/release/public-alpha-announcement.md',
+  'docs/release/v0.1.0-alpha.0.md',
   'docs/known-limitations.md'
 ];
 
