@@ -256,9 +256,9 @@ function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mob
 
   return <div className="command-center">
     <header className="hero-card">
-      <p className="eyebrow">private preview command center</p>
-      <h2>One operating layer for agents, artifacts, memory, approvals, and mobile control.</h2>
-      <p>Use this home screen to see whether Imbas OS is ready for work: modules, runs, proposals, artifacts, sync, and companion pairing all in one place.</p>
+      <p className="eyebrow">HTML Artifact Vault alpha</p>
+      <h2>Save generated HTML, replay it safely, keep the context.</h2>
+      <p>Start here: Imbas OS is launching with Artifact Vault first — a local vault for AI-made dashboards, reports, mini-tools, lessons, and other self-contained HTML outputs.</p>
       <div className="hero-actions">
         <button onClick={onOpenVault}>Open Artifact Vault</button>
         <button className="secondary" onClick={onSeedDemoVault}>Seed demo workbench</button>
@@ -266,6 +266,24 @@ function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mob
         <button className="secondary" onClick={onCreateMobilePairingChallenge}>Create Android pairing code</button>
       </div>
     </header>
+
+    {artifacts.length === 0 && <section className="onboarding-panel" aria-labelledby="first-run-title">
+      <div>
+        <p className="eyebrow">first run</p>
+        <h3 id="first-run-title">Your vault is empty. Try the 60-second loop.</h3>
+        <p>Seed the demo workbench or import/paste generated HTML from the sidebar. Every artifact is copied into your local vault, starts as <code>untrusted</code>, and replays through the sandboxed <code>artifact://</code> viewer.</p>
+      </div>
+      <ol className="onboarding-steps">
+        <li><strong>Capture</strong><span>Paste HTML, import a file, or seed realistic demo artifacts.</span></li>
+        <li><strong>Replay safely</strong><span>Generated HTML gets scripts but no Node bridge and no artifact-origin network by default.</span></li>
+        <li><strong>Preserve context</strong><span>Add metadata, notes, provenance, snapshots, search terms, and AI handoff exports.</span></li>
+      </ol>
+      <div className="hero-actions">
+        <button onClick={onSeedDemoVault}>Seed demo workbench</button>
+        <button className="secondary" onClick={onOpenVault}>Go to import panel</button>
+      </div>
+      <p className="muted">Vault location: <code>{vault?.root ?? 'loading…'}</code></p>
+    </section>}
 
     <section className="metric-grid">
       <MetricCard label="Artifacts" value={String(vault?.artifactCount ?? artifacts.length)} detail={`${artifacts.length} currently shown`} />
@@ -878,7 +896,7 @@ function LinkList({ title, edges, direction, graph }: { title: string; edges: { 
 }
 
 function EmptyState() {
-  return <div className="empty"><h2>No artifact selected</h2><p>Import a self-contained HTML file to start the vault loop.</p></div>;
+  return <div className="empty empty-vault"><p className="eyebrow">Artifact Vault</p><h2>No artifact selected yet</h2><p>Use the sidebar import panel to paste generated HTML, import a local <code>.html</code> file, or seed the demo vault. Imported artifacts are stored locally, marked <code>untrusted</code>, and replayed in the sandbox.</p></div>;
 }
 
 createRoot(document.getElementById('root')!).render(<App />);
