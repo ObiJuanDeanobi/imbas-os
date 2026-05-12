@@ -6,6 +6,31 @@ import './styles.css';
 
 const MOBILE_DEFAULT_CONDUIT_URL = 'http://127.0.0.1:3077';
 
+
+const vaultFilters = [
+  { id: 'all', label: 'All Artifacts', hint: 'Everything saved locally' },
+  { id: 'dashboard', label: 'Dashboards', hint: 'Visual summaries and status panels' },
+  { id: 'tool', label: 'Tools', hint: 'Interactive utilities and editors' },
+  { id: 'report', label: 'Reports', hint: 'Research, compliance, and analysis' },
+  { id: 'simulation', label: 'Simulations', hint: 'Lessons, quizzes, and models' },
+  { id: 'site', label: 'Sites', hint: 'Landing pages and microsites' },
+  { id: 'experiment', label: 'Experiments', hint: 'Prototypes and rough cuts' },
+  { id: 'inbox', label: 'Inbox / Untitled', hint: 'Needs triage' }
+];
+
+function matchesVaultFilter(item: { title: string; tags: string[]; project?: string; sourceOwnership?: string }, filter: string) {
+  if (filter === 'all') return true;
+  const haystack = [item.title, item.project ?? '', ...(item.tags ?? [])].join(' ').toLowerCase();
+  if (filter === 'inbox') return !item.project || /inbox|untitled|imported|paste/.test(haystack);
+  if (filter === 'site') return /site|landing|page|microsite/.test(haystack);
+  if (filter === 'simulation') return /simulation|lesson|quiz|model|timeline/.test(haystack);
+  if (filter === 'tool') return /tool|editor|utility|matrix|calculator/.test(haystack);
+  if (filter === 'dashboard') return /dashboard|status|board|map|panel/.test(haystack);
+  if (filter === 'report') return /report|research|compliance|review|analysis|pack/.test(haystack);
+  if (filter === 'experiment') return /experiment|prototype|demo|throwaway|alpha/.test(haystack);
+  return true;
+}
+
 const defaultHtml = `<!doctype html>
 <html>
 <head><title>First artifact</title><style>body{font-family:system-ui;margin:2rem} .card{border:1px solid #ddd;border-radius:16px;padding:1rem;max-width:560px} button{padding:.6rem 1rem;border-radius:999px;border:0;background:#111;color:white}</style></head>
@@ -25,6 +50,7 @@ function App() {
   const [markdownDraft, setMarkdownDraft] = useState('# Project note\n\nLink artifacts with `[[artifact:artifact-id]]` or wiki pages with `[[Page Name]]`.');
   const [query, setQuery] = useState('');
   const [projectFilter, setProjectFilter] = useState('');
+  const [vaultFilter, setVaultFilter] = useState('all');
   const [graph, setGraph] = useState<ArtifactGraph>({ nodes: [], edges: [] });
   const [wikiReport, setWikiReport] = useState<WikiBridgeReport | null>(null);
   const [indexStats, setIndexStats] = useState<SearchIndexStats | null>(null);
@@ -48,9 +74,11 @@ function App() {
       ? indexStats ? await window.artifactVault.searchArtifactsIndexed(query) : await window.artifactVault.searchArtifacts(query)
       : await window.artifactVault.listArtifacts();
     const nextGraph = await window.artifactVault.artifactGraph();
-    const filtered = projectFilter ? next.filter((artifact) => artifact.project === projectFilter) : next;
+    const filteredByProject = projectFilter ? next.filter((artifact) => artifact.project === projectFilter) : next;
+    const filtered = filteredByProject.filter((artifact) => matchesVaultFilter(artifact, vaultFilter));
     const mixed = await window.artifactVault.searchUnified(query);
-    const filteredMixed = projectFilter ? mixed.filter((item) => item.project === projectFilter) : mixed;
+    const filteredMixedByProject = projectFilter ? mixed.filter((item) => item.project === projectFilter) : mixed;
+    const filteredMixed = filteredMixedByProject.filter((item) => item.kind === 'wiki' ? vaultFilter === 'all' : matchesVaultFilter(item, vaultFilter));
     setGraph(nextGraph);
     setArtifacts(filtered);
     setUnifiedResults(filteredMixed);
@@ -59,7 +87,7 @@ function App() {
     if (!selectedId && filtered[0]) setSelectedId(filtered[0].id);
   }
 
-  useEffect(() => { void refresh(); }, [query, projectFilter, indexStats]);
+  useEffect(() => { void refresh(); }, [query, projectFilter, vaultFilter, indexStats]);
 
   async function importArtifact(sample?: string) {
     const created = await window.artifactVault.createArtifact({ html: sample ?? html, title, sourceType: 'paste', tags: ['imported', 'paste'] });
@@ -168,15 +196,33 @@ function App() {
       <aside className="sidebar">
         <div className="brand"><span>◈</span><div><p>local-first</p><h1>Imbas OS</h1></div></div>
         <nav className="primary-nav" aria-label="Imbas OS sections">
-          <button className={activeView === 'command' ? 'active' : ''} onClick={() => setActiveView('command')}>Command Center</button>
-          <button className={activeView === 'agent' ? 'active' : ''} onClick={() => setActiveView('agent')}>Agent Console</button>
-          <button className={activeView === 'vault' ? 'active' : ''} onClick={() => setActiveView('vault')}>Artifact Vault</button>
+          <button className={activeView === 'command' ? 'active' : ''} onClick={() => setActiveView('command')}>⌘ Command Center</button>
+          <button className={activeView === 'agent' ? 'active' : ''} onClick={() => setActiveView('agent')}>✦ Agent Console</button>
+          <button className={activeView === 'vault' ? 'active' : ''} onClick={() => setActiveView('vault')}>⬢ Artifact Vault</button>
+        </nav>
+        <nav className="vault-nav" aria-label="Artifact Vault filters">
+          <p className="eyebrow">Vault</p>
+          {vaultFilters.map((filter) => <button key={filter.id} className={activeView === 'vault' && vaultFilter === filter.id ? 'active' : ''} onClick={() => { setActiveView('vault'); setVaultFilter(filter.id); }}><span>{filter.label}</span><small>{filter.hint}</small></button>)}
+          <p className="eyebrow nav-gap">Pages</p>
+          <button className={activeView === 'vault' && selectedWikiId ? 'active' : ''} onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Notes / Wiki</button>
+          <button onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Projects</button>
+          <button onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Tags</button>
+          <button onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Graph</button>
+          <p className="eyebrow nav-gap">System</p>
+          <button disabled title="Runledger-backed Runs are private-preview until the public surface is ready.">Runs · private preview</button>
+          <button onClick={() => setActiveView('command')}>Settings / status</button>
         </nav>
         <div className="vault-card">
           <strong>Vault</strong>
           <code>{vault?.root ?? 'loading…'}</code>
           <span>{artifacts.length} artifacts shown · {totalArtifactCount} artifacts · {totalWikiCount} markdown pages</span>
         </div>
+        <section className="value-strip" aria-label="Artifact Vault values">
+          <span><strong>Local First</strong>Stays on your machine.</span>
+          <span><strong>Private</strong>No cloud by default.</span>
+          <span><strong>Portable</strong>Readable bundles.</span>
+          <span><strong>Open Source</strong>Public alpha path.</span>
+        </section>
         <section className="tour-panel">
           <p className="eyebrow">60-second tour</p>
           <ol>
@@ -208,7 +254,7 @@ function App() {
           <button className="secondary" onClick={createVaultMarkdownPage}>Create vault-owned page</button>
         </section>
         <section className="library">
-          <div className="section-heading"><h2>Library</h2><span>{indexStats ? 'indexed' : 'filesystem scan'}</span></div>
+          <div className="section-heading"><h2>Library</h2><span>{vaultFilters.find((item) => item.id === vaultFilter)?.label ?? 'All'} · {indexStats ? 'indexed' : 'scan'}</span></div>
           <input placeholder="Search title, tags, notes, prompt, HTML…" value={query} onChange={(event) => setQuery(event.target.value)} />
           <select value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)}><option value="">All projects</option>{projectOptions.map((project) => <option key={project} value={project}>{project}</option>)}</select>
           <button className="secondary" onClick={rebuildSearchIndex}>{indexStats ? `Index rebuilt: ${indexStats.artifactCount} artifacts` : 'Rebuild SQLite search index'}</button>
@@ -700,6 +746,10 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
   const [notes, setNotes] = useState('');
   const [exportText, setExportText] = useState('');
   const [exportStatus, setExportStatus] = useState('Export Markdown, JSON, portable bundles, or AI-ready context packages without leaving the local vault.');
+  const [metadataStatus, setMetadataStatus] = useState('Metadata is loaded from metadata.json. Save changes to update search, graph, and exports.');
+  const [notesStatus, setNotesStatus] = useState('Sidecar notes live beside the artifact as notes.md and travel with exports.');
+  const [snapshotStatus, setSnapshotStatus] = useState('Snapshots preserve artifact.html, metadata.json, and notes.md before important changes. Restore is reversible because the current state is snapshotted first.');
+  const [activeInspectorTab, setActiveInspectorTab] = useState<'details' | 'notes' | 'provenance' | 'snapshots' | 'export'>('details');
   const [metadataTitle, setMetadataTitle] = useState(artifact.title);
   const [metadataTags, setMetadataTags] = useState(artifact.tags.join(', '));
   const [metadataTrust, setMetadataTrust] = useState<TrustLevel>(artifact.trustLevel);
@@ -835,61 +885,88 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
     if (exportedPath) setExportText(`Portable bundle exported to:\n${exportedPath}`);
   }
 
-  return <div className="artifact-detail">
-    <header className="detail-header"><div><p className="eyebrow">{artifact.trustLevel} artifact</p><h2>{artifact.title}</h2><p>{artifact.id}</p></div><div className="pills"><span>network denied</span><span>no node bridge</span><span>{artifact.snapshotCount} snapshot</span></div></header>
-    <div className="detail-grid">
-      <iframe className="artifact-frame" title={artifact.title} src={`artifact://${artifact.id}/`} sandbox="allow-scripts" />
-      <aside className="metadata-panel">
-        <details open><summary>Provenance card</summary>
-        <div className="provenance-card">
-          <div><span>Capture source</span><strong>{artifact.sourceType}</strong><p>{artifact.sourcePath ? 'Imported from a local source path.' : 'Created inside the vault from paste or generated content.'}</p></div>
-          <div><span>AI generator</span><strong>{artifact.provider || 'unknown provider'}{artifact.model ? ` / ${artifact.model}` : ''}</strong><p>{artifact.prompt ? artifact.prompt.slice(0, 180) : 'No source prompt recorded yet.'}</p></div>
-          <div><span>Safety posture</span><strong>{metadataTrust}</strong><p>Replays through <code>artifact://</code> with no Node bridge; artifact-origin network requests are blocked by default.</p></div>
-          <div><span>Integrity</span><strong>{artifact.snapshotCount} snapshot{artifact.snapshotCount === 1 ? '' : 's'}</strong><p>HTML SHA-256 <code>{artifact.hashes.sha256Html}</code></p></div>
+  const inspectorTabs = [
+    { id: 'details', label: 'Details' },
+    { id: 'notes', label: 'Notes' },
+    { id: 'provenance', label: 'Provenance' },
+    { id: 'snapshots', label: 'Snapshots' },
+    { id: 'export', label: 'AI Context' }
+  ] as const;
+
+  return <div className="artifact-detail vault-detail-shell">
+    <header className="detail-header vault-detail-header">
+      <div>
+        <p className="eyebrow">{artifact.trustLevel} artifact · local bundle</p>
+        <h2>{artifact.title}</h2>
+        <p>{artifact.project || 'No project'} · <code>{artifact.id}</code></p>
+      </div>
+      <div className="pills"><span>network denied</span><span>no node bridge</span><span>{artifact.snapshotCount} snapshot{artifact.snapshotCount === 1 ? '' : 's'}</span></div>
+    </header>
+    <div className="detail-grid vault-detail-grid">
+      <section className="artifact-workspace-panel" aria-label="Artifact preview workspace">
+        <div className="artifact-toolbar">
+          <div>
+            <p className="eyebrow">safe replay</p>
+            <strong>{metadataTitle || artifact.title}</strong>
+            <span>Sandboxed <code>artifact://</code> preview. Generated HTML is treated as hostile until reviewed.</span>
+          </div>
+          <div className="button-row compact"><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={snapshot}>Snapshot</button><button className="secondary" onClick={exportBundleDirectory}>Export bundle</button></div>
         </div>
-        <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>Source path</dt><dd>{artifact.sourcePath ? <code>{artifact.sourcePath}</code> : 'not recorded'}</dd><dt>Bundle</dt><dd><code>{artifact.bundlePath}</code></dd></dl>
-        </details>
-        <details open><summary>Metadata</summary>
-        <p className="metadata-status">{metadataStatus}</p>
-        <div className="metadata-summary">
-          <span>Source: <code>{artifact.sourceType}</code></span>
-          <span>Trust: <code>{metadataTrust}</code></span>
-          <span>Project: <code>{metadataProject || 'none'}</code></span>
+        <iframe className="artifact-frame" title={artifact.title} src={`artifact://${artifact.id}/`} sandbox="allow-scripts" />
+      </section>
+      <aside className="metadata-panel inspector-panel" aria-label="Artifact inspector">
+        <div className="inspector-tabs" role="tablist" aria-label="Artifact inspector tabs">
+          {inspectorTabs.map((tab) => <button key={tab.id} role="tab" aria-selected={activeInspectorTab === tab.id} className={activeInspectorTab === tab.id ? 'active' : ''} onClick={() => setActiveInspectorTab(tab.id)}>{tab.label}</button>)}
         </div>
-        <label>Title<input value={metadataTitle} onChange={(event) => setMetadataTitle(event.target.value)} placeholder="Readable artifact title" /></label>
-        <label>Project<input value={metadataProject} onChange={(event) => setMetadataProject(event.target.value)} placeholder="project or collection" /></label>
-        <label>Tags<input value={metadataTags} onChange={(event) => setMetadataTags(event.target.value)} placeholder="demo, review" /></label>
-        <label>Trust level<select value={metadataTrust} onChange={(event) => setMetadataTrust(event.target.value as TrustLevel)}><option value="untrusted">untrusted</option><option value="reviewed">reviewed</option><option value="trusted">trusted</option></select></label>
-        <label>Provider<input value={metadataProvider} onChange={(event) => setMetadataProvider(event.target.value)} placeholder="OpenAI, Anthropic…" /></label>
-        <label>Model<input value={metadataModel} onChange={(event) => setMetadataModel(event.target.value)} placeholder="model name" /></label>
-        <label>Source path<input value={metadataSourcePath} onChange={(event) => setMetadataSourcePath(event.target.value)} placeholder="optional local source path" /></label>
-        <label>Source prompt<textarea className="prompt-editor" value={metadataPrompt} onChange={(event) => setMetadataPrompt(event.target.value)} placeholder="Prompt or instruction that produced this artifact" /></label>
-        <div className="button-row"><button onClick={saveMetadata}>Save metadata</button></div>
-        </details>
-        <details open><summary>Artifact map</summary>
-        <LinkList title="Links out" edges={outgoing} direction="to" graph={graph} />
-        <LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} />
-        </details>
-        <details open><summary>Sidecar note</summary>
-        <p className="metadata-status">{notesStatus}</p>
-        <textarea className="notes-editor" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="What matters about this artifact? Add review notes, links, follow-ups, or usage context." />
-        <div className="button-row"><button onClick={saveNotes}>Save note</button><button className="secondary" onClick={snapshot}>Snapshot</button></div>
-        </details>
-        <details open><summary>Snapshot browser</summary>
-        <p className="metadata-status">{snapshotStatus}</p>
-        <div className="snapshot-list">{snapshots.length ? snapshots.slice(0, 8).map((item) => <article className="snapshot-card" key={item.id}>
-          <strong>{new Date(item.createdAt).toLocaleString()}</strong>
-          <span>ID <code>{item.id}</code></span>
-          <span>HTML <code>{item.htmlPath}</code></span>
-          <span>Metadata <code>{item.metadataPath}</code></span>
-          <button className="secondary" onClick={() => restoreSnapshot(item.id)}>Restore this snapshot</button>
-        </article>) : <p className="muted">No snapshots found. Use Snapshot beside the sidecar note before a risky edit or metadata change.</p>}</div>
-        </details>
-        <details open><summary>Export / AI context</summary>
-        <p className="metadata-status">{exportStatus}</p>
-        <div className="button-row"><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={exportPromptPackage}>Export context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed artifact + wiki package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button></div>
-        {exportText && <pre>{exportText}</pre>}
-        </details>
+        {activeInspectorTab === 'details' && <section className="inspector-section" role="tabpanel">
+          <p className="metadata-status">{metadataStatus}</p>
+          <div className="metadata-summary">
+            <span>Source: <code>{artifact.sourceType}</code></span>
+            <span>Trust: <code>{metadataTrust}</code></span>
+            <span>Project: <code>{metadataProject || 'none'}</code></span>
+            <span>Bundle: <code>{artifact.bundlePath}</code></span>
+          </div>
+          <label>Title<input value={metadataTitle} onChange={(event) => setMetadataTitle(event.target.value)} placeholder="Readable artifact title" /></label>
+          <label>Project<input value={metadataProject} onChange={(event) => setMetadataProject(event.target.value)} placeholder="project or collection" /></label>
+          <label>Tags<input value={metadataTags} onChange={(event) => setMetadataTags(event.target.value)} placeholder="dashboard, report, tool" /></label>
+          <label>Trust level<select value={metadataTrust} onChange={(event) => setMetadataTrust(event.target.value as TrustLevel)}><option value="untrusted">untrusted</option><option value="reviewed">reviewed</option><option value="trusted">trusted</option></select></label>
+          <label>Provider<input value={metadataProvider} onChange={(event) => setMetadataProvider(event.target.value)} placeholder="OpenAI, Anthropic…" /></label>
+          <label>Model<input value={metadataModel} onChange={(event) => setMetadataModel(event.target.value)} placeholder="model name" /></label>
+          <label>Source path<input value={metadataSourcePath} onChange={(event) => setMetadataSourcePath(event.target.value)} placeholder="optional local source path" /></label>
+          <label>Source prompt<textarea className="prompt-editor" value={metadataPrompt} onChange={(event) => setMetadataPrompt(event.target.value)} placeholder="Prompt or instruction that produced this artifact" /></label>
+          <div className="button-row"><button onClick={saveMetadata}>Save metadata</button></div>
+          <div className="link-list"><LinkList title="Links out" edges={outgoing} direction="to" graph={graph} /><LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} /></div>
+        </section>}
+        {activeInspectorTab === 'notes' && <section className="inspector-section" role="tabpanel">
+          <p className="metadata-status">{notesStatus}</p>
+          <textarea className="notes-editor" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="What matters about this artifact? Add review notes, links, follow-ups, or usage context." />
+          <div className="button-row"><button onClick={saveNotes}>Save note</button><button className="secondary" onClick={snapshot}>Snapshot</button></div>
+        </section>}
+        {activeInspectorTab === 'provenance' && <section className="inspector-section" role="tabpanel">
+          <div className="provenance-card">
+            <div><span>Capture source</span><strong>{artifact.sourceType}</strong><p>{artifact.sourcePath ? 'Imported from a local source path.' : 'Created inside the vault from paste or generated content.'}</p></div>
+            <div><span>AI generator</span><strong>{artifact.provider || 'unknown provider'}{artifact.model ? ` / ${artifact.model}` : ''}</strong><p>{artifact.prompt ? artifact.prompt.slice(0, 240) : 'No source prompt recorded yet.'}</p></div>
+            <div><span>Safety posture</span><strong>{metadataTrust}</strong><p>Replays through <code>artifact://</code> with no Node bridge; artifact-origin network requests are blocked by default.</p></div>
+            <div><span>Integrity</span><strong>{artifact.snapshotCount} snapshot{artifact.snapshotCount === 1 ? '' : 's'}</strong><p>HTML SHA-256 <code>{artifact.hashes.sha256Html}</code></p></div>
+          </div>
+          <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>Source path</dt><dd>{artifact.sourcePath ? <code>{artifact.sourcePath}</code> : 'not recorded'}</dd><dt>Bundle</dt><dd><code>{artifact.bundlePath}</code></dd></dl>
+        </section>}
+        {activeInspectorTab === 'snapshots' && <section className="inspector-section" role="tabpanel">
+          <p className="metadata-status">{snapshotStatus}</p>
+          <div className="button-row"><button onClick={snapshot}>Create snapshot</button></div>
+          <div className="snapshot-list">{snapshots.length ? snapshots.slice(0, 10).map((item) => <article className="snapshot-card" key={item.id}>
+            <strong>{new Date(item.createdAt).toLocaleString()}</strong>
+            <span>ID <code>{item.id}</code></span>
+            <span>HTML <code>{item.htmlPath}</code></span>
+            <span>Metadata <code>{item.metadataPath}</code></span>
+            <button className="secondary" onClick={() => restoreSnapshot(item.id)}>Restore this snapshot</button>
+          </article>) : <p className="muted">No snapshots found. Create one before a risky edit or metadata change.</p>}</div>
+        </section>}
+        {activeInspectorTab === 'export' && <section className="inspector-section" role="tabpanel">
+          <p className="metadata-status">{exportStatus}</p>
+          <div className="button-row"><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={exportPromptPackage}>Export context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed artifact + wiki package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button></div>
+          {exportText && <pre>{exportText}</pre>}
+        </section>}
       </aside>
     </div>
   </div>;

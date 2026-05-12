@@ -198,9 +198,9 @@ Stretch/push-to-beta if needed:
 
 Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/human-facing-vault-shell.md).
 
-- [ ] M2.1 shell redesign: branded app frame, left vault navigation, artifact list, center workspace, and right inspector.
+- [x] M2.1 shell redesign: branded app frame, left vault navigation, artifact list, center workspace, and right inspector.
 - [ ] M2.2 smart artifact taxonomy: dashboards, tools, reports, simulations, sites, experiments as metadata-backed views/filters.
-- [ ] M2.3 inspector tabs: Details, Notes, Provenance, and Snapshots backed by real artifact data.
+- [x] M2.3 inspector tabs: Details, Notes, Provenance, Snapshots, and AI Context backed by real artifact data.
 - [ ] M2.4 human vault navigation: Pages, Projects, Tags, Graph, with Runs hidden/disabled/private-preview-labelled until Runledger is ready.
 - [ ] M2.5 polish and accessibility: keyboard navigation, focus states, empty/error states, narrow-window behavior, and visual verification.
 - [ ] Add drag/drop import.

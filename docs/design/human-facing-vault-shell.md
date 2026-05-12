@@ -95,6 +95,8 @@ This strip may collapse on narrow screens, but the values should remain visible 
 
 ### M2.1 — Shell redesign
 
+Status: implemented in the M2.1 shell slice.
+
 - Adopt the branded three-pane shell: left nav, artifact list, center workspace, right inspector.
 - Preserve current artifact operations.
 - Add responsive behavior for narrow windows.
