@@ -148,10 +148,11 @@ Sprint 4 adds the first durable AI-world timeline and proposal surfaces:
 - `GET /v0/runledger?query=&limit=` — searchable timeline of notable agent actions, runs, Lorekeeper proposals, and later audits.
 - `GET /v0/wiki/proposals?query=&limit=` — searchable Lorekeeper managed-wiki proposals.
 - `POST /v0/wiki/proposals` — create a redacted proposal for a wiki/Markdown update without mutating wiki files.
-- `POST /v0/wiki/proposals/:id/approve` — mark a proposal approved, but does not yet apply it to a page.
+- `POST /v0/wiki/proposals/:id/approve` — mark a proposal approved; approval records human intent but does not itself mutate a page.
 - `POST /v0/wiki/proposals/:id/reject` — mark a proposal rejected.
+- `POST /v0/wiki/proposals/:id/apply` — separate guarded mutation step for approved, sourced proposals targeting Imbas-managed blocks in vault-owned Markdown pages.
 
-Lorekeeper is proposal-first by design. Agents can suggest durable wiki knowledge, but Imbas OS does not silently rewrite human-readable notes or external vaults. Applying approved proposals to managed blocks/pages is a later guarded slice.
+Lorekeeper is proposal-first by design. Agents can suggest durable wiki knowledge, but Imbas OS does not silently rewrite human-readable notes or external vaults. Approval and apply are deliberately separate so humans can inspect intent before the guarded write path mutates managed wiki blocks.
 
 
 ## Mobile companion pairing endpoints

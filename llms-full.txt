@@ -32,7 +32,7 @@ Generated HTML is becoming a natural next output layer after raw text and Markdo
 
 If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or HTML report, HTML Artifact Vault is the place to keep it instead of losing it in a chat thread or downloads folder.
 
-## What you can do in the alpha
+## What works now
 
 - Paste or import generated HTML and replay it locally.
 - Inspect artifacts inside a sandboxed `artifact://` viewer with network access blocked by default.
@@ -41,8 +41,13 @@ If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or H
 - Search artifact titles, tags, notes, prompts, and visible HTML.
 - Export prompt/context packages for the next AI pass.
 - Keep vault-owned Markdown notes alongside artifacts, with read-only bridge support for external Markdown/wiki pages.
-- Move toward an Obsidian-like human folder tree: folders, nested folders, notes, and readable artifact bundles, while AI agents use stable IDs/indexes underneath.
-- Link notes, artifacts, folders, runs, and wiki knowledge with backlinks/graph navigation so everything ties together.
+- Use current graph/backlink foundations across artifacts and Markdown pages.
+
+## Coming in the public alpha/M1 polish pass
+
+- Make the human-facing vault feel more like an Obsidian folder tree: folders, nested folders, notes, and readable `.artifact/` bundles, while AI agents use stable IDs/indexes underneath.
+- Polish link, backlink, unresolved-link, and graph navigation across notes, artifacts, folders, runs, and wiki knowledge.
+- Add clearer first-run, import destination, artifact detail, provenance-card, snapshot-browser, and “Copy AI context” flows.
 - Treat the wiki as the long-term human-readable knowledge layer, tightly indexed into Memsocket for contextual memory, agentic search, and context packs.
 
 ## What this is not yet
@@ -55,6 +60,12 @@ If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or H
 ## Roadmap
 
 The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench. See [`docs/roadmap.md`](docs/roadmap.md) for the canonical roadmap and GitHub milestone plan.
+
+| State | Status |
+|---|---|
+| HTML Artifact Vault alpha | Public target after approval: focused local desktop vault for generated HTML artifacts. |
+| Imbas OS private preview | Internal/dogfood integration lane for Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket, and OpenClaw dispatch. |
+| Imbas OS public 1.0 | Blocked until fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass. |
 
 ## Current alpha status
 
@@ -234,9 +245,9 @@ Implemented as private-preview foundations, but not production complete yet:
 
 - Memsocket adapter/CLI boundary and optional Conduit write/search/context-pack integration; public 1.0 requires full first-class integration.
 - Conduit local API/loopback service with durable JSONL private-preview storage.
-- OpenClaw shadow connector; Hermes/Codex/Claude Code connector SDKs remain future work.
-- Encrypted local Sanctum vault, redaction, policy, and audit foundation; OS keyring/passphrase UX remains future work.
-- Android companion Gradle/Compose scaffold and pairing/session contract; real Android compile and secure token storage remain future work.
+- OpenClaw shadow connector and constrained local CLI dispatch; Hermes/Codex/Claude Code connector SDKs remain future work.
+- Encrypted local Sanctum vault, redaction, policy, and audit foundation; OS keyring/passphrase UX and approval UX remain future work.
+- Android companion Kotlin/Compose app with live pairing, QR prefill, Android Keystore-encrypted mobile token storage, scoped reads/actions, diagnostics, Runledger filtering, proposal review, share-sheet capture, and voice-dictation drafts. Remaining mobile work includes physical-device validation, photo capture, richer restore UX, and install/update/signing decisions.
 
 ## Setup
 
@@ -509,6 +520,7 @@ Imbas OS documentation has three jobs:
 - [AI-first OS principle](architecture/ai-first-os.md)
 - [Dual-surface information architecture](architecture/dual-surface-information.md)
 - [Human filesystem vault architecture](architecture/human-filesystem-vault.md)
+- [Shared reference model](architecture/shared-reference-model.md) — stable entity/ref/edge contract for graph, search, context packs, and future Atlas/Memsocket integration.
 - [Wiki graph and agent artifact capture](architecture/wiki-graph-and-agent-capture.md)
 - [Wiki and Memsocket boundary](architecture/wiki-memsocket-boundary.md)
 - [Module selection and install profiles](architecture/module-selection.md)
@@ -602,6 +614,14 @@ Free local core includes:
 
 Paid offerings, if/when they happen, should be separate and should charge for hosted reliability, sync, collaboration, business controls, compliance, and managed services — not basic local ownership.
 
+## Release state table
+
+| State | Audience | What it means | What it must not imply |
+|---|---|---|---|
+| HTML Artifact Vault public alpha | Public OSS users after approval | A focused local desktop vault for generated HTML artifacts with sandbox replay, metadata/notes/provenance, snapshots, search, readable storage direction, and context export. | Full Imbas OS, production connector auth, hosted/cloud service, stable Android, or hardened automatic multi-agent capture. |
+| Imbas OS private preview | Maintainer/dogfood users | Broader local-first agent OS integration work: Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket adapters, OpenClaw dispatch, and migration experiments. | Public stability or public support commitments. |
+| Imbas OS public 1.0 | Public release after gates pass | Coherent distribution with first-class modules, fresh-system proof, backup/restore/delete/forget, security/privacy review, and explicit maintainer approval. | A loosely related Artifact Vault app plus external memory tooling. |
+
 ## Release lanes
 
 ### Lane A: HTML Artifact Vault OSS alpha
@@ -613,13 +633,12 @@ Scope:
 - Electron desktop app.
 - Paste/import AI-generated HTML.
 - Safe sandboxed replay.
-- Local artifact bundles with `artifact.html`, `metadata.json`, `notes.md`, and snapshots, arranged in a human-readable folder tree.
+- Local artifact bundles with `artifact.html`, `metadata.json`, `notes.md`, and snapshots.
 - Metadata editing: title, project, tags, prompt, provider/model, trust level.
 - Search across title/tags/notes/prompt/visible HTML.
-- Obsidian-style links, backlinks, and graph basics across notes and artifacts.
-- Notes and provenance.
-- Snapshot create/restore.
-- Prompt-package/context export.
+- Notes, provenance, snapshot create/restore, and prompt-package/context export.
+- A readable-storage path toward an Obsidian-like folder tree, with stable IDs/indexes underneath.
+- Basic Markdown/artifact link and backlink foundations; deeper graph polish can move to beta if it threatens alpha focus.
 - Demo artifacts and screenshots/GIFs.
 - Root `README.md`, `llms.txt`, `llms-full.txt`, `AGENTS.md`, `skill.md`, `SECURITY.md`, `CONTRIBUTING.md`, license, roadmap.
 
@@ -726,17 +745,22 @@ These are intended to become GitHub milestones/issues once approved.
 
 ### M1 — HTML Artifact Vault alpha
 
-- [ ] Make the human-facing vault an Obsidian-like folder tree with folders, nested folders, Markdown notes, readable `.artifact/` bundles, and link/backlink behavior.
+Must-have before public alpha:
+
 - [ ] Make first-run flow obvious.
-- [ ] Polish import/paste flow, including choosing where a new artifact lands in the folder tree.
+- [ ] Polish paste/import flow, including a clear destination for new artifacts.
 - [ ] Improve artifact detail page and metadata editing while keeping the filesystem bundle understandable.
-- [ ] Add provenance card.
-- [ ] Add Obsidian-style links, backlinks, unresolved-link reporting, and graph basics across notes/artifacts/wiki pages.
-- [ ] Add “Copy AI context” for selected artifact.
-- [ ] Add artifact context-pack export.
+- [ ] Add a clear provenance card or equivalent provenance panel.
+- [ ] Add “Copy AI context” or artifact context-package export for the selected artifact.
 - [ ] Improve snapshot browser and restore explanation.
 - [x] Document artifact bundle file format.
 - [x] Verify sandbox/security smoke.
+
+Stretch/push-to-beta if needed:
+
+- [ ] Make the human-facing vault an Obsidian-like folder tree with folders, nested folders, Markdown notes, and readable `.artifact/` bundles.
+- [ ] Add Obsidian-style links, backlinks, unresolved-link reporting, and graph basics across notes/artifacts/wiki pages.
+- [ ] Add deeper graph navigation using the shared reference model.
 
 ### M2 — HTML Artifact Vault beta
 
@@ -1197,6 +1221,888 @@ Before public 1.0, this principle should be visible in:
 - Android (human mobile UX + scoped Conduit contracts);
 - connectors (human-readable run evidence + AI-usable context packs);
 - backup/restore (human recovery docs + machine-verifiable manifests).
+
+---
+## Source: docs/architecture/human-filesystem-vault.md
+
+# Human filesystem vault architecture
+
+Artifact Vault should be understandable as a normal local folder tree before someone learns any Imbas OS internals.
+
+This is a product requirement for the public Artifact Vault work: the human-facing source tree should feel closer to Obsidian, a project folder, or a plain filesystem than to an app-private database.
+
+## Principle
+
+> Humans get an obvious folder tree. AI agents get stable IDs, indexes, manifests, and context packs generated from that tree.
+
+The human and AI surfaces still share one durable source of truth, but they do not need the same shape.
+
+## Human-facing layout target
+
+The preferred public-facing vault should look roughly like this:
+
+```text
+vault-root/
+  Inbox/
+    Untitled Artifact.artifact/
+      artifact.html
+      notes.md
+      metadata.json
+      snapshots/
+  Projects/
+    Example Project/
+      README.md
+      Research/
+        Notes.md
+        Market Map.artifact/
+          artifact.html
+          notes.md
+          metadata.json
+          snapshots/
+      Decisions/
+        ADR-001.md
+  Areas/
+    Learning/
+      HTML Sandbox Lesson.artifact/
+        artifact.html
+        notes.md
+        metadata.json
+        snapshots/
+  Archive/
+  .imbas/
+    index.sqlite
+    sync-manifest.json
+    node.json
+    ids.json
+```
+
+Exact folder names can evolve, but the direction is fixed:
+
+- humans can create folders inside folders;
+- Markdown notes can live beside artifact bundles;
+- artifact bundles have readable folder names, not only opaque IDs;
+- an artifact bundle should be visually distinguishable, likely with a `.artifact/` directory suffix;
+- app-private machine state lives under a hidden `.imbas/` or `.vault/` directory;
+- generated/rebuildable indexes are not required for a human to browse the vault.
+
+## Artifact bundle target
+
+A human-readable artifact bundle remains a directory:
+
+```text
+Readable Artifact Name.artifact/
+  artifact.html
+  notes.md
+  metadata.json
+  snapshots/
+    2026-05-12T15-45-00Z.html
+    2026-05-12T15-45-00Z.json
+```
+
+Required behavior:
+
+- `artifact.html` is the generated/imported active content.
+- `notes.md` is the human sidecar note.
+- `metadata.json` contains stable identity, provenance, trust, source prompt/model/provider, tags, and links.
+- `snapshots/` keeps reversible history.
+- The folder name is for humans and may change.
+- The stable artifact ID is inside metadata and AI indexes, not encoded only in the folder path.
+
+## Markdown and folders
+
+Markdown should be first-class in the same tree:
+
+- normal `.md` notes can be created inside any human folder;
+- notes can use Obsidian-style wikilinks;
+- notes can link to artifacts by stable ID or by resolved local reference;
+- folder hierarchy should participate in search, graph, prompt-package export, and sync manifests.
+
+Artifact Vault should not force users into one flat `pages/` folder long term. The current `pages/` implementation is a stepping stone, not the desired final human layout.
+
+
+## Links, backlinks, and graph
+
+The human folder tree should also behave like a wiki. Markdown notes, artifact bundles, folders/projects, Runledger entries, and Lorekeeper-managed wiki blocks should map to each other through links, backlinks, and graph views.
+
+Minimum expectations:
+
+- Obsidian-style wikilinks work in Markdown notes.
+- Artifacts can be linked from notes and from other artifact notes.
+- Each note/artifact can show backlinks.
+- Unresolved links and orphan notes/artifacts are visible.
+- Moves/renames should preserve graph identity when stable IDs/frontmatter exist.
+- AI context-pack export can include a selected graph neighborhood.
+
+See [`wiki-graph-and-agent-capture.md`](wiki-graph-and-agent-capture.md).
+
+## AI-facing layout
+
+AI agents should not rely on fragile human folder names as primary identity.
+
+The AI-facing layer can use:
+
+- stable IDs in `metadata.json` and Markdown frontmatter;
+- `.imbas/ids.json` or equivalent path-to-ID maps;
+- rebuildable SQLite/vector/graph indexes;
+- sync manifests;
+- structured JSON records;
+- context packs and prompt-package exports;
+- Conduit APIs.
+
+AI agents may read the human tree when useful, but operational actions should resolve through stable IDs and manifests so moves/renames do not break history.
+
+## Move and rename behavior
+
+A good public Artifact Vault should tolerate normal human filesystem behavior:
+
+- moving an artifact bundle between folders;
+- renaming a project folder;
+- renaming a `.artifact/` directory;
+- adding Markdown notes manually;
+- creating subfolders outside the app.
+
+Expected handling:
+
+1. Rebuild indexes from the filesystem.
+2. Preserve stable IDs from metadata/frontmatter.
+3. Detect moved/renamed paths as path changes, not new objects, when IDs match.
+4. Warn on duplicate IDs.
+5. Treat missing metadata as an import/adoption flow, not silent corruption.
+
+## Public alpha implication
+
+Before public release, the product should either:
+
+1. implement this human-readable tree directly; or
+2. clearly label the current ID-based `artifacts/<id>/` and flat `pages/` layout as a temporary private-preview structure, with the public roadmap pointing to the human filesystem layout as a release blocker.
+
+Preferred path: implement the human-readable tree before public unveil, because it is central to the product feel.
+
+## Non-goals
+
+- Do not replace Obsidian outright.
+- Do not require users to understand app-private indexes.
+- Do not make the AI surface scrape visual UI state.
+- Do not make stable identity depend only on human folder names.
+- Do not silently rewrite external Obsidian/OpenClaw vaults.
+
+---
+## Source: docs/architecture/shared-reference-model.md
+
+# Shared reference model
+
+Imbas OS needs one small reference model that every surface can use before Atlas and Memsocket are fully integrated. The goal is to avoid rebuilding links, search, graph traversal, and context packs each time a new subsystem lands.
+
+This is not a database schema. It is the minimum contract that lets human-readable files, local APIs, agents, and future indexes agree on identity and relationships.
+
+## Entities
+
+Every durable thing that can appear in search, graph navigation, Runledger, or context packs should project to an entity shape:
+
+```json
+{
+  "id": "artifact:01H...",
+  "kind": "artifact",
+  "title": "Market Map",
+  "path": "Projects/Acme/market-map.artifact/",
+  "sourceOwnership": "vault-owned",
+  "provenance": {
+    "createdBy": "user|agent|import",
+    "sourceRef": "run:run_...",
+    "createdAt": "2026-05-12T00:00:00.000Z"
+  }
+}
+```
+
+Required fields:
+
+- `id` — stable machine reference, prefixed by namespace.
+- `kind` — entity type.
+- `title` — human display name.
+- `path` — human-readable vault-relative path when there is a file/folder representation.
+- `sourceOwnership` — whether Imbas owns, imports, bridges, or only indexes the source.
+- `provenance` — enough source/ref information for trust, audit, and context-pack citation.
+
+Recommended namespaces:
+
+- `artifact:<id>` — generated/imported artifact bundle.
+- `note:<id>` — vault-owned Markdown note with frontmatter ID.
+- `wiki:<relative/path.md>` — external read-only bridged wiki page until imported.
+- `folder:<path>` — human folder/project grouping.
+- `run:<id>` — Runledger entry.
+- `proposal:<id>` — Lorekeeper proposal.
+- `memory:<id>` — Memsocket event/projection/context item.
+- `context-pack:<id>` — generated retrieval/export bundle.
+
+## References
+
+Human links should stay readable. AI/API references should canonicalize to stable IDs.
+
+Examples:
+
+```markdown
+[[Projects/Acme/Research Notes]]
+[[artifact:01H...]]
+[[run:run_...]]
+```
+
+Canonical reference shape:
+
+```json
+{
+  "raw": "[[Projects/Acme/Research Notes]]",
+  "targetId": "note:01J...",
+  "targetKind": "note",
+  "resolved": true,
+  "resolutionSource": "frontmatter|manifest|path|search"
+}
+```
+
+Rules:
+
+- A readable path/title can move or change; the stable ID should not.
+- Unresolved references are first-class graph/search results, not hidden parser failures.
+- External read-only wiki pages keep their bridged `wiki:<relative/path.md>` IDs until explicitly imported or converted.
+- Agents should prefer stable IDs in API calls and preserve readable labels in generated Markdown.
+
+## Edges
+
+Edges describe why two entities are connected:
+
+```json
+{
+  "from": "run:run_...",
+  "to": "artifact:01H...",
+  "type": "run-produced",
+  "label": "produced artifact",
+  "resolved": true,
+  "provenance": "runledger:run_..."
+}
+```
+
+Initial edge types:
+
+- `wikilink`
+- `artifact-link`
+- `embed`
+- `folder-contains`
+- `run-produced`
+- `proposal-updated`
+- `context-used`
+- `source-cites`
+- `memory-derived-from`
+- `context-pack-includes`
+
+## Search, graph, and context packs
+
+Atlas should eventually own unified graph/search navigation, but M1/M2 work should already emit and consume this shared shape where practical.
+
+Minimum expectations:
+
+- Search results include `id`, `kind`, `title`, `path`, `snippet`, and source ownership.
+- Graph views use entity IDs and edges, not UI-only state.
+- Context packs cite the source entity ID plus the human-readable path/title.
+- Memsocket retrieval can point back to wiki/artifact/run sources without copying them into an opaque memory blob.
+
+## Release staging
+
+For HTML Artifact Vault alpha, this contract only needs to cover artifacts, vault-owned Markdown pages, bridged wiki pages, folders/projects, and prompt/context exports.
+
+For Imbas OS private preview, extend the same contract to Runledger, Lorekeeper proposals, Conduit connector events, and Memsocket context events/projections.
+
+For public 1.0, Atlas, Memsocket, Runledger, Lorekeeper, Artifact Vault, SyncCore, Desktop, Android, and CLI should all expose compatible references so backup/restore, delete/forget, graph traversal, and context-pack generation do not rely on one-off adapters.
+
+---
+## Source: docs/architecture/wiki-graph-and-agent-capture.md
+
+# Wiki graph and agent artifact capture
+
+Artifact Vault should feel like an Obsidian-style knowledge vault for humans while giving AI agents a structured graph and safe capture path.
+
+This page records two linked product requirements:
+
+1. Markdown notes, folders, artifacts, runs, and wiki pages should map to each other through links, backlinks, and graph views.
+2. When an AI agent generates a durable artifact, Imbas OS should be able to save it into Artifact Vault automatically with provenance.
+
+## Obsidian-style links and graph
+
+Human expectations:
+
+- Markdown notes use familiar wikilinks: `[[Note]]`, `[[Folder/Note]]`, `[[Note|label]]`, and embeds like `![[Thing]]` where safe.
+- Artifacts are linkable from Markdown and from other artifacts.
+- Each page/artifact can show backlinks.
+- A graph view can show folders, Markdown notes, artifacts, wiki pages, runs, and eventually memory/context nodes.
+- Broken/unresolved links are visible and actionable, not hidden.
+- Links survive reasonable moves and renames when stable IDs/frontmatter exist.
+
+AI expectations:
+
+- Every graph node has a stable ID, kind, title, path, source ownership, and provenance.
+- Every edge has a type such as `wikilink`, `artifact-link`, `embed`, `run-produced`, `proposal-updated`, `context-used`, or `source-cites`.
+- Agents can query graph neighborhoods without scraping UI.
+- Context-pack export can include connected notes/artifacts/runs by traversal rules.
+- Early M1/M2 work should use the shared entity/reference/edge shape in [`shared-reference-model.md`](shared-reference-model.md) so Atlas and Memsocket integration do not require a graph rewrite.
+
+## Link forms
+
+Artifact Vault should support at least these human-readable link forms:
+
+```markdown
+[[Project Brief]]
+[[Projects/Example Project/Research Notes]]
+[[Project Brief|brief]]
+[[artifact:stable-artifact-id]]
+[[artifact:Readable Artifact Name]]
+[[run:runledger-entry-id]]
+```
+
+The AI layer may canonicalize those links into stable references:
+
+```json
+{
+  "from": "wiki:Projects/Example Project/Research Notes.md",
+  "to": "artifact:01H...",
+  "type": "artifact-link",
+  "label": "Market Map",
+  "resolved": true
+}
+```
+
+Readable names are for humans. Stable IDs are for durability.
+
+## Backlinks and graph behavior
+
+Backlinks should be available for:
+
+- Markdown page → all pages/artifacts/runs that reference it;
+- artifact → notes/pages/runs that reference or produced it;
+- run → artifacts/pages/proposals/context generated or used by that run;
+- folder/project → contained notes/artifacts plus incoming references.
+
+Graph traversal should support:
+
+- local neighborhood around the current note/artifact;
+- project/folder graph;
+- unresolved-link report;
+- orphan note/artifact report;
+- export selected neighborhood as an AI context pack.
+
+## Wiki system integration
+
+Artifact Vault and Lorekeeper should not be separate islands.
+
+Desired behavior:
+
+- Vault-owned Markdown notes are the human wiki surface.
+- Lorekeeper proposals can target managed blocks inside vault-owned Markdown notes.
+- External Obsidian/OpenClaw wiki folders can be indexed read-only until migration is explicitly chosen.
+- Graph/search should include both vault-owned notes and read-only bridged notes, with source ownership clearly shown.
+- Approved wiki changes should produce Runledger evidence and preserve snapshots/restore paths.
+
+
+## Wiki and Memsocket
+
+The wiki should tie closely into Memsocket, but with distinct responsibilities. The wiki/Lorekeeper layer is the long-term human-readable knowledge base. Memsocket is the contextual memory, agentic search, retrieval, and context-pack engine.
+
+Wiki pages and managed blocks should index into Memsocket with stable source refs. Memsocket-derived evidence can propose wiki updates through Lorekeeper, but should not silently rewrite durable wiki pages. See [`wiki-memsocket-boundary.md`](wiki-memsocket-boundary.md).
+
+## Agent artifact capture
+
+When an AI agent generates a durable HTML artifact, the ideal flow is:
+
+1. Agent run produces HTML plus title/summary/source prompt/provenance.
+2. Connector sends it to Conduit with run/session/task refs.
+3. Conduit redacts secret-like content and applies policy.
+4. Artifact Vault stores it as an untrusted `.artifact/` bundle in the right human folder, usually `Inbox/` or the active project folder.
+5. Runledger records that the run produced the artifact.
+6. The artifact backlinks to the run, prompt, related notes, and any source context used.
+7. Human can review, rename, move, trust, snapshot, annotate, or archive it.
+
+## Release boundary
+
+This should be staged deliberately.
+
+### Artifact Vault public alpha
+
+Public alpha should focus on the local workbench:
+
+- human folder tree;
+- Markdown/artifact links;
+- backlinks and graph basics;
+- manual paste/import/save flows;
+- a documented local API or CLI-shaped seam for saving artifacts;
+- clear provenance fields for artifacts that came from AI tools.
+
+Automatic capture from OpenClaw/Hermes/Codex/Claude Code does **not** need to be public-stable in the standalone Artifact Vault alpha, but the storage model should be ready for it.
+
+### Imbas OS private-preview / integration lane
+
+Automatic agent capture belongs primarily in the Imbas OS integration lane:
+
+- Conduit connector contracts;
+- Runledger refs;
+- Sanctum redaction/policy;
+- Lorekeeper proposal links;
+- context-pack links;
+- agent-specific save hooks;
+- opt-in/approval settings for what gets saved automatically.
+
+OpenClaw dogfood can implement auto-capture earlier as private-preview infrastructure, but public copy should not imply every AI tool auto-saves until the connector path is hardened.
+
+## Safety and policy
+
+Automatic capture must not become silent junk collection or secret leakage.
+
+Required controls:
+
+- save generated HTML as `untrusted` by default;
+- redact or block secret-like content before durable storage;
+- preserve source prompt/model/provider/run provenance;
+- let users configure destination rules: active project, `Inbox/`, or ask every time;
+- avoid saving low-value scratch output unless configured;
+- expose a Runledger trail for automatic saves;
+- allow delete/archive/export without breaking graph integrity.
+
+---
+## Source: docs/architecture/wiki-memsocket-boundary.md
+
+# Wiki and Memsocket boundary
+
+Lorekeeper/wiki and Memsocket should be tightly connected, but they are not the same subsystem.
+
+Johnathan's product direction:
+
+> The wiki is the long-term human-readable knowledge base for AI and humans. Memsocket is the contextual memory, agentic search, retrieval, and context-pack engine.
+
+## Roles
+
+### Lorekeeper / wiki
+
+The wiki is for durable knowledge that should be readable, reviewable, and maintainable by humans:
+
+- project pages;
+- entity pages;
+- architecture notes;
+- ADRs and decisions;
+- runbooks and procedures;
+- curated lessons learned;
+- stable user/project preferences when appropriate;
+- sourced summaries that should survive beyond one run.
+
+The wiki should live primarily as Markdown in the human filesystem vault. It should support links, backlinks, graph navigation, managed blocks, snapshots, and proposal-first updates.
+
+### Memsocket
+
+Memsocket is for contextual and operational memory that agents use while working:
+
+- session/run context events;
+- episodic observations;
+- semantic/procedural/profile/causal/live-state projections;
+- agentic search across recent and durable context;
+- retrieval ranking;
+- context packs;
+- graph traversal and budgeted context selection;
+- provenance-aware memory queries;
+- fallback/replay/debug data for why something was retrieved.
+
+Memsocket can index wiki content and produce context from it, but it should not be the only place where curated long-term wiki knowledge lives.
+
+## Relationship
+
+The intended relationship is bidirectional with clear authority:
+
+```text
+Human wiki / Lorekeeper Markdown
+  ├─ source of truth for curated durable knowledge
+  ├─ human-readable pages, managed blocks, links, backlinks
+  └─ emits/indexes into Memsocket for retrieval/context packs
+
+Memsocket
+  ├─ source of truth for contextual memory events and projections
+  ├─ searches/ranks/retrieves wiki + events + runs + artifacts
+  └─ can propose wiki updates through Lorekeeper, not silently rewrite pages
+```
+
+## Source-of-truth rules
+
+- Curated long-term knowledge belongs in the wiki/Lorekeeper Markdown layer.
+- Raw and derived contextual memory belongs in Memsocket.
+- Run history belongs in Runledger.
+- Generated artifacts belong in Artifact Vault.
+- Sensitive policy/secret handling belongs in Sanctum.
+- Cross-object navigation/search belongs in Atlas, backed by explicit refs from all systems.
+
+## Wiki → Memsocket flow
+
+Wiki content should feed Memsocket as indexed context:
+
+1. A Markdown page or managed block changes.
+2. Lorekeeper records provenance and snapshot/restore information.
+3. The change emits a context event or index update for Memsocket.
+4. Memsocket stores/searches a compact projection with source refs back to the wiki page/block.
+5. Context-pack retrieval can include the wiki item with citation and freshness metadata.
+
+Memsocket projections from wiki should preserve:
+
+- page/block stable ID;
+- path and title;
+- source ownership;
+- links/backlinks;
+- last reviewed/updated timestamps;
+- source citations;
+- trust/confidence where applicable.
+
+## Memsocket → wiki flow
+
+Memsocket can identify knowledge worth curating, but should not silently mutate the wiki.
+
+Expected flow:
+
+1. Agent work creates context events, runs, artifacts, and observations.
+2. Memsocket retrieval/projection identifies durable facts, lessons, or procedures.
+3. Lorekeeper creates a proposal for a wiki page or managed block.
+4. Human or policy-approved lane reviews/applies it.
+5. Runledger records the proposal and apply result.
+6. The updated wiki re-indexes into Memsocket.
+
+This keeps long-term knowledge readable and governed while still letting agents learn from their work.
+
+## Search and context packs
+
+Agentic search should span both systems:
+
+- wiki pages and managed blocks;
+- Memsocket contextual events/projections;
+- Artifact Vault artifacts and sidecar notes;
+- Runledger entries;
+- Lorekeeper proposals;
+- graph neighborhoods and backlinks.
+
+A context pack should explain why each item was selected and cite whether it came from:
+
+- `wiki:<path-or-block-id>`;
+- `memsocket:<event-or-projection-id>`;
+- `artifact:<artifact-id>`;
+- `runledger:<entry-id>`;
+- `lorekeeper:<proposal-id>`.
+
+## Delete/forget implications
+
+Forget/delete needs to respect both layers:
+
+- Removing a Memsocket projection does not necessarily delete the wiki source page.
+- Editing/removing a wiki page should invalidate or update Memsocket projections.
+- Destructive wiki changes should be proposal-first unless clearly reversible and policy-approved.
+- Sensitive content must be redacted before it becomes wiki knowledge or ordinary Memsocket context.
+- Runledger should record material forget/delete actions.
+
+## Public release implications
+
+For Artifact Vault alpha:
+
+- The wiki should feel physically present as Markdown notes in the human folder tree.
+- Links/backlinks/graph should make wiki notes and artifacts feel connected.
+- The storage model should keep stable IDs/provenance ready for Memsocket indexing.
+
+For Imbas OS public 1.0:
+
+- Memsocket must be first-class and integrated with Lorekeeper/wiki.
+- Context packs must retrieve from both wiki and Memsocket with source citations.
+- Lorekeeper proposals must be able to arise from Memsocket-derived evidence.
+- Wiki changes must re-index into Memsocket.
+- Search/graph should cross wiki, memory, artifacts, runs, and proposals.
+
+## Anti-patterns
+
+Avoid:
+
+- wiki as a disconnected document viewer;
+- Memsocket as an opaque replacement for human-readable wiki knowledge;
+- agents writing durable wiki pages silently from transient memory;
+- context packs that cite uncited blobs with no path back to source;
+- duplicate facts drifting between wiki and memory with no provenance or freshness metadata.
+
+---
+## Source: docs/architecture/memsocket-adapter.md
+
+# Memsocket Adapter
+
+The Memsocket adapter maps Imbas OS context events into Memsocket vNext `ContextEvent` payloads without coupling Imbas OS connectors directly to Memsocket storage internals.
+
+## Boundary
+
+- Imbas OS owns connector protocol, artifacts, runs, wiki proposals, Lorekeeper Markdown, and Sanctum policy.
+- Memsocket owns event-sourced contextual memory, projections, agentic search, and context packs.
+- Lorekeeper/wiki owns curated long-term human-readable knowledge; Memsocket indexes it and can propose updates, but does not silently replace it.
+- The adapter translates between Imbas `ImbasContextEventDraft` and Memsocket-compatible event payloads.
+
+## Current private-preview slice
+
+Implemented now:
+
+- deterministic mapping from Imbas event drafts to Memsocket event payload shape;
+- namespace/session/layer/visibility/source/provenance mapping;
+- Sanctum redaction before payload creation;
+- validation that `secret_pointer` events use Sanctum handles/capabilities.
+
+Implemented as a private-preview CLI boundary, but not final public-1.0 integration:
+
+- writing into Memsocket through `python3 -m memsocket.cli` when configured;
+- spawning the Memsocket CLI through `src/main/memsocket/cliClient.ts`;
+- search and context-pack retrieval through the CLI boundary;
+- live module health updates when the CLI write path fails.
+
+Still remaining:
+
+- direct first-class Imbas OS module integration/packaging for public 1.0;
+- richer error taxonomy and retry behavior;
+- broader backup/restore/delete/forget tests across Memsocket + artifact/wiki state.
+
+## Mapping
+
+| Imbas field | Memsocket field |
+| --- | --- |
+| `projectId` or adapter namespace | `namespace` |
+| `runId` | `session_id` |
+| `type` | `event_type` |
+| `agent` | `actor_id` |
+| `layer` | `layers[0]` |
+| `visibility` | `visibility` |
+| `text` | `text` after Sanctum redaction |
+| `source.uri` | `source_uri` |
+| connector/project/run/source/links | `metadata` / `tags` |
+
+## Next slices
+
+1. Decide whether private preview writes use Memsocket CLI, Python sidecar process, or a Node-readable JSONL handoff.
+2. Add write/read integration against a fixture Memsocket state directory.
+3. Add `context_pack` retrieval through Memsocket `brief` once the storage boundary is selected.
+4. Keep OpenClaw/MemPalace fallback until private dogfood validates quality and safety.
+
+## Module packaging note
+
+See [`module-selection.md`](module-selection.md). Memsocket is currently a separate engine repo with an Imbas adapter, not vendored into this repo. The intended private-preview direction is optional integration through stable boundaries.
+
+See also [`memsocket-agentmemory-patterns.md`](memsocket-agentmemory-patterns.md) for pattern-harvest notes from agentmemory that should inform Memsocket's Imbas OS integration without adopting agentmemory as a runtime dependency.
+
+
+## CLI boundary
+
+Private preview now includes a Memsocket CLI client boundary in `src/main/memsocket/cliClient.ts`. It shells out to `python3 -m memsocket.cli` by default and passes mapped/redacted Imbas events through JSON stdin. It also exposes search and context-pack (`brief`) calls.
+
+This is not the final public 1.0 merge shape; it is the first live boundary for dogfooding. Public 1.0 still requires Memsocket to be merged/integrated/tested as a first-class Imbas OS module.
+
+
+See also [`wiki-memsocket-boundary.md`](wiki-memsocket-boundary.md) for the Lorekeeper/wiki ↔ Memsocket source-of-truth boundary.
+
+---
+## Source: docs/file-format.md
+
+# File format
+
+Artifact Vault uses local folder-per-artifact bundles for generated HTML artifacts and read-only bridge records for external Markdown/wiki pages. The filesystem is the source of truth; indexes are rebuildable caches.
+
+Public-product direction: the human-facing vault should become an Obsidian-like folder tree with folders inside folders, Markdown notes beside artifact bundles, and readable `.artifact/` directories. Stable AI identity should live in metadata/frontmatter and hidden indexes, not in opaque folder names. See [`architecture/human-filesystem-vault.md`](architecture/human-filesystem-vault.md).
+
+## Vault root
+
+```text
+vault-root/
+  .vault/
+    manifest.json
+  artifacts/
+    <artifact-id>/
+      artifact.html
+      metadata.json
+      notes.md
+      snapshots/
+        <timestamp>.html
+        <timestamp>.json
+```
+
+In the current Electron skeleton, the default vault root is:
+
+```text
+<electron userData>/html-artifact-vault
+```
+
+## Artifact bundle
+
+### `artifact.html`
+
+The imported or generated HTML payload. It is treated as untrusted active content by default.
+
+### `metadata.json`
+
+Current core fields:
+
+```json
+{
+  "id": "uuid",
+  "title": "Artifact title",
+  "createdAt": "ISO timestamp",
+  "updatedAt": "ISO timestamp",
+  "sourceType": "paste",
+  "prompt": "",
+  "model": "",
+  "provider": "",
+  "sourcePath": "/optional/local/source.html",
+  "project": "Optional project or collection",
+  "trustLevel": "untrusted",
+  "tags": [],
+  "hashes": { "sha256Html": "..." },
+  "links": [],
+  "snapshotCount": 1
+}
+```
+
+`trustLevel` starts as `untrusted` for every imported artifact.
+
+The app can edit durable metadata after import: title, project, tags, trust level, provider, model, source path, and source prompt. Edits update `updatedAt` and recompute explicit artifact links from HTML, sidecar notes, and prompt text.
+
+File imports set `sourceType: "file"` and record the local `sourcePath` when available. The artifact bundle remains self-contained because the imported HTML is copied into `artifact.html`; `sourcePath` is provenance only.
+
+### `notes.md`
+
+Human-readable sidecar note. Markdown remains the durable note/export substrate.
+
+### `snapshots/`
+
+Initial import writes the first HTML and metadata snapshot. Snapshot restore copies a previous HTML payload back to `artifact.html`, restores snapshot metadata fields, recomputes hashes/links, and records the restore as a new snapshot so the action remains reversible.
+
+## Indexing
+
+The rebuildable SQLite FTS cache lives at:
+
+```text
+vault-root/.vault/index.sqlite
+```
+
+The index stores searchable copies of title, tags, notes, source prompt, and visible HTML text. Artifact bundles remain the source of truth; deleting `index.sqlite` and rebuilding from `artifacts/*` must recover search behavior.
+
+## Sync foundation
+
+Artifact Vault now has a transport-neutral sync foundation. This is not a full sync service yet; it is the source-file manifest and status layer needed for safe sync later.
+
+Local node identity lives at:
+
+```text
+vault-root/.vault/node.json
+```
+
+It contains a stable device/node ID and display name. This file is local device identity and is not treated as shared source content by the manifest builder.
+
+The rebuildable sync manifest lives at:
+
+```text
+vault-root/.vault/sync-manifest.json
+```
+
+Each manifest entry records:
+
+- vault-relative path;
+- SHA-256 hash;
+- byte size;
+- logical type, such as `artifact-html`, `artifact-metadata`, `artifact-notes`, `artifact-snapshot-html`, `artifact-snapshot-metadata`, `markdown-page`, or `vault-manifest`;
+- file modified timestamp;
+- last writer node;
+- trust level for artifact metadata entries.
+
+Rebuildable caches such as `.vault/index.sqlite`, `.vault/node.json`, and `.vault/sync-manifest.json` are excluded from sync source entries. Artifact bundles and Markdown pages remain the syncable source material.
+
+Sync status compares the current filesystem against the saved manifest and reports changed files plus conflict candidates. If an artifact metadata conflict changes `trustLevel`, it is flagged as `trust-level-change-requires-review` so trust never silently promotes across nodes.
+
+## Vault-owned Markdown pages
+
+Current private-preview implementation: Artifact Vault-owned Markdown pages live under:
+
+```text
+vault-root/pages/<slug>.md
+```
+
+These pages are different from external Obsidian/OpenClaw wiki pages:
+
+- `sourceOwnership: vault-owned` pages can be created and edited by Artifact Vault.
+- `sourceOwnership: external-readonly` pages are indexed through the bridge and are not rewritten.
+
+Vault-owned pages support frontmatter, normal Markdown text, Obsidian-style wikilinks, and artifact links such as:
+
+```markdown
+[[Project Note]]
+[[artifact:00000000-0000-0000-0000-000000000000]]
+```
+
+They participate in unified search, graph edges, backlinks, sync manifests, and mixed Markdown + HTML prompt-package export. The public direction is Obsidian-style linking across notes, artifacts, folders/projects, Runledger entries, and Lorekeeper-managed wiki blocks.
+
+Longer term, `pages/` should evolve into a general human folder tree where Markdown notes can live anywhere under project/area folders, closer to an Obsidian vault. The AI surface should continue resolving pages through stable IDs/frontmatter and manifests so user moves/renames remain safe.
+
+## Format migration posture
+
+Current alpha/private-preview vaults use `artifacts/<artifact-id>/` bundles and `pages/<slug>.md` vault-owned Markdown pages. The public product direction is a more human-readable tree with nested folders, notes anywhere, and readable `.artifact/` bundle directories.
+
+Migration rules:
+
+- Treat existing `artifacts/<artifact-id>/` and `pages/<slug>.md` layouts as supported legacy/current layouts, not disposable prototypes.
+- Add stable IDs to metadata/frontmatter before relying on readable paths as identity.
+- Rebuild indexes from source files; never make `index.sqlite` or other caches the only migration source.
+- Preserve snapshots and trust levels exactly during migration; imported or moved bundles must not silently promote trust.
+- Keep old IDs resolvable through manifests or redirect records after move/rename.
+- Provide a dry-run migration report before writing changes to a vault.
+- Prefer additive migrations that leave a recoverable backup/snapshot path.
+
+The shared reference model in [`architecture/shared-reference-model.md`](architecture/shared-reference-model.md) is the compatibility layer: humans can see nicer folders and filenames while agents, graph search, SyncCore, and Memsocket continue to resolve stable entity IDs.
+
+## Prompt package export
+
+Prompt-package export is a generated Markdown handoff for the next AI/human pass. It includes artifact metadata, explicit links, original/source prompt, sidecar notes, fenced HTML, and a safety reminder to preserve local-first assumptions and avoid adding network dependencies unless explicitly requested.
+
+Mixed prompt-package export combines selected Markdown pages and HTML artifacts into one generated Markdown handoff. For bridged Markdown pages it includes page ID, relative path, `sourceOwnership`, tags, artifact links, and fenced Markdown content. For artifacts it includes metadata, sidecar notes, source prompt, and fenced HTML.
+
+## Portable bundle-folder export/import
+
+The app can export an artifact bundle as a plain directory containing the same source-of-truth files. Importing a bundle folder copies its `artifact.html`, `metadata.json`, and optional `notes.md` into the active vault as a new artifact. The imported bundle records the source directory as provenance; it does not depend on the original folder after import.
+
+Imported portable bundles always reset to `trustLevel: "untrusted"` even if their source metadata says `reviewed` or `trusted`. Trust is local and must be earned again after inspection in the destination vault.
+
+Repeated exports do not overwrite an existing export folder; the app writes a unique suffixed folder instead.
+
+Current bundle movement is folder-based. Zip import/export is intentionally left as a later polish step if manual folder movement feels too clunky.
+
+## Read-only Markdown/wiki bridge
+
+The wiki bridge indexes an existing Markdown folder without rewriting source files. It creates runtime graph nodes for `.md` pages and extracts Obsidian-style wikilinks such as `[[Page]]`, `[[Page|label]]`, and `![[Embed]]`. Markdown pages can also link to artifacts with `[[artifact:<id>]]`; those edges appear in the mixed artifact/wiki graph when the referenced artifact exists in the vault. Longer term, links should also resolve readable artifact references where possible while canonicalizing to stable IDs underneath.
+
+Bridge mode is an index/view layer only. Markdown files remain source-of-truth in their original vault until migration is explicitly proven worthwhile.
+
+Every bridged Markdown node currently has:
+
+```json
+{
+  "id": "wiki:relative/path.md",
+  "kind": "wiki",
+  "title": "Page title",
+  "tags": [],
+  "path": "/absolute/source/path.md",
+  "relativePath": "relative/path.md",
+  "sourceOwnership": "external-readonly",
+  "wikilinks": [],
+  "artifactLinks": []
+}
+```
+
+`sourceOwnership` is intentionally explicit so later Markdown-native workspace work can distinguish external read-only pages from imported copies and Artifact Vault-owned pages. The current implemented state is `external-readonly`; planned states are `imported-copy` and `vault-owned`.
+
+Unified search can return both artifact results and Markdown page results. Markdown page result matching scans title, tags, relative path, and Markdown content.
+
+The bridge readiness report summarizes:
+
+- pages indexed;
+- wikilinks resolved vs unresolved;
+- artifact links resolved vs unresolved;
+- orphan Markdown pages;
+- a migration posture recommendation.
+
+Current recommendation values are intentionally conservative: unresolved links produce `investigate`; a clean bridge still reports migration as premature rather than automatically recommending replacement.
 
 ---
 ## Source: docs/implementation-status.md

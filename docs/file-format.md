@@ -136,6 +136,22 @@ They participate in unified search, graph edges, backlinks, sync manifests, and 
 
 Longer term, `pages/` should evolve into a general human folder tree where Markdown notes can live anywhere under project/area folders, closer to an Obsidian vault. The AI surface should continue resolving pages through stable IDs/frontmatter and manifests so user moves/renames remain safe.
 
+## Format migration posture
+
+Current alpha/private-preview vaults use `artifacts/<artifact-id>/` bundles and `pages/<slug>.md` vault-owned Markdown pages. The public product direction is a more human-readable tree with nested folders, notes anywhere, and readable `.artifact/` bundle directories.
+
+Migration rules:
+
+- Treat existing `artifacts/<artifact-id>/` and `pages/<slug>.md` layouts as supported legacy/current layouts, not disposable prototypes.
+- Add stable IDs to metadata/frontmatter before relying on readable paths as identity.
+- Rebuild indexes from source files; never make `index.sqlite` or other caches the only migration source.
+- Preserve snapshots and trust levels exactly during migration; imported or moved bundles must not silently promote trust.
+- Keep old IDs resolvable through manifests or redirect records after move/rename.
+- Provide a dry-run migration report before writing changes to a vault.
+- Prefer additive migrations that leave a recoverable backup/snapshot path.
+
+The shared reference model in [`architecture/shared-reference-model.md`](architecture/shared-reference-model.md) is the compatibility layer: humans can see nicer folders and filenames while agents, graph search, SyncCore, and Memsocket continue to resolve stable entity IDs.
+
 ## Prompt package export
 
 Prompt-package export is a generated Markdown handoff for the next AI/human pass. It includes artifact metadata, explicit links, original/source prompt, sidecar notes, fenced HTML, and a safety reminder to preserve local-first assumptions and avoid adding network dependencies unless explicitly requested.

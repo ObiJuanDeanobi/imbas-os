@@ -43,9 +43,9 @@ Implemented as private-preview foundations, but not production complete yet:
 
 - Memsocket adapter/CLI boundary and optional Conduit write/search/context-pack integration; public 1.0 requires full first-class integration.
 - Conduit local API/loopback service with durable JSONL private-preview storage.
-- OpenClaw shadow connector; Hermes/Codex/Claude Code connector SDKs remain future work.
-- Encrypted local Sanctum vault, redaction, policy, and audit foundation; OS keyring/passphrase UX remains future work.
-- Android companion Gradle/Compose scaffold and pairing/session contract; real Android compile and secure token storage remain future work.
+- OpenClaw shadow connector and constrained local CLI dispatch; Hermes/Codex/Claude Code connector SDKs remain future work.
+- Encrypted local Sanctum vault, redaction, policy, and audit foundation; OS keyring/passphrase UX and approval UX remain future work.
+- Android companion Kotlin/Compose app with live pairing, QR prefill, Android Keystore-encrypted mobile token storage, scoped reads/actions, diagnostics, Runledger filtering, proposal review, share-sheet capture, and voice-dictation drafts. Remaining mobile work includes physical-device validation, photo capture, richer restore UX, and install/update/signing decisions.
 
 ## Setup
 

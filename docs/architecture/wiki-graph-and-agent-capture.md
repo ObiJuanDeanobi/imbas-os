@@ -24,6 +24,7 @@ AI expectations:
 - Every edge has a type such as `wikilink`, `artifact-link`, `embed`, `run-produced`, `proposal-updated`, `context-used`, or `source-cites`.
 - Agents can query graph neighborhoods without scraping UI.
 - Context-pack export can include connected notes/artifacts/runs by traversal rules.
+- Early M1/M2 work should use the shared entity/reference/edge shape in [`shared-reference-model.md`](shared-reference-model.md) so Atlas and Memsocket integration do not require a graph rewrite.
 
 ## Link forms
 

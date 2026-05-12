@@ -46,6 +46,14 @@ Free local core includes:
 
 Paid offerings, if/when they happen, should be separate and should charge for hosted reliability, sync, collaboration, business controls, compliance, and managed services — not basic local ownership.
 
+## Release state table
+
+| State | Audience | What it means | What it must not imply |
+|---|---|---|---|
+| HTML Artifact Vault public alpha | Public OSS users after approval | A focused local desktop vault for generated HTML artifacts with sandbox replay, metadata/notes/provenance, snapshots, search, readable storage direction, and context export. | Full Imbas OS, production connector auth, hosted/cloud service, stable Android, or hardened automatic multi-agent capture. |
+| Imbas OS private preview | Maintainer/dogfood users | Broader local-first agent OS integration work: Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket adapters, OpenClaw dispatch, and migration experiments. | Public stability or public support commitments. |
+| Imbas OS public 1.0 | Public release after gates pass | Coherent distribution with first-class modules, fresh-system proof, backup/restore/delete/forget, security/privacy review, and explicit maintainer approval. | A loosely related Artifact Vault app plus external memory tooling. |
+
 ## Release lanes
 
 ### Lane A: HTML Artifact Vault OSS alpha
@@ -57,13 +65,12 @@ Scope:
 - Electron desktop app.
 - Paste/import AI-generated HTML.
 - Safe sandboxed replay.
-- Local artifact bundles with `artifact.html`, `metadata.json`, `notes.md`, and snapshots, arranged in a human-readable folder tree.
+- Local artifact bundles with `artifact.html`, `metadata.json`, `notes.md`, and snapshots.
 - Metadata editing: title, project, tags, prompt, provider/model, trust level.
 - Search across title/tags/notes/prompt/visible HTML.
-- Obsidian-style links, backlinks, and graph basics across notes and artifacts.
-- Notes and provenance.
-- Snapshot create/restore.
-- Prompt-package/context export.
+- Notes, provenance, snapshot create/restore, and prompt-package/context export.
+- A readable-storage path toward an Obsidian-like folder tree, with stable IDs/indexes underneath.
+- Basic Markdown/artifact link and backlink foundations; deeper graph polish can move to beta if it threatens alpha focus.
 - Demo artifacts and screenshots/GIFs.
 - Root `README.md`, `llms.txt`, `llms-full.txt`, `AGENTS.md`, `skill.md`, `SECURITY.md`, `CONTRIBUTING.md`, license, roadmap.
 
@@ -170,17 +177,22 @@ These are intended to become GitHub milestones/issues once approved.
 
 ### M1 — HTML Artifact Vault alpha
 
-- [ ] Make the human-facing vault an Obsidian-like folder tree with folders, nested folders, Markdown notes, readable `.artifact/` bundles, and link/backlink behavior.
+Must-have before public alpha:
+
 - [ ] Make first-run flow obvious.
-- [ ] Polish import/paste flow, including choosing where a new artifact lands in the folder tree.
+- [ ] Polish paste/import flow, including a clear destination for new artifacts.
 - [ ] Improve artifact detail page and metadata editing while keeping the filesystem bundle understandable.
-- [ ] Add provenance card.
-- [ ] Add Obsidian-style links, backlinks, unresolved-link reporting, and graph basics across notes/artifacts/wiki pages.
-- [ ] Add “Copy AI context” for selected artifact.
-- [ ] Add artifact context-pack export.
+- [ ] Add a clear provenance card or equivalent provenance panel.
+- [ ] Add “Copy AI context” or artifact context-package export for the selected artifact.
 - [ ] Improve snapshot browser and restore explanation.
 - [x] Document artifact bundle file format.
 - [x] Verify sandbox/security smoke.
+
+Stretch/push-to-beta if needed:
+
+- [ ] Make the human-facing vault an Obsidian-like folder tree with folders, nested folders, Markdown notes, and readable `.artifact/` bundles.
+- [ ] Add Obsidian-style links, backlinks, unresolved-link reporting, and graph basics across notes/artifacts/wiki pages.
+- [ ] Add deeper graph navigation using the shared reference model.
 
 ### M2 — HTML Artifact Vault beta
 

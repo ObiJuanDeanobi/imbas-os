@@ -25,7 +25,7 @@ Generated HTML is becoming a natural next output layer after raw text and Markdo
 
 If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or HTML report, HTML Artifact Vault is the place to keep it instead of losing it in a chat thread or downloads folder.
 
-## What you can do in the alpha
+## What works now
 
 - Paste or import generated HTML and replay it locally.
 - Inspect artifacts inside a sandboxed `artifact://` viewer with network access blocked by default.
@@ -34,8 +34,13 @@ If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or H
 - Search artifact titles, tags, notes, prompts, and visible HTML.
 - Export prompt/context packages for the next AI pass.
 - Keep vault-owned Markdown notes alongside artifacts, with read-only bridge support for external Markdown/wiki pages.
-- Move toward an Obsidian-like human folder tree: folders, nested folders, notes, and readable artifact bundles, while AI agents use stable IDs/indexes underneath.
-- Link notes, artifacts, folders, runs, and wiki knowledge with backlinks/graph navigation so everything ties together.
+- Use current graph/backlink foundations across artifacts and Markdown pages.
+
+## Coming in the public alpha/M1 polish pass
+
+- Make the human-facing vault feel more like an Obsidian folder tree: folders, nested folders, notes, and readable `.artifact/` bundles, while AI agents use stable IDs/indexes underneath.
+- Polish link, backlink, unresolved-link, and graph navigation across notes, artifacts, folders, runs, and wiki knowledge.
+- Add clearer first-run, import destination, artifact detail, provenance-card, snapshot-browser, and “Copy AI context” flows.
 - Treat the wiki as the long-term human-readable knowledge layer, tightly indexed into Memsocket for contextual memory, agentic search, and context packs.
 
 ## What this is not yet
@@ -48,6 +53,12 @@ If an LLM gives you an interactive dashboard, mini-tool, slide, simulation, or H
 ## Roadmap
 
 The current plan is to launch **HTML Artifact Vault first** as the free/open-source wedge, then grow into the broader Imbas OS local-first agent workbench. See [`docs/roadmap.md`](docs/roadmap.md) for the canonical roadmap and GitHub milestone plan.
+
+| State | Status |
+|---|---|
+| HTML Artifact Vault alpha | Public target after approval: focused local desktop vault for generated HTML artifacts. |
+| Imbas OS private preview | Internal/dogfood integration lane for Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket, and OpenClaw dispatch. |
+| Imbas OS public 1.0 | Blocked until fresh-system, docs, security/privacy, backup/restore/delete/forget, and Memsocket first-class integration gates pass. |
 
 ## Current alpha status
 

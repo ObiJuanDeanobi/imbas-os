@@ -44,6 +44,7 @@ Imbas OS documentation has three jobs:
 - [AI-first OS principle](architecture/ai-first-os.md)
 - [Dual-surface information architecture](architecture/dual-surface-information.md)
 - [Human filesystem vault architecture](architecture/human-filesystem-vault.md)
+- [Shared reference model](architecture/shared-reference-model.md) — stable entity/ref/edge contract for graph, search, context packs, and future Atlas/Memsocket integration.
 - [Wiki graph and agent artifact capture](architecture/wiki-graph-and-agent-capture.md)
 - [Wiki and Memsocket boundary](architecture/wiki-memsocket-boundary.md)
 - [Module selection and install profiles](architecture/module-selection.md)
