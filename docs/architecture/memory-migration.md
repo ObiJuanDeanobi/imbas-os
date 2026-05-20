@@ -1,4 +1,4 @@
-# Memory migration: MemPalace to Imbas/Memsocket
+# Memory migration: MemPalace to Imbas memory
 
 This document is a private-preview operating decision. It prevents accidental removal of working memory infrastructure before Imbas OS can replace it safely.
 
@@ -6,9 +6,9 @@ This document is a private-preview operating decision. It prevents accidental re
 
 Do **not** rip out MemPalace during early Imbas/OpenClaw dogfood.
 
-MemPalace remains the working OpenClaw/Hermes shared recall safety net until Imbas OS + Memsocket can provide equivalent or better memory, retrieval, provenance, redaction, context-pack, and human-review workflows.
+MemPalace remains the working OpenClaw/Hermes shared recall safety net until Imbas OS plus the chosen memory module can provide equivalent or better memory, retrieval, provenance, redaction, context-pack, and human-review workflows.
 
-The target architecture is still Imbas OS with Memsocket as the first-class memory/context module. The migration should be staged and evidence-driven.
+As of 2026-05-20, custom Memsocket development is paused and agentmemory is the primary live-memory candidate. The migration should remain staged and evidence-driven.
 
 ## Current roles
 
@@ -20,7 +20,7 @@ The target architecture is still Imbas OS with Memsocket as the first-class memo
 - Hermes pre-LLM recall hook.
 - Existing refresh/prune workflow for curated seed content.
 
-### Imbas/Memsocket target
+### Imbas memory target
 
 - First-class Imbas OS memory/context engine.
 - Context events linked to artifacts, wiki pages, runs, approvals, and sources.

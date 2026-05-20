@@ -10,7 +10,8 @@ Fast mental model:
 
 ```text
 Imbas OS = umbrella product
-Memsocket = memory/context engine
+agentmemory = current live-memory candidate
+Memsocket = paused custom memory/context engine design history
 Artifact Vault = artifact/wiki workbench seed
 Sanctum = trust, redaction, approvals, agent secret vault
 Conduit = agent connector/API layer
@@ -18,7 +19,7 @@ Conduit = agent connector/API layer
 
 ## Public 1.0 rule
 
-Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit maintainer approval.
+Do not treat the old Memsocket public-1.0 gate as active. As of 2026-05-20, Johnathan paused/archived custom Memsocket development and wants agentmemory used fully and regularly as the primary live-memory candidate. Public release still requires explicit maintainer approval; the memory gate should now be rewritten around a proven first-class memory module, likely agentmemory plus Imbas governance/adapters if the spike succeeds.
 
 Do not remove MemPalace during early OpenClaw/Imbas dogfood. MemPalace remains the working OpenClaw/Hermes recall safety net until the staged migration criteria in `docs/architecture/memory-migration.md` pass and the maintainer explicitly approves retirement.
 
@@ -41,7 +42,7 @@ Implemented now:
 
 Implemented as private-preview foundations, but not production complete yet:
 
-- Memsocket adapter/CLI boundary and optional Conduit write/search/context-pack integration; public 1.0 requires full first-class integration.
+- Memsocket adapter/CLI boundary and optional Conduit write/search/context-pack integration exist as private-preview design history; active memory work should evaluate agentmemory first.
 - Conduit local API/loopback service with durable JSONL private-preview storage.
 - OpenClaw shadow connector and constrained local CLI dispatch; Hermes/Codex/Claude Code connector SDKs remain future work.
 - Encrypted local Sanctum vault, redaction, policy, and audit foundation; OS keyring/passphrase UX and approval UX remain future work.
@@ -105,7 +106,8 @@ Use explicit searchable phrases so retrieval works well:
 - AI artifact vault
 - agent connector
 - context pack
-- Memsocket
+- agentmemory
+- paused Memsocket design history
 - Artifact Vault
 - OpenClaw
 - Hermes
@@ -121,7 +123,7 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/index.md` — documentation library map and 1.0 documentation gate.
 - `docs/architecture/subsystems.md` — subsystem map.
 - `docs/architecture/module-selection.md` — optional module/install-profile direction.
-- `docs/architecture/memory-migration.md` — MemPalace → Imbas/Memsocket migration and retirement criteria.
+- `docs/architecture/memory-migration.md` — MemPalace → Imbas memory migration and retirement criteria.
 - `docs/architecture/ai-first-os.md` — product principle: UI as a window into the AI operating layer.
 - `docs/release/fresh-system-1.0-gate.md` — mandatory clean-system public 1.0 gate.
 - `docs/setup/local-development.md` — local setup/run/verification/troubleshooting.

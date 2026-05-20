@@ -8,9 +8,11 @@ This page is intentionally blunt. Imbas OS is private-preview software, not publ
 - No production installer, signing, notarization, or app-store distribution.
 - Dev preview package exists, but public distribution is blocked by the fresh-system gate.
 
-## Memsocket and memory migration
+## Memory engine and memory migration
 
-- Memsocket is not yet fully merged/integrated/tested as the first-class Imbas OS public 1.0 memory module.
+- Memsocket custom development is paused as of 2026-05-20.
+- agentmemory is the primary live-memory candidate for OpenClaw/Hermes dogfood.
+- Imbas OS public 1.0 memory requirements need to be rewritten around whichever memory module is proven in regular use.
 - MemPalace remains the working OpenClaw/Hermes recall safety net.
 - MemPalace must not be removed until migration criteria pass and the maintainer explicitly approves.
 

@@ -253,7 +253,8 @@ Fast mental model:
 
 ```text
 Imbas OS = umbrella product
-Memsocket = memory/context engine
+agentmemory = current live-memory candidate
+Memsocket = paused custom memory/context engine design history
 Artifact Vault = artifact/wiki workbench seed
 Sanctum = trust, redaction, approvals, agent secret vault
 Conduit = agent connector/API layer
@@ -261,7 +262,7 @@ Conduit = agent connector/API layer
 
 ## Public 1.0 rule
 
-Do not treat Memsocket as optional-to-integrate for public release. For private preview it may remain a separate repo/adapter target, but before public Imbas OS 1.0 it must be merged/integrated/tested as a first-class Imbas OS module. Runtime enablement can remain user-selectable. Public release still requires explicit maintainer approval.
+Do not treat the old Memsocket public-1.0 gate as active. As of 2026-05-20, Johnathan paused/archived custom Memsocket development and wants agentmemory used fully and regularly as the primary live-memory candidate. Public release still requires explicit maintainer approval; the memory gate should now be rewritten around a proven first-class memory module, likely agentmemory plus Imbas governance/adapters if the spike succeeds.
 
 Do not remove MemPalace during early OpenClaw/Imbas dogfood. MemPalace remains the working OpenClaw/Hermes recall safety net until the staged migration criteria in `docs/architecture/memory-migration.md` pass and the maintainer explicitly approves retirement.
 
@@ -284,7 +285,7 @@ Implemented now:
 
 Implemented as private-preview foundations, but not production complete yet:
 
-- Memsocket adapter/CLI boundary and optional Conduit write/search/context-pack integration; public 1.0 requires full first-class integration.
+- Memsocket adapter/CLI boundary and optional Conduit write/search/context-pack integration exist as private-preview design history; active memory work should evaluate agentmemory first.
 - Conduit local API/loopback service with durable JSONL private-preview storage.
 - OpenClaw shadow connector and constrained local CLI dispatch; Hermes/Codex/Claude Code connector SDKs remain future work.
 - Encrypted local Sanctum vault, redaction, policy, and audit foundation; OS keyring/passphrase UX and approval UX remain future work.
@@ -348,7 +349,8 @@ Use explicit searchable phrases so retrieval works well:
 - AI artifact vault
 - agent connector
 - context pack
-- Memsocket
+- agentmemory
+- paused Memsocket design history
 - Artifact Vault
 - OpenClaw
 - Hermes
@@ -364,7 +366,7 @@ Use explicit searchable phrases so retrieval works well:
 - `docs/index.md` — documentation library map and 1.0 documentation gate.
 - `docs/architecture/subsystems.md` — subsystem map.
 - `docs/architecture/module-selection.md` — optional module/install-profile direction.
-- `docs/architecture/memory-migration.md` — MemPalace → Imbas/Memsocket migration and retirement criteria.
+- `docs/architecture/memory-migration.md` — MemPalace → Imbas memory migration and retirement criteria.
 - `docs/architecture/ai-first-os.md` — product principle: UI as a window into the AI operating layer.
 - `docs/release/fresh-system-1.0-gate.md` — mandatory clean-system public 1.0 gate.
 - `docs/setup/local-development.md` — local setup/run/verification/troubleshooting.
@@ -667,8 +669,8 @@ Paid offerings, if/when they happen, should be separate and should charge for ho
 | State | Audience | What it means | What it must not imply |
 |---|---|---|---|
 | HTML Artifact Vault public alpha | Public OSS users after approval | A focused local desktop vault for generated HTML artifacts with sandbox replay, metadata/notes/provenance, snapshots, search, readable storage direction, and context export. | Full Imbas OS, production connector auth, hosted/cloud service, stable Android, or hardened automatic multi-agent capture. |
-| Imbas OS private preview | Maintainer/dogfood users | Broader local-first agent OS integration work: Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket adapters, OpenClaw dispatch, and migration experiments. | Public stability or public support commitments. |
-| Imbas OS public 1.0 | Public release after gates pass | Coherent distribution with first-class modules, fresh-system proof, backup/restore/delete/forget, security/privacy review, and explicit maintainer approval. | A loosely related Artifact Vault app plus external memory tooling. |
+| Imbas OS private preview | Maintainer/dogfood users | Broader local-first agent OS integration work: Conduit, Runledger, Lorekeeper, Sanctum, Android, agentmemory evaluation, paused Memsocket design history, OpenClaw dispatch, and migration experiments. | Public stability or public support commitments. |
+| Imbas OS public 1.0 | Public release after gates pass | Coherent distribution with first-class modules, fresh-system proof, backup/restore/delete/forget, security/privacy review, proven memory module, and explicit maintainer approval. | A loosely related Artifact Vault app plus external memory tooling. |
 
 ## Release lanes
 
@@ -696,7 +698,7 @@ Non-goals for alpha:
 - Production installer/signing/notarization.
 - Hosted cloud service.
 - Team/workspace features.
-- Fully integrated Memsocket memory engine.
+- Proven first-class memory engine. Current candidate: agentmemory; custom Memsocket engine is paused.
 - Production-grade connector auth.
 - Public claims that Android/OpenClaw live dispatch are stable.
 
@@ -850,10 +852,11 @@ Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/huma
 - [ ] Add wiki context export.
 - [ ] Add source/citation quality checks.
 
-### M5 — Memsocket first-class integration
+### M5 — First-class memory integration
 
-- [ ] Merge or vendor Memsocket into Imbas OS release story.
-- [ ] Integrate Lorekeeper/wiki as the curated long-term knowledge source that indexes into Memsocket.
+- [ ] Complete agentmemory regular-use spike for OpenClaw/Hermes.
+- [ ] Decide whether agentmemory is the memory engine, whether Imbas wraps it with governance/adapters, or whether paused Memsocket work must resume.
+- [ ] Integrate Lorekeeper/wiki as the curated long-term knowledge source that indexes into the chosen memory engine.
 - [ ] Add memory/context event governance.
 - [ ] Add retrieval eval fixtures.
 - [ ] Add context pack quality tests.
@@ -2327,7 +2330,7 @@ This page tracks the current private-preview reality against the initial issue s
 | #6 | Android companion | Kotlin/Compose Gradle project, Android SDK/JDK/Gradle wrapper, tabbed private-preview APK, live HTTP status/runledger/proposal fetch with offline demo fallback, desktop-created pairing challenge UI with QR payload, Android QR scan prefill, live pairing completion, Android Keystore-encrypted mobile token storage, authenticated session revoke, proposal approve/reject POSTs, proposal rationale/markdown/source preview, private note capture/voice draft POSTs, companion diagnostics, and server-side loopback guards for mobile-scoped reads/actions are implemented. | Photo capture, richer restore UX, and biometric/keychain polish remain. |
 | #7 | Lorekeeper | Proposal-first workflow plus guarded managed-block apply with source citations, non-mutating before/after preview, desktop visual line diff, approve-before-apply action guard, on-disk markdown snapshot before apply, desktop snapshot listing/preview, Runledger audit, Command Center proposal summary, and Agent Console transcript-to-artifact/proposal path exist. | Tiered Lorekeeper automation policy implementation for safe auto-apply lanes versus approval-required lanes, plus guarded restore UI for saved markdown snapshots with safety snapshots before rollback. |
 | #8 | Installer/restore | Private-preview tarball, `npm run verify:preview`, restore/package docs, verification ops guide, and backup/restore/delete/forget readiness plan exist. | Real installer/signing/notarization require release decisions; clean-machine restore evidence still needed. |
-| #9 | Memsocket public 1.0 gate | Adapter, CLI client, optional write-through, status module, live smoke path, agentmemory pattern-harvest note, and explicit MemPalace→Imbas migration plan exist. | Public 1.0 still blocked until Memsocket is merged/integrated/tested under Imbas OS as first-class release module and the maintainer approves. MemPalace must remain active as a safety net until Imbas/Memsocket meets the migration exit criteria. Near-term design slices: deeper memory governance proposals, retrieval eval fixtures, and policy-controlled auto-maintenance for low-risk wiki/artifact updates. |
+| #9 | Memory public 1.0 gate | Adapter, CLI client, optional write-through, status module, live smoke path, agentmemory pattern-harvest note, and explicit MemPalace→Imbas migration plan exist. | Custom Memsocket development is paused as of 2026-05-20 while agentmemory becomes the primary live-memory candidate. Public 1.0 remains blocked until a first-class memory module is proven, documented, backed up/restored, delete/forget tested, and approved by the maintainer. MemPalace remains active as a safety net until the replacement meets migration exit criteria. |
 
 ## Current verification gates
 
@@ -2341,7 +2344,7 @@ This page tracks the current private-preview reality against the initial issue s
 ## Explicit blockers
 
 - No public release, publishing, or announcement without explicit maintainer approval.
-- No public 1.0 until the fresh-system gate in [`docs/release/fresh-system-1.0-gate.md`](release/fresh-system-1.0-gate.md) passes: brand-new OpenClaw config, Imbas OS with all supported modules, agent adapters, Android companion pairing, backup/restore, security smoke, and human review loop.
+- No public 1.0 until the fresh-system gate in [`docs/release/fresh-system-1.0-gate.md`](release/fresh-system-1.0-gate.md) is updated for the chosen memory module and passes: brand-new OpenClaw config, Imbas OS with supported modules, agent adapters, Android companion pairing, backup/restore, security smoke, and human review loop.
 - Do not remove/disable MemPalace until the staged migration criteria in [`docs/architecture/memory-migration.md`](architecture/memory-migration.md) pass and the maintainer approves retirement.
 - No production installer/signing/notarization decision has been made.
 
@@ -3486,9 +3489,11 @@ This page is intentionally blunt. Imbas OS is private-preview software, not publ
 - No production installer, signing, notarization, or app-store distribution.
 - Dev preview package exists, but public distribution is blocked by the fresh-system gate.
 
-## Memsocket and memory migration
+## Memory engine and memory migration
 
-- Memsocket is not yet fully merged/integrated/tested as the first-class Imbas OS public 1.0 memory module.
+- Memsocket custom development is paused as of 2026-05-20.
+- agentmemory is the primary live-memory candidate for OpenClaw/Hermes dogfood.
+- Imbas OS public 1.0 memory requirements need to be rewritten around whichever memory module is proven in regular use.
 - MemPalace remains the working OpenClaw/Hermes recall safety net.
 - MemPalace must not be removed until migration criteria pass and the maintainer explicitly approves.
 

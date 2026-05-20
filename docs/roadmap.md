@@ -51,8 +51,8 @@ Paid offerings, if/when they happen, should be separate and should charge for ho
 | State | Audience | What it means | What it must not imply |
 |---|---|---|---|
 | HTML Artifact Vault public alpha | Public OSS users after approval | A focused local desktop vault for generated HTML artifacts with sandbox replay, metadata/notes/provenance, snapshots, search, readable storage direction, and context export. | Full Imbas OS, production connector auth, hosted/cloud service, stable Android, or hardened automatic multi-agent capture. |
-| Imbas OS private preview | Maintainer/dogfood users | Broader local-first agent OS integration work: Conduit, Runledger, Lorekeeper, Sanctum, Android, Memsocket adapters, OpenClaw dispatch, and migration experiments. | Public stability or public support commitments. |
-| Imbas OS public 1.0 | Public release after gates pass | Coherent distribution with first-class modules, fresh-system proof, backup/restore/delete/forget, security/privacy review, and explicit maintainer approval. | A loosely related Artifact Vault app plus external memory tooling. |
+| Imbas OS private preview | Maintainer/dogfood users | Broader local-first agent OS integration work: Conduit, Runledger, Lorekeeper, Sanctum, Android, agentmemory evaluation, paused Memsocket design history, OpenClaw dispatch, and migration experiments. | Public stability or public support commitments. |
+| Imbas OS public 1.0 | Public release after gates pass | Coherent distribution with first-class modules, fresh-system proof, backup/restore/delete/forget, security/privacy review, proven memory module, and explicit maintainer approval. | A loosely related Artifact Vault app plus external memory tooling. |
 
 ## Release lanes
 
@@ -80,7 +80,7 @@ Non-goals for alpha:
 - Production installer/signing/notarization.
 - Hosted cloud service.
 - Team/workspace features.
-- Fully integrated Memsocket memory engine.
+- Proven first-class memory engine. Current candidate: agentmemory; custom Memsocket engine is paused.
 - Production-grade connector auth.
 - Public claims that Android/OpenClaw live dispatch are stable.
 
@@ -234,10 +234,11 @@ Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/huma
 - [ ] Add wiki context export.
 - [ ] Add source/citation quality checks.
 
-### M5 — Memsocket first-class integration
+### M5 — First-class memory integration
 
-- [ ] Merge or vendor Memsocket into Imbas OS release story.
-- [ ] Integrate Lorekeeper/wiki as the curated long-term knowledge source that indexes into Memsocket.
+- [ ] Complete agentmemory regular-use spike for OpenClaw/Hermes.
+- [ ] Decide whether agentmemory is the memory engine, whether Imbas wraps it with governance/adapters, or whether paused Memsocket work must resume.
+- [ ] Integrate Lorekeeper/wiki as the curated long-term knowledge source that indexes into the chosen memory engine.
 - [ ] Add memory/context event governance.
 - [ ] Add retrieval eval fixtures.
 - [ ] Add context pack quality tests.
