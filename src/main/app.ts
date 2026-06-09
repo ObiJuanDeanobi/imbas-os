@@ -3,7 +3,7 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { createArtifact, createArtifactFromFile, createSnapshot, defaultVaultRoot, exportArtifactBundleToDirectory, exportArtifactJson, exportArtifactMarkdown, exportArtifactPromptPackage, getArtifactGraph, importArtifactBundleFromDirectory, initVault, listArtifacts, listSnapshots, readArtifact, restoreSnapshot, searchArtifacts, updateArtifactMetadata, updateArtifactNotes } from './vault/vaultStore.js';
+import { createArtifact, createArtifactFromFile, createSnapshot, defaultVaultRoot, exportArtifactBundleToDirectory, exportArtifactBundleToZip, exportArtifactJson, exportArtifactMarkdown, exportArtifactPromptPackage, getArtifactGraph, importArtifactBundleFromDirectory, importArtifactBundleFromZip, initVault, listArtifacts, listSnapshots, readArtifact, restoreSnapshot, searchArtifacts, updateArtifactMetadata, updateArtifactNotes, readSnapshot } from './vault/vaultStore.js';
 import { exportMixedPromptPackage } from './vault/mixedExport.js';
 import { rebuildSearchIndex, searchArtifactsWithIndex } from './vault/searchIndex.js';
 import { renderPolicyForTrustLevel, shouldBlockArtifactRequest, wrapHtmlForSandbox } from './security/artifactPolicy.js';
@@ -220,16 +220,23 @@ ipcMain.handle('artifacts:import-file', async () => {
   if (result.canceled || !result.filePaths[0]) return null;
   return createArtifactFromFile(vaultRoot, result.filePaths[0]);
 });
+ipcMain.handle('artifacts:import-path', async (_event, filePath: string) => createArtifactFromFile(vaultRoot, filePath));
 ipcMain.handle('artifacts:import-bundle-directory', async () => {
   const result = await dialog.showOpenDialog({ properties: ['openDirectory'], title: 'Import artifact bundle folder' });
   if (result.canceled || !result.filePaths[0]) return null;
   return importArtifactBundleFromDirectory(vaultRoot, result.filePaths[0]);
+});
+ipcMain.handle('artifacts:import-bundle-zip', async () => {
+  const result = await dialog.showOpenDialog({ properties: ['openFile'], title: 'Import artifact bundle zip', filters: [{ name: 'Zip archives', extensions: ['zip'] }] });
+  if (result.canceled || !result.filePaths[0]) return null;
+  return importArtifactBundleFromZip(vaultRoot, result.filePaths[0]);
 });
 ipcMain.handle('artifacts:read', async (_event, id: string) => readArtifact(vaultRoot, id));
 ipcMain.handle('artifacts:update-notes', async (_event, id: string, notes: string) => updateArtifactNotes(vaultRoot, id, notes));
 ipcMain.handle('artifacts:update-metadata', async (_event, id: string, input) => updateArtifactMetadata(vaultRoot, id, input));
 ipcMain.handle('artifacts:snapshot', async (_event, id: string) => createSnapshot(vaultRoot, id));
 ipcMain.handle('artifacts:snapshots', async (_event, id: string) => listSnapshots(vaultRoot, id));
+ipcMain.handle('artifacts:read-snapshot', async (_event, id: string, snapshotId: string) => readSnapshot(vaultRoot, id, snapshotId));
 ipcMain.handle('artifacts:restore-snapshot', async (_event, id: string, snapshotId: string) => restoreSnapshot(vaultRoot, id, snapshotId));
 ipcMain.handle('artifacts:export-markdown', async (_event, id: string) => exportArtifactMarkdown(vaultRoot, id));
 ipcMain.handle('artifacts:export-json', async (_event, id: string) => exportArtifactJson(vaultRoot, id));
@@ -239,6 +246,11 @@ ipcMain.handle('artifacts:export-bundle-directory', async (_event, id: string) =
   const result = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], title: 'Choose export destination' });
   if (result.canceled || !result.filePaths[0]) return null;
   return exportArtifactBundleToDirectory(vaultRoot, id, result.filePaths[0]);
+});
+ipcMain.handle('artifacts:export-bundle-zip', async (_event, id: string) => {
+  const result = await dialog.showSaveDialog({ title: 'Export bundle as zip', defaultPath: `artifact-${id.slice(0, 8)}.zip`, filters: [{ name: 'Zip archives', extensions: ['zip'] }] });
+  if (result.canceled || !result.filePath) return null;
+  return exportArtifactBundleToZip(vaultRoot, id, result.filePath);
 });
 ipcMain.handle('wiki:index-directory', async () => {
   const result = await dialog.showOpenDialog({ properties: ['openDirectory'], title: 'Index Markdown/wiki folder in read-only bridge mode' });
@@ -275,9 +287,9 @@ async function runSecuritySmoke() {
   });
   installWindowGuards(win);
   await win.loadURL(`artifact://${created.metadata.id}/`);
-  await new Promise((resolve) => setTimeout(resolve, 750));
+  await new Promise((resolve) => setTimeout(resolve, 1500));
   const bodyText = await win.webContents.executeJavaScript('document.body.innerText');
-  const required = ['typeof process: undefined', 'typeof require: undefined', 'typeof artifactVault bridge: undefined', 'window open: blocked', 'top navigation: attempted', 'network fetch: blocked'];
+  const required = ['typeof process: undefined', 'typeof require: undefined', 'typeof artifactVault bridge: undefined', 'window open: blocked', 'top navigation: attempted', 'network fetch: blocked', 'file url fetch: blocked', 'permission query', 'localStorage', 'iframe escape: attempted', 'img load: blocked', 'script src: blocked'];
   const missing = required.filter((item) => !bodyText.includes(item));
   if (missing.length) {
     console.error(`Security smoke failed; missing: ${missing.join(', ')}`);

@@ -19,17 +19,27 @@ const vaultFilters = [
   { id: 'inbox', label: 'Inbox / Untitled', hint: 'Needs triage' }
 ];
 
-function matchesVaultFilter(item: { title: string; tags: string[]; project?: string; sourceOwnership?: string }, filter: string) {
+function matchesVaultFilter(item: { title: string; tags: string[]; taxonomy?: string; project?: string; sourceOwnership?: string }, filter: string) {
   if (filter === 'all') return true;
+  
+  if (filter === 'inbox') {
+    return !item.project || /inbox|untitled|imported|paste/.test([item.title, ...(item.tags ?? [])].join(' ').toLowerCase());
+  }
+
+  // Exact taxonomy match first if populated
+  if (item.taxonomy && item.taxonomy !== '') {
+    return item.taxonomy === filter;
+  }
+
+  // Fallback for legacy artifacts
   const haystack = [item.title, item.project ?? '', ...(item.tags ?? [])].join(' ').toLowerCase();
-  if (filter === 'inbox') return !item.project || /inbox|untitled|imported|paste/.test(haystack);
   if (filter === 'site') return /site|landing|page|microsite/.test(haystack);
   if (filter === 'simulation') return /simulation|lesson|quiz|model|timeline/.test(haystack);
   if (filter === 'tool') return /tool|editor|utility|matrix|calculator/.test(haystack);
   if (filter === 'dashboard') return /dashboard|status|board|map|panel/.test(haystack);
   if (filter === 'report') return /report|research|compliance|review|analysis|pack/.test(haystack);
   if (filter === 'experiment') return /experiment|prototype|demo|throwaway|alpha/.test(haystack);
-  return true;
+  return false;
 }
 
 const defaultHtml = `<!doctype html>
@@ -39,7 +49,7 @@ const defaultHtml = `<!doctype html>
 </html>`;
 
 export function App() {
-  const [activeView, setActiveView] = useState<'command' | 'agent' | 'vault'>('command');
+  const [activeView, setActiveView] = useState<'command' | 'agent' | 'vault' | 'pages' | 'projects' | 'tags' | 'graph'>('command');
   const [vault, setVault] = useState<VaultInfo | null>(null);
   const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
   const [unifiedResults, setUnifiedResults] = useState<UnifiedSearchResult[]>([]);
@@ -47,6 +57,8 @@ export function App() {
   const [selectedWikiId, setSelectedWikiId] = useState<string | null>(null);
   const [html, setHtml] = useState(defaultHtml);
   const [title, setTitle] = useState('First artifact');
+  const [destinationProject, setDestinationProject] = useState('');
+  const [destinationTaxonomy, setDestinationTaxonomy] = useState<any>('');
   const [markdownTitle, setMarkdownTitle] = useState('Project note');
   const [markdownDraft, setMarkdownDraft] = useState('# Project note\n\nLink artifacts with `[[artifact:artifact-id]]` or wiki pages with `[[Page Name]]`.');
   const [query, setQuery] = useState('');
@@ -90,8 +102,42 @@ export function App() {
 
   useEffect(() => { void refresh(); }, [query, projectFilter, vaultFilter, indexStats]);
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (activeView !== 'vault' || !unifiedResults.length) return;
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA' || document.activeElement?.tagName === 'SELECT') return;
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const currentIndex = unifiedResults.findIndex((item) => (item.kind === 'artifact' && item.id === selectedId) || (item.kind === 'wiki' && item.id === selectedWikiId));
+        let nextIndex = currentIndex;
+        
+        if (currentIndex === -1) {
+          nextIndex = 0;
+        } else if (event.key === 'ArrowDown') {
+          nextIndex = (currentIndex + 1) % unifiedResults.length;
+        } else if (event.key === 'ArrowUp') {
+          nextIndex = (currentIndex - 1 + unifiedResults.length) % unifiedResults.length;
+        }
+
+        const nextItem = unifiedResults[nextIndex];
+        if (nextItem) {
+          if (nextItem.kind === 'artifact') {
+            setSelectedId(nextItem.id);
+            setSelectedWikiId(null);
+          } else {
+            setSelectedWikiId(nextItem.id);
+            setSelectedId(null);
+          }
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [unifiedResults, selectedId, selectedWikiId, activeView]);
+
   async function importArtifact(sample?: string) {
-    const created = await window.artifactVault.createArtifact({ html: sample ?? html, title, sourceType: 'paste', tags: ['imported', 'paste'] });
+    const created = await window.artifactVault.createArtifact({ html: sample ?? html, title, taxonomy: destinationTaxonomy || undefined, project: destinationProject.trim() || undefined, sourceType: 'paste', tags: ['imported', 'paste'] });
     setIndexStats(null);
     await refresh();
     setSelectedId(created.metadata.id);
@@ -126,6 +172,19 @@ export function App() {
     const message = `Imported portable bundle ${created.metadata.title}. Destination: local artifact bundle artifacts/${created.metadata.id}. Trust level: ${created.metadata.trustLevel}.`;
     setImportStatus(message);
     setLastAction(`${message} It was copied into the local vault as a new artifact.`);
+  }
+
+  async function importBundleZip() {
+    const created = await window.artifactVault.importBundleZip();
+    if (!created) return;
+    setIndexStats(null);
+    await refresh();
+    setSelectedId(created.metadata.id);
+    setSelectedWikiId(null);
+    setActiveView('vault');
+    const message = `Imported zipped bundle ${created.metadata.title}. Destination: local artifact bundle artifacts/${created.metadata.id}. Trust level: ${created.metadata.trustLevel}.`;
+    setImportStatus(message);
+    setLastAction(`${message} It was extracted and copied into the local vault.`);
   }
 
   async function importMaliciousFixture() {
@@ -189,11 +248,36 @@ export function App() {
     await refresh();
     setSelectedWikiId(page.node.id);
     setSelectedId(null);
-    setLastAction(`Created vault-owned Markdown page ${page.node.relativePath}. It is editable inside Imbas OS.`);
+    setLastAction(`Created vault-owned Markdown Note ${page.node.relativePath}. It is editable inside Imbas OS.`);
+  }
+
+  async function handleDrop(event: React.DragEvent) {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (file && (file.name.endsWith('.html') || file.name.endsWith('.htm'))) {
+      const path = (file as any).path;
+      if (path) {
+        const created = await window.artifactVault.importHtmlFilePath(path);
+        if (created) {
+          setIndexStats(null);
+          await refresh();
+          setSelectedId(created.metadata.id);
+          setSelectedWikiId(null);
+          setActiveView('vault');
+          const message = `Imported ${created.metadata.title} via drag-and-drop. Destination: local artifact bundle artifacts/${created.metadata.id}. Trust level: ${created.metadata.trustLevel}.`;
+          setImportStatus(message);
+          setLastAction(`${message} Source-path provenance was preserved.`);
+        }
+      }
+    }
+  }
+
+  function handleDragOver(event: React.DragEvent) {
+    event.preventDefault();
   }
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" onDrop={handleDrop} onDragOver={handleDragOver}>
       <aside className="sidebar">
         <div className="brand"><span>◈</span><div><p>local-first</p><h1>Imbas OS</h1></div></div>
         <nav className="primary-nav" aria-label="Imbas OS sections">
@@ -205,10 +289,10 @@ export function App() {
           <p className="eyebrow">Vault</p>
           {vaultFilters.map((filter) => <button key={filter.id} className={activeView === 'vault' && vaultFilter === filter.id ? 'active' : ''} onClick={() => { setActiveView('vault'); setVaultFilter(filter.id); }}><span>{filter.label}</span><small>{filter.hint}</small></button>)}
           <p className="eyebrow nav-gap">Pages</p>
-          <button className={activeView === 'vault' && selectedWikiId ? 'active' : ''} onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Notes / Wiki</button>
-          <button onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Projects</button>
-          <button onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Tags</button>
-          <button onClick={() => { setActiveView('vault'); setVaultFilter('all'); }}>Graph</button>
+          <button className={activeView === 'pages' ? 'active' : ''} onClick={() => setActiveView('pages')}>Notes / Wiki</button>
+          <button className={activeView === 'projects' ? 'active' : ''} onClick={() => setActiveView('projects')}>Projects</button>
+          <button className={activeView === 'tags' ? 'active' : ''} onClick={() => setActiveView('tags')}>Tags</button>
+          <button className={activeView === 'graph' ? 'active' : ''} onClick={() => setActiveView('graph')}>Graph</button>
           <p className="eyebrow nav-gap">System</p>
           <button disabled title="Runledger-backed Runs are staged until the public surface is ready.">Runs · staged</button>
           <button onClick={() => setActiveView('command')}>Settings / status</button>
@@ -216,7 +300,7 @@ export function App() {
         <div className="vault-card">
           <strong>Vault</strong>
           <code title={vault?.root ?? ''}>{vault ? 'Local vault on this device' : 'loading…'}</code>
-          <span>{artifacts.length} artifacts shown · {totalArtifactCount} artifacts · {totalWikiCount} markdown pages</span>
+          <span>{artifacts.length} artifacts shown · {totalArtifactCount} artifacts · {totalWikiCount} markdown notes</span>
         </div>
         <section className="value-strip" aria-label="Artifact Vault values">
           <span><strong>Local First</strong>Stays on your machine.</span>
@@ -242,9 +326,24 @@ export function App() {
             <p className="muted">Default trust: <code>untrusted</code> · replay opens in the sandbox immediately after import.</p>
           </div>
           <label>Artifact title<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+          <label>Project / Workspace<input list="project-options" value={destinationProject} onChange={(e) => setDestinationProject(e.target.value)} placeholder="e.g. Sales Deck" /></label>
+          <label>Taxonomy Class
+            <select value={destinationTaxonomy} onChange={(e) => setDestinationTaxonomy(e.target.value)}>
+              <option value="">None</option>
+              <option value="dashboard">Dashboard</option>
+              <option value="tool">Tool</option>
+              <option value="report">Report</option>
+              <option value="simulation">Simulation</option>
+              <option value="site">Site</option>
+              <option value="experiment">Experiment</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <datalist id="project-options">{projectOptions.map(p => <option key={p} value={p} />)}</datalist>
           <label>Paste generated HTML<textarea value={html} onChange={(event) => setHtml(event.target.value)} /></label>
           <button onClick={() => importArtifact()} disabled={!html.trim()}>Import pasted HTML</button>
-          <div className="button-row compact"><button className="secondary" onClick={importHtmlFile}>Import .html file</button><button className="secondary" onClick={importBundleDirectory}>Import bundle folder</button></div>
+          <p className="muted">Import full portable bundles</p>
+          <div className="button-row compact"><button className="secondary" onClick={importHtmlFile}>Import .html file</button><button className="secondary" onClick={importBundleDirectory}>Import bundle folder</button><button className="secondary" onClick={importBundleZip}>Import bundle zip</button></div>
           <div className="button-row compact"><button className="secondary" onClick={importMaliciousFixture}>Import malicious fixture</button><button className="secondary" onClick={seedDemoVault}>Seed demo vault</button></div>
           <p className="import-status">{importStatus}</p>
         </section>
@@ -304,9 +403,31 @@ export function App() {
           ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} mobilePairingChallenge={mobilePairingChallenge} mobilePairingQrDataUrl={mobilePairingQrDataUrl} onCreateMobilePairingChallenge={createMobilePairingChallenge} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
           : activeView === 'agent'
             ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onDispatchOpenClaw={window.artifactVault.conduitOpenClawDispatch} onRunReplay={window.artifactVault.conduitRunReplay} onCreateLorekeeperProposal={window.artifactVault.conduitCreateLorekeeperProposal} onPreviewLorekeeperProposal={window.artifactVault.conduitPreviewLorekeeperProposal} onApproveLorekeeperProposal={window.artifactVault.conduitApproveLorekeeperProposal} onRejectLorekeeperProposal={window.artifactVault.conduitRejectLorekeeperProposal} onApplyLorekeeperProposal={window.artifactVault.conduitApplyLorekeeperProposal} onListLorekeeperSnapshots={window.artifactVault.conduitListLorekeeperSnapshots} onPreviewLorekeeperSnapshot={window.artifactVault.conduitPreviewLorekeeperSnapshot} onRestoreLorekeeperSnapshot={window.artifactVault.conduitRestoreLorekeeperSnapshot} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
-            : selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
+          : activeView === 'pages' ? <PagesView graph={graph} onSelectWiki={(id) => { setSelectedWikiId(id); setActiveView('vault'); setVaultFilter('all'); }} />
+          : activeView === 'projects' ? <ProjectsView graph={graph} onSelectProject={(project) => { setProjectFilter(project); setActiveView('vault'); setVaultFilter('all'); }} />
+          : activeView === 'tags' ? <TagsView graph={graph} artifacts={artifacts} onSelectTag={(tag) => { setQuery(tag); setActiveView('vault'); setVaultFilter('all'); }} />
+          : activeView === 'graph' ? <GraphView graph={graph} onNavigate={(id, isWiki) => {
+          if (isWiki) {
+            setSelectedWikiId(id);
+            setSelectedId(null);
+          } else {
+            setSelectedId(id);
+            setSelectedWikiId(null);
+          }
+          setActiveView('vault');
+        }} />
+          : selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
       </section>
-      <InspectorPane selected={selectedWikiId && selectedWikiNode ? selectedWikiNode : selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} />
+      <InspectorPane selected={selectedWikiId && selectedWikiNode ? selectedWikiNode : selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} onNavigate={(id, isWiki) => {
+          if (isWiki) {
+            setSelectedWikiId(id);
+            setSelectedId(null);
+          } else {
+            setSelectedId(id);
+            setSelectedWikiId(null);
+          }
+          setActiveView('vault');
+        }} />
     </main>
   );
 }
@@ -751,7 +872,7 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
   const [metadataStatus, setMetadataStatus] = useState('Metadata is loaded from metadata.json. Save changes to update search, graph, and exports.');
   const [notesStatus, setNotesStatus] = useState('Sidecar notes live beside the artifact as notes.md and travel with exports.');
   const [snapshotStatus, setSnapshotStatus] = useState('Snapshots preserve artifact.html, metadata.json, and notes.md before important changes. Restore is reversible because the current state is snapshotted first.');
-  const [activeInspectorTab, setActiveInspectorTab] = useState<'details' | 'notes' | 'provenance' | 'snapshots' | 'export'>('details');
+  const [showExport, setShowExport] = useState(false);
   const [metadataTitle, setMetadataTitle] = useState(artifact.title);
   const [metadataTags, setMetadataTags] = useState(artifact.tags.join(', '));
   const [metadataTrust, setMetadataTrust] = useState<TrustLevel>(artifact.trustLevel);
@@ -889,16 +1010,23 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
 
   async function exportBundleDirectory() {
     const exportedPath = await window.artifactVault.exportBundleDirectory(artifact.id);
-    if (exportedPath) setExportText(`Portable bundle exported to:\n${exportedPath}`);
+    if (exportedPath) {
+      setExportStatus(`Exported portable artifact bundle to ${exportedPath}`);
+      setShowExport(true);
+      setExportText(`Portable bundle exported to:\n${exportedPath}`);
+    }
   }
 
-  const inspectorTabs = [
-    { id: 'details', label: 'Details' },
-    { id: 'notes', label: 'Notes' },
-    { id: 'provenance', label: 'Provenance' },
-    { id: 'snapshots', label: 'Snapshots' },
-    { id: 'export', label: 'AI Context' }
-  ] as const;
+  async function exportBundleZip() {
+    const exportedPath = await window.artifactVault.exportBundleZip(artifact.id);
+    if (exportedPath) {
+      setExportStatus(`Exported zipped artifact bundle to ${exportedPath}`);
+      setShowExport(true);
+      setExportText(`Zipped bundle exported to:\n${exportedPath}`);
+    }
+  }
+
+
 
   return <div className="artifact-detail vault-detail-shell">
     <header className="detail-header vault-detail-header">
@@ -917,8 +1045,14 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
             <strong>{metadataTitle || artifact.title}</strong>
             <span>Sandboxed <code>artifact://</code> preview. Generated HTML is treated as hostile until reviewed.</span>
           </div>
-          <div className="button-row compact"><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={snapshot}>Snapshot</button><button className="secondary" onClick={exportBundleDirectory}>Export bundle</button></div>
+          <div className="button-row compact"><button onClick={() => window.open(`artifact://${artifact.id}/`)}>Open</button><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={() => setShowExport(!showExport)}>Export</button><button className="secondary" onClick={snapshot}>Snapshot</button></div>
         </div>
+        {showExport && <div className="export-panel" style={{ padding: '1rem', borderBottom: '1px solid #ddd', background: '#fafafa' }}>
+          <p className="metadata-status">{exportStatus}</p>
+          <p className="eyebrow nav-gap">Export formats</p>
+          <div className="button-row compact" style={{ marginBottom: '1rem' }}><button className="secondary" onClick={exportPromptPackage}>Context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button><button className="secondary" onClick={exportBundleZip}>Bundle zip</button></div>
+          {exportText && <pre style={{ maxHeight: '300px', overflow: 'auto', background: '#111', color: '#eee', padding: '1rem', borderRadius: '8px' }}>{exportText}</pre>}
+        </div>}
         <iframe className="artifact-frame" title={artifact.title} src={`artifact://${artifact.id}/`} sandbox="allow-scripts" />
       </section>
     </div>
@@ -954,26 +1088,123 @@ function MarkdownDetail({ pageId, graph, onRefresh }: { pageId: string; graph: A
     await onRefresh();
   }
 
-  if (!page) return <div className="empty"><h2>Loading Markdown page…</h2></div>;
+  if (!page) return <div className="empty"><h2>Loading Markdown Note…</h2></div>;
 
   return <div className="markdown-detail">
-    <header className="detail-header"><div><p className="eyebrow">Markdown page · {page.node.sourceOwnership}</p><h2>{page.node.title}</h2><p>{page.node.relativePath}</p></div><div className="pills"><span>{page.node.sourceOwnership === 'vault-owned' ? 'editable local page' : 'read-only bridge'}</span><span>{page.node.wikilinks.length} wikilinks</span><span>{page.node.artifactLinks.length} artifact links</span></div></header>
+    <header className="detail-header"><div><p className="eyebrow">Markdown Note · {page.node.sourceOwnership}</p><h2>{page.node.title}</h2><p>{page.node.relativePath}</p></div><div className="pills"><span>{page.node.sourceOwnership === 'vault-owned' ? 'editable local note' : 'read-only bridge'}</span><span>{page.node.wikilinks.length} wikilinks</span><span>{page.node.artifactLinks.length} artifact links</span></div></header>
+    <div className="button-row" style={{ padding: '0 1.5rem', marginTop: '-0.5rem', marginBottom: '1rem' }}><button onClick={exportMixedPromptPackage}>Export mixed package</button></div>
+    {exportText && <pre style={{ margin: '0 1.5rem 1rem', maxHeight: '200px', overflow: 'auto', background: '#111', color: '#eee', padding: '1rem', borderRadius: '8px' }}>{exportText}</pre>}
     <div className="markdown-grid">
       <article className="markdown-preview">
         {page.node.sourceOwnership === 'vault-owned'
-          ? <><textarea className="markdown-editor" value={markdownDraft} onChange={(event) => setMarkdownDraft(event.target.value)} /><button onClick={saveVaultMarkdownPage}>Save Markdown page</button></>
+          ? <><textarea className="markdown-editor" value={markdownDraft} onChange={(event) => setMarkdownDraft(event.target.value)} /><button onClick={saveVaultMarkdownPage}>Save Markdown Note</button></>
           : <pre>{page.markdown}</pre>}
       </article>
     </div>
   </div>;
 }
 
-function LinkList({ title, edges, direction, graph }: { title: string; edges: { from: string; to: string }[]; direction: 'from' | 'to'; graph: ArtifactGraph }) {
-  return <div className="link-list"><strong>{title}</strong>{edges.length ? edges.map((edge) => {
-    const id = edge[direction];
-    const node = graph.nodes.find((item) => item.id === id);
-    return <p key={`${edge.from}-${edge.to}-${direction}`}><code>{node?.title ?? id.slice(0, 8)}</code>{node?.project && <span> · {node.project}</span>}</p>;
-  }) : <p className="muted">none</p>}</div>;
+
+
+function PagesView({ graph, onSelectWiki }: { graph: ArtifactGraph; onSelectWiki: (id: string) => void }) {
+  const pages = graph.nodes.filter(n => n.kind === 'wiki');
+  return <div className="vault-detail-shell" style={{ padding: '2rem' }}>
+    <header className="detail-header">
+      <h2>Pages / Notes</h2>
+      <p>{pages.length} Markdown pages</p>
+    </header>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+      {pages.map(page => (
+        <button key={page.id} className="secondary" style={{ textAlign: 'left', padding: '1rem' }} onClick={() => onSelectWiki(page.id)}>
+          <strong>{page.title}</strong>
+          <div className="muted">{page.id}</div>
+        </button>
+      ))}
+    </div>
+  </div>;
+}
+
+function ProjectsView({ graph, onSelectProject }: { graph: ArtifactGraph; onSelectProject: (project: string) => void }) {
+  const projects = [...new Set(graph.nodes.map(n => n.project).filter(Boolean))] as string[];
+  projects.sort();
+  return <div className="vault-detail-shell" style={{ padding: '2rem' }}>
+    <header className="detail-header">
+      <h2>Projects / Workspaces</h2>
+      <p>{projects.length} distinct projects</p>
+    </header>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+      {projects.map(project => (
+        <button key={project} className="secondary" onClick={() => onSelectProject(project)}>
+          <strong>{project}</strong>
+        </button>
+      ))}
+    </div>
+  </div>;
+}
+
+function TagsView({ graph, artifacts, onSelectTag }: { graph: ArtifactGraph; artifacts: ArtifactSummary[]; onSelectTag: (tag: string) => void }) {
+  const allTags = artifacts.flatMap(a => a.tags || []);
+  const tagCounts = allTags.reduce((acc, tag) => { acc[tag] = (acc[tag] || 0) + 1; return acc; }, {} as Record<string, number>);
+  const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+  return <div className="vault-detail-shell" style={{ padding: '2rem' }}>
+    <header className="detail-header">
+      <h2>Tags</h2>
+      <p>{sortedTags.length} distinct tags</p>
+    </header>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
+      {sortedTags.map(([tag, count]) => (
+        <button key={tag} className="secondary" onClick={() => onSelectTag(tag)}>
+          {tag} <span className="muted" style={{ marginLeft: '0.5rem' }}>{count}</span>
+        </button>
+      ))}
+    </div>
+  </div>;
+}
+
+function GraphView({ graph, onNavigate }: { graph: ArtifactGraph, onNavigate: (id: string, isWiki: boolean) => void }) {
+  const groups: Record<string, typeof graph.nodes> = {};
+  for (const node of graph.nodes) {
+    let groupName = 'Uncategorized Artifacts';
+    if (node.kind === 'wiki') {
+      const parts = node.id.split('/');
+      groupName = parts.length > 1 ? parts[0] : 'Root Pages';
+    } else if (node.project) {
+      groupName = `Project: ${node.project}`;
+    }
+    groups[groupName] = groups[groupName] || [];
+    groups[groupName].push(node);
+  }
+
+  return <div className="vault-detail-shell" style={{ padding: '2rem', overflowY: 'auto' }}>
+    <header className="detail-header">
+      <h2>Graph Overview</h2>
+      <p>{graph.nodes.length} nodes · {graph.edges.length} edges</p>
+    </header>
+    <div className="inspector-content" style={{ marginTop: '2rem' }}>
+      <p className="muted">The local graph connects Wiki Pages and Artifacts via explicitly authored wikilinks.</p>
+      
+      {Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0])).map(([groupName, nodes]) => (
+        <div key={groupName} style={{ marginTop: '2rem' }}>
+          <h3 style={{ borderBottom: '1px solid #333', paddingBottom: '0.5rem', marginBottom: '1rem' }}>{groupName} ({nodes.length})</h3>
+          <ul style={{ listStyleType: 'none', padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+            {nodes.map(n => {
+              const incoming = graph.edges.filter(e => e.to === n.id).length;
+              const outgoing = graph.edges.filter(e => e.from === n.id).length;
+              return <li key={n.id} style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '8px', cursor: 'pointer' }} onClick={() => onNavigate(n.id, n.kind === 'wiki')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <span className="muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{n.kind}</span>
+                  <strong style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.title}</strong>
+                </div>
+                <div className="muted" style={{ fontSize: '0.8rem' }}>
+                  {incoming} incoming, {outgoing} outgoing links
+                </div>
+              </li>;
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>;
 }
 
 function EmptyState() {

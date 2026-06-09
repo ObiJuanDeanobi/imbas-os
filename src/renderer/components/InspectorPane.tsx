@@ -1,11 +1,49 @@
 import React, { useState, useEffect } from 'react';
+import * as Diff from 'diff';
 import type { ArtifactGraph, ArtifactSnapshot, TrustLevel } from '../../../shared/types';
 
-function LinkList({ title, edges, direction, graph }: { title: string; edges: { from: string; to: string }[]; direction: 'from' | 'to'; graph: ArtifactGraph }) {
+function TrustPromotionPrompt({
+  targetLevel,
+  reason,
+  onReasonChange,
+  onCancel,
+  onConfirm
+}: {
+  targetLevel: TrustLevel;
+  reason: string;
+  onReasonChange: (val: string) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const [criteria1, setCriteria1] = useState(false);
+  const [criteria2, setCriteria2] = useState(false);
+  const canConfirm = criteria1 && criteria2 && reason.trim().length > 5;
+  return <div className="trust-promotion-prompt" style={{ background: '#222', padding: '1rem', borderRadius: '8px', border: '1px solid #4ade80', marginTop: '1rem' }}>
+    <h4 style={{ margin: '0 0 1rem', color: '#4ade80' }}>Trust Level Promotion Review</h4>
+    <p style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>You are promoting this artifact to <strong>{targetLevel}</strong>. Please confirm the following security criteria:</p>
+    <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+      <input type="checkbox" checked={criteria1} onChange={(e) => setCriteria1(e.target.checked)} />
+      I have reviewed the visual diff or the source code for malicious content, network requests, and external resources.
+    </label>
+    <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.85rem', marginBottom: '1rem' }}>
+      <input type="checkbox" checked={criteria2} onChange={(e) => setCriteria2(e.target.checked)} />
+      I understand that higher trust levels may grant additional sandbox capabilities or API access in the future.
+    </label>
+    <label style={{ fontSize: '0.85rem' }}>Audit Reason / Justification
+      <textarea className="prompt-editor" value={reason} onChange={(e) => onReasonChange(e.target.value)} placeholder="Required. What did you review, and why is this transition appropriate?" style={{ marginTop: '0.25rem' }} />
+    </label>
+    <div className="button-row compact" style={{ marginTop: '1rem' }}>
+      <button onClick={onConfirm} disabled={!canConfirm}>Confirm Promotion</button>
+      <button className="secondary" onClick={onCancel}>Cancel</button>
+    </div>
+  </div>;
+}
+
+function LinkList({ title, edges, direction, graph, onNavigate }: { title: string; edges: { from: string; to: string }[]; direction: 'from' | 'to'; graph: ArtifactGraph; onNavigate: (id: string, isWiki: boolean) => void }) {
   return <div className="link-list"><strong>{title}</strong>{edges.length ? edges.map((edge) => {
     const id = edge[direction];
     const node = graph.nodes.find((item) => item.id === id);
-    return <p key={`${edge.from}-${edge.to}-${direction}`}><code>{node?.title ?? id.slice(0, 8)}</code>{node?.project && <span> · {node.project}</span>}</p>;
+    return <p key={`${edge.from}-${edge.to}-${direction}`}><button className="secondary" style={{ padding: '0.2rem 0.5rem', margin: 0, fontSize: '0.8rem', border: 'none', background: 'transparent', textAlign: 'left', cursor: 'pointer' }} onClick={() => onNavigate(id, node?.kind === 'wiki')}><code>{node?.title ?? id.slice(0, 8)}</code>{node?.project && <span> · {node.project}</span>}</button></p>;
   }) : <p className="muted">none</p>}</div>;
 }
 
@@ -14,12 +52,14 @@ export function InspectorPane({
   graph, 
   onRefresh, 
   onIndexDirty, 
+  onNavigate,
   defaultTab = 'details' 
 }: { 
   selected: any, 
   graph: any, 
   onRefresh: () => Promise<void>, 
   onIndexDirty: () => void, 
+  onNavigate: (id: string, isWiki: boolean) => void,
   defaultTab?: 'details' | 'notes' | 'provenance' | 'snapshots' | 'export' 
 }) {
   const [activeInspectorTab, setActiveInspectorTab] = useState(defaultTab);
@@ -32,6 +72,8 @@ export function InspectorPane({
   const [notesStatus, setNotesStatus] = useState('Sidecar notes live beside the artifact as notes.md and travel with exports.');
   const [snapshotStatus, setSnapshotStatus] = useState('Snapshots preserve artifact.html, metadata.json, and notes.md before important changes. Restore is reversible because the current state is snapshotted first.');
   const [snapshots, setSnapshots] = useState<any[]>([]);
+  const [snapshotRestoreConfirm, setSnapshotRestoreConfirm] = useState('');
+  const [diffView, setDiffView] = useState<{ snapshotId: string; diffs: Diff.Change[] } | null>(null);
 
   // Metadata form
   const [metadataTitle, setMetadataTitle] = useState(selected?.title ?? '');
@@ -42,6 +84,7 @@ export function InspectorPane({
   const [metadataProvider, setMetadataProvider] = useState(selected?.provider ?? '');
   const [metadataSourcePath, setMetadataSourcePath] = useState(selected?.sourcePath ?? '');
   const [metadataProject, setMetadataProject] = useState(selected?.project ?? '');
+  const [metadataTaxonomy, setMetadataTaxonomy] = useState(selected?.taxonomy ?? '');
   const [metadataTrustReason, setMetadataTrustReason] = useState('');
 
   const outgoing = selected ? graph.edges.filter((edge: any) => edge.from === selected.id) : [];
@@ -62,6 +105,7 @@ export function InspectorPane({
     setMetadataTitle(selected.title || '');
     setMetadataTrust(selected.trustLevel || 'untrusted');
     setMetadataProject(selected.project || '');
+    setMetadataTaxonomy(selected.taxonomy || '');
     setMetadataTags(selected.tags ? selected.tags.join(', ') : '');
     setMetadataPrompt(selected.prompt || '');
     setMetadataModel(selected.model || '');
@@ -80,6 +124,7 @@ export function InspectorPane({
           setMetadataProvider(bundle.metadata.provider || '');
           setMetadataSourcePath(bundle.metadata.sourcePath ?? '');
           setMetadataProject(bundle.metadata.project ?? '');
+          setMetadataTaxonomy(bundle.metadata.taxonomy ?? '');
           setMetadataTrustReason('');
           setMetadataStatus('Metadata is loaded from metadata.json. Save changes to update search, graph, and exports.');
           setNotesStatus('Sidecar notes live beside the artifact as notes.md and travel with exports.');
@@ -89,6 +134,8 @@ export function InspectorPane({
       void window.artifactVault.listSnapshots(selected.id).then((next: any) => {
         if (!cancelled) setSnapshots(next || []);
       });
+      setSnapshotRestoreConfirm('');
+      setDiffView(null);
     }
     return () => { cancelled = true; };
   }, [selected, defaultTab]);
@@ -137,6 +184,7 @@ export function InspectorPane({
       provider: metadataProvider,
       sourcePath: metadataSourcePath,
       project: metadataProject,
+      taxonomy: metadataTaxonomy,
       trustReason: metadataTrustReason
     });
     setMetadataTitle(updated.metadata.title);
@@ -147,10 +195,20 @@ export function InspectorPane({
     setMetadataProvider(updated.metadata.provider);
     setMetadataSourcePath(updated.metadata.sourcePath ?? '');
     setMetadataProject(updated.metadata.project ?? '');
+    setMetadataTaxonomy(updated.metadata.taxonomy ?? '');
     setMetadataTrustReason('');
     onIndexDirty();
     await onRefresh();
     setMetadataStatus('Saved metadata.json. Library search, graph labels, provenance, and exports now reflect these fields.');
+  }
+
+  function handleTrustConfirm() {
+    saveMetadata();
+  }
+
+  function handleTrustCancel() {
+    setMetadataTrust(selected.trustLevel);
+    setMetadataTrustReason('');
   }
 
   async function snapshot() {
@@ -160,6 +218,19 @@ export function InspectorPane({
     setSnapshots(await window.artifactVault.listSnapshots(selected.id));
     await onRefresh();
     setSnapshotStatus(`Created snapshot ${created.id}. You can restore it later without losing the current state.`);
+  }
+
+  async function showRestoreConfirm(snapshotId: string) {
+    setSnapshotRestoreConfirm(snapshotId);
+    setDiffView(null);
+    try {
+      const bundle = await window.artifactVault.readArtifact(selected.id);
+      const snapshotHtml = await window.artifactVault.readSnapshot(selected.id, snapshotId);
+      const diffs = Diff.diffLines(snapshotHtml, bundle.html);
+      setDiffView({ snapshotId, diffs });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async function restoreSnapshot(snapshotId: string) {
@@ -179,6 +250,8 @@ export function InspectorPane({
     onIndexDirty();
     setSnapshots(await window.artifactVault.listSnapshots(selected.id));
     await onRefresh();
+    setSnapshotRestoreConfirm('');
+    setDiffView(null);
     setSnapshotStatus(`Restored ${snapshotId}. A new safety snapshot was added, so the restore can be rolled back.`);
   }
 
@@ -253,8 +326,8 @@ export function InspectorPane({
           </details>
           <details open>
             <summary>Mixed backlinks</summary>
-            <LinkList title="Links out" edges={outgoing} direction="to" graph={graph} />
-            <LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} />
+            <LinkList title="Links out" edges={outgoing} direction="to" graph={graph} onNavigate={onNavigate} />
+            <LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} onNavigate={onNavigate} />
           </details>
           <details open>
             <summary>AI handoff</summary>
@@ -300,15 +373,31 @@ export function InspectorPane({
           </div>
           <label>Title<input value={metadataTitle} onChange={(event) => setMetadataTitle(event.target.value)} placeholder="Readable artifact title" /></label>
           <label>Project<input value={metadataProject} onChange={(event) => setMetadataProject(event.target.value)} placeholder="project or collection" /></label>
-          <label>Tags<input value={metadataTags} onChange={(event) => setMetadataTags(event.target.value)} placeholder="dashboard, report, tool" /></label>
-          <label>Trust level<select value={metadataTrust} onChange={(event) => setMetadataTrust(event.target.value as TrustLevel)}><option value="untrusted">untrusted</option><option value="reviewed">reviewed</option><option value="trusted">trusted</option></select></label>
-          {metadataTrust !== selected.trustLevel && <label>Trust review reason<textarea className="prompt-editor" value={metadataTrustReason} onChange={(event) => setMetadataTrustReason(event.target.value)} placeholder="Required when changing trust level. What did you review, and why is this transition appropriate?" /></label>}
+          <label>Tags<input value={metadataTags} onChange={(event) => setMetadataTags(event.target.value)} placeholder="comma, separated, tags" /></label>
+          <label>Taxonomy Class
+            <select value={metadataTaxonomy} onChange={(event) => setMetadataTaxonomy(event.target.value)}>
+              <option value="">None</option>
+              <option value="dashboard">Dashboard</option>
+              <option value="tool">Tool</option>
+              <option value="report">Report</option>
+              <option value="simulation">Simulation</option>
+              <option value="site">Site</option>
+              <option value="experiment">Experiment</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Trust level<select value={metadataTrust} onChange={(event) => setMetadataTrust(event.target.value as TrustLevel)} disabled={metadataTrust !== selected.trustLevel}><option value="untrusted">untrusted</option><option value="reviewed">reviewed</option><option value="trusted">trusted</option></select></label>
+          {metadataTrust !== selected.trustLevel && (
+            <TrustPromotionPrompt targetLevel={metadataTrust} reason={metadataTrustReason} onReasonChange={setMetadataTrustReason} onCancel={handleTrustCancel} onConfirm={handleTrustConfirm} />
+          )}
           <label>Provider<input value={metadataProvider} onChange={(event) => setMetadataProvider(event.target.value)} placeholder="OpenAI, Anthropic…" /></label>
           <label>Model<input value={metadataModel} onChange={(event) => setMetadataModel(event.target.value)} placeholder="model name" /></label>
           <label>Source path<input value={metadataSourcePath} onChange={(event) => setMetadataSourcePath(event.target.value)} placeholder="optional local source path" /></label>
           <label>Source prompt<textarea className="prompt-editor" value={metadataPrompt} onChange={(event) => setMetadataPrompt(event.target.value)} placeholder="Prompt or instruction that produced this artifact" /></label>
-          <div className="button-row"><button onClick={saveMetadata}>Save metadata</button></div>
-          <div className="link-list"><LinkList title="Links out" edges={outgoing} direction="to" graph={graph} /><LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} /></div>
+          {metadataTrust === selected.trustLevel && (
+            <div className="button-row"><button onClick={saveMetadata}>Save metadata</button></div>
+          )}
+          <div className="link-list"><LinkList title="Links out" edges={outgoing} direction="to" graph={graph} onNavigate={onNavigate} /><LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} onNavigate={onNavigate} /></div>
         </section>
       )}
       {activeInspectorTab === 'notes' && (
@@ -340,13 +429,40 @@ export function InspectorPane({
             <span>ID <code>{item.id}</code></span>
             <span>HTML <code>{item.htmlPath}</code></span>
             <span>Metadata <code>{item.metadataPath}</code></span>
-            <button className="secondary" onClick={() => restoreSnapshot(item.id)}>Restore this snapshot</button>
+            {snapshotRestoreConfirm === item.id ? (
+              <div className="restore-confirm">
+                <p className="warning">Restoring will replace the current artifact with this version. The current state will be saved as a new snapshot first.</p>
+                {diffView && diffView.snapshotId === item.id && (
+                  <div className="diff-viewer" style={{ background: '#111', color: '#eee', padding: '1rem', borderRadius: '4px', maxHeight: '300px', overflowY: 'auto', marginBottom: '1rem', fontSize: '0.85rem', fontFamily: 'monospace' }}>
+                    <h4 style={{ margin: '0 0 0.5rem', color: '#aaa' }}>Visual Diff (Snapshot vs Current)</h4>
+                    {diffView.diffs.map((part, index) => {
+                      const color = part.added ? '#4ade80' : part.removed ? '#f87171' : '#9ca3af';
+                      const bgColor = part.added ? 'rgba(74, 222, 128, 0.1)' : part.removed ? 'rgba(248, 113, 113, 0.1)' : 'transparent';
+                      const prefix = part.added ? '+ ' : part.removed ? '- ' : '  ';
+                      return <div key={index} style={{ color, backgroundColor: bgColor, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                        {part.value.split('\n').map((line, i, arr) => i < arr.length - 1 || line ? <div key={i}>{prefix}{line}</div> : null)}
+                      </div>;
+                    })}
+                  </div>
+                )}
+                <div className="button-row compact">
+                  <button onClick={() => restoreSnapshot(item.id)}>Confirm Restore</button>
+                  <button className="secondary" onClick={() => { setSnapshotRestoreConfirm(''); setDiffView(null); }}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <button className="secondary" onClick={() => showRestoreConfirm(item.id)}>Restore this snapshot…</button>
+            )}
           </article>) : <p className="muted">No snapshots found. Create one before a risky edit or metadata change.</p>}</div>
         </section>
       )}
       {activeInspectorTab === 'export' && (
         <section className="inspector-section" role="tabpanel">
           <p className="metadata-status">{exportStatus}</p>
+          <div className="provenance-card">
+            <div><span>Context Package</span><strong>Includes metadata, notes, provenance, visible text, snapshot history, and fenced HTML.</strong><p>Paste this directly into Claude, ChatGPT, or Cursor to give the agent full context before requesting changes.</p></div>
+            <div><span>Safety</span><strong>Local-first security reminder</strong><p>The package reminds the AI to avoid running arbitrary scripts locally if it is generating an execution script.</p></div>
+          </div>
           <div className="button-row"><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={exportPromptPackage}>Export context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed artifact + wiki package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button></div>
           {exportText && <pre>{exportText}</pre>}
         </section>

@@ -10,6 +10,7 @@
     "dev:renderer": "vite --host 127.0.0.1",
     "dev:electron": "wait-on tcp:5173 && tsc -p tsconfig.main.json --watch --preserveWatchOutput & wait-on dist/main/app.js dist/preload/api.cjs && IMBAS_OS_DEV_SERVER_URL=http://127.0.0.1:5173 ARTIFACT_VAULT_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
     "build": "tsc -p tsconfig.main.json && node scripts/copy-demo-assets.mjs && vite build",
+    "mcp": "node dist/mcp/index.js",
     "start": "npm run build && electron .",
     "test": "node --test --import tsx test/*.test.ts",
     "smoke": "IMBAS_OS_SMOKE=1 ARTIFACT_VAULT_SMOKE=1 xvfb-run -a electron --no-sandbox .",
@@ -36,11 +37,16 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "adm-zip": "^0.5.17",
+    "diff": "^9.0.0",
     "qrcode": "1.5.4",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/diff": "^7.0.2",
     "@types/node": "25.6.2",
     "@types/qrcode": "1.5.6",
     "@types/react": "19.2.14",

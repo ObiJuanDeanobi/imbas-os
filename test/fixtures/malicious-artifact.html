@@ -1,29 +1,93 @@
 <!doctype html>
 <html>
-<head><title>Malicious fixture</title></head>
-<body>
-  <h1>Malicious fixture</h1>
-  <ul id="results"></ul>
+  <title>Malicious fixture</title>
   <script>
-    const results = document.getElementById('results');
     function report(label, value) {
+      const results = document.getElementById('results');
+      if (!results) {
+        window.pendingReports = window.pendingReports || [];
+        window.pendingReports.push({label, value});
+        return;
+      }
       const li = document.createElement('li');
       li.textContent = `${label}: ${value}`;
       results.appendChild(li);
     }
+  </script>
+</head>
+<body>
+  <h1>Malicious fixture</h1>
+  <ul id="results"></ul>
+  <script>
+    if (window.pendingReports) {
+      window.pendingReports.forEach(({label, value}) => report(label, value));
+    }
+  </script>
+  
+  <!-- Image source tracking -->
+  <img id="tracking-img" src="https://example.com/blocked-image.png" onerror="report('img load', 'blocked')" onload="report('img load', 'unexpected success')">
+  
+  <!-- Script source tracking -->
+  <script src="https://example.com/blocked-script.js" onerror="report('script src', 'blocked')" onload="report('script src', 'unexpected success')"></script>
+
+  <script>
+    // Core node and bridge access
     report('typeof process', typeof window.process);
     report('typeof require', typeof window.require);
     report('typeof artifactVault bridge', typeof window.artifactVault);
+    
+    // Popups
     const popup = window.open('https://example.com/popup');
     report('window open', popup ? 'unexpected success' : 'blocked');
+    
+    // Navigation
     setTimeout(() => {
       window.location.href = 'https://example.com/navigate';
       report('top navigation', 'attempted');
     }, 50);
+
+    // Network fetch
     fetch('https://example.com/should-be-blocked').then(
       () => report('network fetch', 'unexpected success'),
       () => report('network fetch', 'blocked')
     );
+
+    // Beacon
+    if (navigator.sendBeacon) {
+      const sent = navigator.sendBeacon('https://example.com/beacon', 'data');
+      // Beacon returns true if queued. Electron network blocking intercepts it.
+      report('beacon queued', sent ? 'yes' : 'no');
+    }
+
+    // File URL fetch
+    fetch('file:///etc/passwd').then(
+      () => report('file url fetch', 'unexpected success'),
+      () => report('file url fetch', 'blocked')
+    );
+
+    // Permission API (e.g. notifications)
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'notifications' }).then((status) => {
+        report('permission query', status.state);
+      }).catch(() => report('permission query', 'blocked/error'));
+    } else {
+      report('permission query', 'unavailable');
+    }
+
+    // Storage APIs (should be partitioned or cleared, but not crash)
+    try {
+      localStorage.setItem('malicious-key', 'value');
+      report('localStorage', 'accessed');
+    } catch {
+      report('localStorage', 'blocked');
+    }
+
+    // Nested iframe escaping
+    const iframe = document.createElement('iframe');
+    iframe.src = 'data:text/html,<script>window.parent.location="https://example.com/iframe-escape"<\/script>';
+    document.body.appendChild(iframe);
+    report('iframe escape', 'attempted');
+
   </script>
 </body>
 </html>
