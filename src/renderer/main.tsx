@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import QRCode from 'qrcode';
 import type { ArtifactGraph, ArtifactSnapshot, ArtifactSummary, SearchIndexStats, SyncStatus, TrustLevel, UnifiedSearchResult, VaultInfo, WikiBridgeReport, WikiPageBundle } from '../shared/types';
+import { InspectorPane } from './components/InspectorPane';
 import './styles.css';
 
 const MOBILE_DEFAULT_CONDUIT_URL = 'http://127.0.0.1:3077';
@@ -37,7 +38,7 @@ const defaultHtml = `<!doctype html>
 <body><div class="card"><h1>Hello artifact vault</h1><p>This is a self-contained HTML artifact rendered in a sandbox.</p><button onclick="document.querySelector('p').textContent='Interaction stayed inside the artifact.'">Try interaction</button></div></body>
 </html>`;
 
-function App() {
+export function App() {
   const [activeView, setActiveView] = useState<'command' | 'agent' | 'vault'>('command');
   const [vault, setVault] = useState<VaultInfo | null>(null);
   const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
@@ -305,6 +306,7 @@ function App() {
             ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onDispatchOpenClaw={window.artifactVault.conduitOpenClawDispatch} onRunReplay={window.artifactVault.conduitRunReplay} onCreateLorekeeperProposal={window.artifactVault.conduitCreateLorekeeperProposal} onPreviewLorekeeperProposal={window.artifactVault.conduitPreviewLorekeeperProposal} onApproveLorekeeperProposal={window.artifactVault.conduitApproveLorekeeperProposal} onRejectLorekeeperProposal={window.artifactVault.conduitRejectLorekeeperProposal} onApplyLorekeeperProposal={window.artifactVault.conduitApplyLorekeeperProposal} onListLorekeeperSnapshots={window.artifactVault.conduitListLorekeeperSnapshots} onPreviewLorekeeperSnapshot={window.artifactVault.conduitPreviewLorekeeperSnapshot} onRestoreLorekeeperSnapshot={window.artifactVault.conduitRestoreLorekeeperSnapshot} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
             : selectedWikiId && selectedWikiNode ? <MarkdownDetail pageId={selectedWikiId} graph={graph} onRefresh={refresh} /> : selected ? <ArtifactDetail artifact={selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} /> : <EmptyState />}
       </section>
+      <InspectorPane selected={selectedWikiId && selectedWikiNode ? selectedWikiNode : selected} graph={graph} onRefresh={refresh} onIndexDirty={() => setIndexStats(null)} />
     </main>
   );
 }
@@ -919,63 +921,6 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
         </div>
         <iframe className="artifact-frame" title={artifact.title} src={`artifact://${artifact.id}/`} sandbox="allow-scripts" />
       </section>
-      <aside className="metadata-panel inspector-panel" aria-label="Artifact inspector">
-        <div className="inspector-tabs" role="tablist" aria-label="Artifact inspector tabs">
-          {inspectorTabs.map((tab) => <button key={tab.id} role="tab" aria-selected={activeInspectorTab === tab.id} className={activeInspectorTab === tab.id ? 'active' : ''} onClick={() => setActiveInspectorTab(tab.id)}>{tab.label}</button>)}
-        </div>
-        {activeInspectorTab === 'details' && <section className="inspector-section" role="tabpanel">
-          <p className="metadata-status">{metadataStatus}</p>
-          <div className="metadata-summary">
-            <span>Source: <code>{artifact.sourceType}</code></span>
-            <span>Trust: <code>{metadataTrust}</code></span>
-            <span>Project: <code>{metadataProject || 'none'}</code></span>
-            <span>Bundle: <code>artifacts/{artifact.id}</code></span>
-          </div>
-          <label>Title<input value={metadataTitle} onChange={(event) => setMetadataTitle(event.target.value)} placeholder="Readable artifact title" /></label>
-          <label>Project<input value={metadataProject} onChange={(event) => setMetadataProject(event.target.value)} placeholder="project or collection" /></label>
-          <label>Tags<input value={metadataTags} onChange={(event) => setMetadataTags(event.target.value)} placeholder="dashboard, report, tool" /></label>
-          <label>Trust level<select value={metadataTrust} onChange={(event) => setMetadataTrust(event.target.value as TrustLevel)}><option value="untrusted">untrusted</option><option value="reviewed">reviewed</option><option value="trusted">trusted</option></select></label>
-          {metadataTrust !== artifact.trustLevel && <label>Trust review reason<textarea className="prompt-editor" value={metadataTrustReason} onChange={(event) => setMetadataTrustReason(event.target.value)} placeholder="Required when changing trust level. What did you review, and why is this transition appropriate?" /></label>}
-          <label>Provider<input value={metadataProvider} onChange={(event) => setMetadataProvider(event.target.value)} placeholder="OpenAI, Anthropic…" /></label>
-          <label>Model<input value={metadataModel} onChange={(event) => setMetadataModel(event.target.value)} placeholder="model name" /></label>
-          <label>Source path<input value={metadataSourcePath} onChange={(event) => setMetadataSourcePath(event.target.value)} placeholder="optional local source path" /></label>
-          <label>Source prompt<textarea className="prompt-editor" value={metadataPrompt} onChange={(event) => setMetadataPrompt(event.target.value)} placeholder="Prompt or instruction that produced this artifact" /></label>
-          <div className="button-row"><button onClick={saveMetadata}>Save metadata</button></div>
-          <div className="link-list"><LinkList title="Links out" edges={outgoing} direction="to" graph={graph} /><LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} /></div>
-        </section>}
-        {activeInspectorTab === 'notes' && <section className="inspector-section" role="tabpanel">
-          <p className="metadata-status">{notesStatus}</p>
-          <textarea className="notes-editor" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="What matters about this artifact? Add review notes, links, follow-ups, or usage context." />
-          <div className="button-row"><button onClick={saveNotes}>Save note</button><button className="secondary" onClick={snapshot}>Snapshot</button></div>
-        </section>}
-        {activeInspectorTab === 'provenance' && <section className="inspector-section" role="tabpanel">
-          <div className="provenance-card">
-            <div><span>Capture source</span><strong>{artifact.sourceType}</strong><p>{artifact.sourcePath ? 'Imported from a local source path.' : 'Created inside the vault from paste or generated content.'}</p></div>
-            <div><span>AI generator</span><strong>{artifact.provider || 'unknown provider'}{artifact.model ? ` / ${artifact.model}` : ''}</strong><p>{artifact.prompt ? artifact.prompt.slice(0, 240) : 'No source prompt recorded yet.'}</p></div>
-            <div><span>Safety posture</span><strong>{metadataTrust}</strong><p>Replays through <code>artifact://</code> with no Node bridge; artifact-origin network requests are blocked by default.</p></div>
-            <div><span>Trust audit</span><strong>{artifact.trustAudit?.length ?? 0} entries</strong><p>{artifact.trustAudit?.at(-1)?.reason ?? 'Imported artifacts start untrusted until reviewed.'}</p></div>
-            <div><span>Integrity</span><strong>{artifact.snapshotCount} snapshot{artifact.snapshotCount === 1 ? '' : 's'}</strong><p>HTML SHA-256 <code>{artifact.hashes.sha256Html}</code></p></div>
-          </div>
-          <dl><dt>Created</dt><dd>{artifact.createdAt}</dd><dt>Updated</dt><dd>{artifact.updatedAt}</dd><dt>Source path</dt><dd>{artifact.sourcePath ? <code>{artifact.sourcePath}</code> : 'not recorded'}</dd><dt>Bundle</dt><dd><code>artifacts/{artifact.id}</code></dd></dl>
-          <div className="snapshot-list">{artifact.trustAudit?.slice().reverse().map((entry) => <article className="snapshot-card" key={`${entry.at}-${entry.from}-${entry.to}`}><strong>{entry.from} → {entry.to}</strong><span>{new Date(entry.at).toLocaleString()}</span><p>{entry.reason}</p></article>)}</div>
-        </section>}
-        {activeInspectorTab === 'snapshots' && <section className="inspector-section" role="tabpanel">
-          <p className="metadata-status">{snapshotStatus}</p>
-          <div className="button-row"><button onClick={snapshot}>Create snapshot</button></div>
-          <div className="snapshot-list">{snapshots.length ? snapshots.slice(0, 10).map((item) => <article className="snapshot-card" key={item.id}>
-            <strong>{new Date(item.createdAt).toLocaleString()}</strong>
-            <span>ID <code>{item.id}</code></span>
-            <span>HTML <code>{item.htmlPath}</code></span>
-            <span>Metadata <code>{item.metadataPath}</code></span>
-            <button className="secondary" onClick={() => restoreSnapshot(item.id)}>Restore this snapshot</button>
-          </article>) : <p className="muted">No snapshots found. Create one before a risky edit or metadata change.</p>}</div>
-        </section>}
-        {activeInspectorTab === 'export' && <section className="inspector-section" role="tabpanel">
-          <p className="metadata-status">{exportStatus}</p>
-          <div className="button-row"><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={exportPromptPackage}>Export context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed artifact + wiki package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button></div>
-          {exportText && <pre>{exportText}</pre>}
-        </section>}
-      </aside>
     </div>
   </div>;
 }
@@ -1019,21 +964,6 @@ function MarkdownDetail({ pageId, graph, onRefresh }: { pageId: string; graph: A
           ? <><textarea className="markdown-editor" value={markdownDraft} onChange={(event) => setMarkdownDraft(event.target.value)} /><button onClick={saveVaultMarkdownPage}>Save Markdown page</button></>
           : <pre>{page.markdown}</pre>}
       </article>
-      <aside className="metadata-panel">
-        <details open><summary>Source ownership</summary>
-          <p className="muted">{page.node.sourceOwnership === 'vault-owned' ? 'This Markdown page lives inside the Artifact Vault pages folder and can be edited here.' : 'This Markdown page is indexed from an external vault in read-only bridge mode. Imbas OS can search, graph, and export it, but will not rewrite the source file by default.'}</p>
-          <dl><dt>Page ID</dt><dd><code>{page.node.id}</code></dd><dt>Source path</dt><dd><code>{page.node.path}</code></dd><dt>Tags</dt><dd>{page.node.tags.join(', ') || 'none'}</dd></dl>
-        </details>
-        <details open><summary>Mixed backlinks</summary>
-          <LinkList title="Links out" edges={outgoing} direction="to" graph={graph} />
-          <LinkList title="Backlinks" edges={incoming} direction="from" graph={graph} />
-        </details>
-        <details open><summary>AI handoff</summary>
-          <p className="muted">Export this Markdown page with directly linked artifacts as one AI context package.</p>
-          <div className="button-row"><button onClick={exportMixedPromptPackage}>Export mixed package</button><button className="secondary" onClick={onRefresh}>Refresh graph</button></div>
-          {exportText && <pre>{exportText}</pre>}
-        </details>
-      </aside>
     </div>
   </div>;
 }
@@ -1050,4 +980,6 @@ function EmptyState() {
   return <div className="empty empty-vault"><p className="eyebrow">Artifact Vault</p><h2>No artifact selected yet</h2><p>Use the sidebar import panel to paste generated HTML, import a local <code>.html</code> file, or seed the demo vault. Imported artifacts are stored locally, marked <code>untrusted</code>, and replayed in the sandbox.</p></div>;
 }
 
-createRoot(document.getElementById('root')!).render(<App />);
+if (typeof document !== 'undefined') {
+  createRoot(document.getElementById('root')!).render(<App />);
+}

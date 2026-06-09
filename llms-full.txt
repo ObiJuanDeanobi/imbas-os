@@ -388,6 +388,20 @@ Use explicit searchable phrases so retrieval works well:
 
 Some implementation env vars still use the historical `ARTIFACT_VAULT_*` prefix. Do not rename them mechanically without updating tests/smoke scripts and verifying the full gate.
 
+## Agent skills
+
+### Issue tracker
+
+GitHub issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default canonical labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context with CONTEXT.md. See `docs/agents/domain.md`.
+
 ---
 ## Source: skill.md
 
