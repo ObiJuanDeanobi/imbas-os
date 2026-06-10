@@ -248,9 +248,33 @@ export async function handleConduitRequest(request: Request, store: ConduitRecor
 
   if (request.method === 'POST' && path === '/v0/wiki/proposals') {
     try {
-      const proposal = createLorekeeperProposal(await readJson(request));
+      const { evaluateLorekeeperPolicy } = await import('../lorekeeper/policy.js');
+      const { readMarkdownPageFromVault, createMarkdownSnapshot, updateMarkdownPage } = await import('../markdown/markdownStore.js');
+      const proposalInput = await readJson(request);
+      let proposal = createLorekeeperProposal(proposalInput);
+      
+      let autoApplied = false;
+      const policyResult = evaluateLorekeeperPolicy(proposalInput);
+      if (policyResult.action === 'auto-apply' && store.markdownRoot && proposal.targetPageId) {
+        try {
+          const page = await readMarkdownPageFromVault(store.markdownRoot, proposal.targetPageId);
+          const beforeMarkdown = page.markdown;
+          proposal = transitionLorekeeperProposal(proposal, 'approved');
+          const applied = applyLorekeeperProposalToMarkdown(beforeMarkdown, proposal);
+          const snapshot = applied.changed ? await createMarkdownSnapshot(store.markdownRoot, proposal.targetPageId, beforeMarkdown, `lorekeeper-${proposal.id}`) : undefined;
+          await updateMarkdownPage(store.markdownRoot, proposal.targetPageId, applied.markdown);
+          proposal = transitionLorekeeperProposal(proposal, 'applied');
+          autoApplied = true;
+          store.runledger.push(createRunledgerEntry({ kind: 'sanctum', connector: proposal.connector, agent: proposal.agent, title: 'Lorekeeper auto-apply snapshot', outcome: 'success', summary: `Created safety snapshot ${snapshot?.snapshotPath ?? ''} before auto-applying ${proposal.id}`, refs: [proposal.id] }));
+        } catch (applyError) {
+          // If auto-apply fails, fallback to proposed state so the user can review it manually.
+          console.error('Lorekeeper auto-apply failed, falling back to manual review:', applyError);
+          proposal = transitionLorekeeperProposal(proposal, 'proposed');
+        }
+      }
+
       store.lorekeeperProposals.push(proposal);
-      store.runledger.push(createRunledgerEntry({ kind: 'lorekeeper', connector: proposal.connector, agent: proposal.agent, title: proposal.title, outcome: 'proposed', summary: proposal.rationale, refs: [proposal.id, ...(proposal.sources ?? [])], createdAt: proposal.createdAt }));
+      store.runledger.push(createRunledgerEntry({ kind: 'lorekeeper', connector: proposal.connector, agent: proposal.agent, title: proposal.title, outcome: proposal.status, summary: autoApplied ? `Auto-applied: ${proposal.rationale}` : proposal.rationale, refs: [proposal.id, ...(proposal.sources ?? [])], createdAt: proposal.createdAt }));
       store.modules.lorekeeper = { ...store.modules.lorekeeper, enabled: true, available: true, configured: true, health: 'limited' };
       store.modules.runledger = { ...store.modules.runledger, enabled: true, available: true, configured: true, health: 'limited' };
       await store.persist?.();
