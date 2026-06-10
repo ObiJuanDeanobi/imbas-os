@@ -32,6 +32,14 @@
 
 The bigger Imbas OS vision is a local-first agent workbench, but this public alpha is intentionally focused on one useful thing: making AI artifacts durable, inspectable, replayable, and reusable.
 
+## Download & Install
+
+You can download the latest version of Imbas OS for Windows, macOS, and Linux from the **[Releases page](https://github.com/ObiJuanDeanobi/imbas-os/releases/latest)** (check the right sidebar!).
+
+* **Windows**: Download the `.exe` installer.
+* **macOS**: Download the `.dmg` image.
+* **Linux**: Download the `.AppImage` or `.deb` package.
+
 ## What you can use today
 
 - Paste or import generated HTML and replay it locally.

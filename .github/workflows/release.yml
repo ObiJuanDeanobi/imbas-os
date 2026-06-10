@@ -39,5 +39,5 @@ jobs:
             release/builder/*.dmg
             release/builder/*.AppImage
             release/builder/*.deb
-          draft: true
+          draft: false
           generate_release_notes: true
