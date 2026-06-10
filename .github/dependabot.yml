@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "eslint*"
+          - "typescript"
+          - "vite"
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "electron"
+        versions: ["*"] # Handled manually for security/runtime checks

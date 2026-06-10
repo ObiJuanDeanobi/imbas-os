@@ -2,6 +2,8 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { createArtifact, defaultVaultRoot, readArtifact, searchArtifacts, updateArtifactNotes } from '../main/vault/vaultStore.js';
+import { createDurableConduitRecordStore } from '../main/conduit/durableStore.js';
+import { searchRunledger } from '../main/runledger/store.js';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -65,6 +67,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             notes: { type: 'string', description: 'New notes markdown content' },
           },
           required: ['id', 'notes'],
+        },
+      },
+      {
+        name: 'imbas_search_runledger',
+        description: 'Search the local Imbas OS Conduit Runledger for past agent events, runs, and provenance traces.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'Search query for the Runledger' },
+            limit: { type: 'number', description: 'Maximum number of entries to return (default 10)' },
+          },
+          required: ['query'],
         },
       }
     ],
@@ -130,6 +144,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         {
           type: 'text',
           text: `Updated notes for artifact ${bundle.metadata.id} successfully.`,
+        },
+      ],
+    };
+  }
+
+  if (request.params.name === 'imbas_search_runledger') {
+    const query = request.params.arguments?.query as string;
+    const limit = (request.params.arguments?.limit as number | undefined) ?? 10;
+    const conduitDir = path.join(root, 'conduit');
+    const store = await createDurableConduitRecordStore({ dir: conduitDir });
+    const results = searchRunledger(store.runledger, query, limit);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(results, null, 2),
         },
       ],
     };

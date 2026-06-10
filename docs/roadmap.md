@@ -122,13 +122,13 @@ Goal: grow beyond artifact storage into the broader local-first agent OS while k
 
 Subsystems:
 
-- **Conduit:** stable local API/connector layer for OpenClaw first, then Hermes/Codex/Claude Code.
+- **Conduit & MCP Server:** stable local API/connector layer for OpenClaw, plus a bundled standard MCP (Model Context Protocol) Server so any modern AI agent can instantly interface with the Vault.
 - **Runledger:** durable audit timeline for runs, actions, verification, and produced artifacts.
 - **Lorekeeper:** reviewed wiki/proposal workflow with managed blocks, citations, snapshots, restore.
 - **Memsocket:** memory/context engine, context events, search, retrieval, context packs.
 - **Sanctum:** trust, redaction, approval policy, secret handles, capability scopes.
 - **Atlas:** unified graph/search/navigation across artifacts, wiki, runs, memory, and projects.
-- **SyncCore:** backup, restore, export/import, sync manifests, conflict detection, delete/forget propagation.
+- **SyncCore (Git-First):** Treat the entire vault as a Git repository under the hood for free versioning, snapshots, conflict detection, and syncing via standard remotes.
 - **Android companion:** mobile capture, status, Runledger, Lorekeeper review, scoped approvals.
 - **CLI:** automation/admin surface for humans and agents.
 
@@ -200,7 +200,7 @@ Stretch/push-to-beta if needed:
 Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/human-facing-vault-shell.md).
 
 - [x] M2.1 shell redesign: branded app frame, left vault navigation, artifact list, center workspace, and right inspector.
-- [ ] M2.2 smart artifact taxonomy: dashboards, tools, reports, simulations, sites, experiments as metadata-backed views/filters.
+- [ ] M2.2 smart artifact taxonomy: dashboards, tools, reports, simulations, sites, experiments. Types should act as lenses (navigation aids) rather than rigid enforcing schemas.
 - [x] M2.3 inspector tabs: Details, Notes, Provenance, Snapshots, and AI Context backed by real artifact data.
 - [ ] M2.4 human vault navigation: Pages, Projects, Tags, Graph, with Runs hidden/disabled/private-preview-labelled until Runledger is ready.
 - [ ] M2.5 polish and accessibility: keyboard navigation, focus states, empty/error states, narrow-window behavior, and visual verification.
@@ -215,75 +215,26 @@ Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/huma
 - [ ] Add browser/share workflow research note.
 - [ ] Add installation/package path decision.
 
-### M3 — Conduit + Runledger foundation
+### M3 — Artifact Vault "Super Polish"
 
-- [ ] Stabilize Conduit local API contracts.
-- [ ] Add automatic AI-generated artifact capture through Conduit with Runledger provenance and safe destination rules.
-- [ ] Document connector protocol.
-- [ ] Harden OpenClaw connector path.
-- [ ] Add run replay/export improvements.
-- [ ] Add richer Runledger human cards and AI JSON refs.
-- [ ] Add connector failure-path tests.
+- [ ] Ultra-premium UI/UX overhaul of the Artifact Inspector and Command Center.
+- [ ] Advanced full-text and semantic search across all artifacts and metadata.
+- [ ] Seamless import/export workflows (Drag & Drop, Zip, PDF generation).
+- [ ] Granular tag management, nested folder structures, and dynamic artifact lenses.
+- [ ] Real-time rendered visual diffs for artifact snapshots.
+- [ ] Markdown note-taking enhancements with bidirectional linking (Obsidian-style) across artifacts.
 
-### M4 — Lorekeeper reviewed wiki
+### TBD — Larger Imbas OS Integrations
 
-- [ ] Improve proposal creation UX.
-- [ ] Improve visual diff/review.
-- [ ] Finish snapshot restore UI.
-- [ ] Add safe auto-apply policy lanes for low-risk managed blocks.
-- [ ] Add wiki context export.
-- [ ] Add source/citation quality checks.
+*The following systems are paused and deferred to "TBD" while we focus entirely on achieving a super polished Artifact Vault.*
 
-### M5 — First-class memory integration
-
-- [ ] Complete agentmemory regular-use spike for OpenClaw/Hermes.
-- [ ] Decide whether agentmemory is the memory engine, whether Imbas wraps it with governance/adapters, or whether paused Memsocket work must resume.
-- [ ] Integrate Lorekeeper/wiki as the curated long-term knowledge source that indexes into the chosen memory engine.
-- [ ] Add memory/context event governance.
-- [ ] Add retrieval eval fixtures.
-- [ ] Add context pack quality tests.
-- [ ] Add MemPalace migration/import/dogfood bridge.
-- [ ] Pass migration exit criteria before MemPalace retirement.
-
-### M6 — Sanctum trust and capabilities
-
-- [ ] OS keyring/passphrase UX.
-- [ ] Secret handle/capability request UX.
-- [ ] Approval queue.
-- [ ] Redaction policy tests.
-- [ ] Connector execution-boundary secret resolution.
-- [ ] Audit/export for sensitive access.
-
-### M7 — Android companion
-
-- [ ] Polish QR pairing.
-- [ ] Validate persisted secure session on physical phone.
-- [ ] Improve mobile Runledger/Lorekeeper views.
-- [ ] Add photo/audio capture polish.
-- [ ] Add notification/approval research.
-- [ ] Document APK/install/update flow.
-
-### M8 — Atlas, CLI, SyncCore, and recovery
-
-- [ ] Unified Atlas search across artifacts, wiki pages, Memsocket context events/projections, runs, and projects.
-- [ ] Graph/backlink navigation for artifacts, wiki, Runledger refs, and context packs.
-- [ ] CLI/admin commands for verification, import/export, context-pack generation, backup/restore, and diagnostics.
-- [ ] Machine-readable status output for automation and AI agents.
-- [ ] Backup/restore UI.
-- [ ] Portable export/import polish.
-- [ ] Conflict detection UX.
-- [ ] Delete/forget propagation.
-- [ ] Fresh-system restore proof.
-
-### M9 — Public 1.0 release candidate
-
-- [ ] Run fresh-system gate.
-- [ ] Run documentation readiness gate.
-- [ ] Run full verification/security gate.
-- [ ] Confirm public repo posture.
-- [ ] Confirm installer/package plan.
-- [ ] Confirm rollback/recovery plan.
-- [ ] Obtain explicit maintainer approval.
+- **Conduit + Runledger foundation:** Stable local API contracts, MCP Server integration, automatic AI-generated artifact capture, run replays, and richer provenance cards.
+- **Lorekeeper reviewed wiki:** Proposal creation UX, visual diff/review, safe auto-apply policy lanes for low-risk managed blocks.
+- **First-class memory integration:** Memsocket integration, context event governance, retrieval eval fixtures, context pack quality tests.
+- **Sanctum trust and capabilities:** OS keyring/passphrase UX, secret handle/capability request UX, redaction policy tests.
+- **Android companion:** QR pairing, persisted secure session, mobile Runledger/Lorekeeper views.
+- **Atlas, CLI, and recovery:** Unified graph/search across wiki/runs/memory, CLI admin commands, Backup/restore UI.
+- **Public 1.0 release candidate:** Final verification gates, documentation readiness, rollback/recovery plan, explicit maintainer approval.
 
 ## Public alpha unveil assets
 

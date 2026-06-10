@@ -157,8 +157,7 @@ export function InspectorPane({
     { id: 'details', label: 'Details' },
     { id: 'notes', label: 'Notes' },
     { id: 'provenance', label: 'Provenance' },
-    { id: 'snapshots', label: 'Snapshots' },
-    { id: 'export', label: 'AI Context' }
+    { id: 'snapshots', label: 'Snapshots' }
   ] as const;
 
   // Actions
@@ -433,16 +432,29 @@ export function InspectorPane({
               <div className="restore-confirm">
                 <p className="warning">Restoring will replace the current artifact with this version. The current state will be saved as a new snapshot first.</p>
                 {diffView && diffView.snapshotId === item.id && (
-                  <div className="diff-viewer" style={{ background: '#111', color: '#eee', padding: '1rem', borderRadius: '4px', maxHeight: '300px', overflowY: 'auto', marginBottom: '1rem', fontSize: '0.85rem', fontFamily: 'monospace' }}>
+                  <div className="diff-viewer">
                     <h4 style={{ margin: '0 0 0.5rem', color: '#aaa' }}>Visual Diff (Snapshot vs Current)</h4>
-                    {diffView.diffs.map((part, index) => {
-                      const color = part.added ? '#4ade80' : part.removed ? '#f87171' : '#9ca3af';
-                      const bgColor = part.added ? 'rgba(74, 222, 128, 0.1)' : part.removed ? 'rgba(248, 113, 113, 0.1)' : 'transparent';
-                      const prefix = part.added ? '+ ' : part.removed ? '- ' : '  ';
-                      return <div key={index} style={{ color, backgroundColor: bgColor, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                        {part.value.split('\n').map((line, i, arr) => i < arr.length - 1 || line ? <div key={i}>{prefix}{line}</div> : null)}
-                      </div>;
-                    })}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                      <div style={{ border: '1px solid #444', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ background: '#333', padding: '0.2rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold' }}>Snapshot</div>
+                        <iframe title="Snapshot Render" src={`artifact://${selected.id}?snapshotId=${item.id}`} sandbox="allow-scripts" style={{ width: '100%', height: '300px', border: 'none', background: '#fff' }} />
+                      </div>
+                      <div style={{ border: '1px solid #444', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ background: '#333', padding: '0.2rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold' }}>Current</div>
+                        <iframe title="Current Render" src={`artifact://${selected.id}`} sandbox="allow-scripts" style={{ width: '100%', height: '300px', border: 'none', background: '#fff' }} />
+                      </div>
+                    </div>
+                    <h4 style={{ margin: '0 0 0.5rem', color: '#aaa' }}>Code Diff</h4>
+                    <div style={{ background: '#111', color: '#eee', padding: '1rem', borderRadius: '4px', maxHeight: '300px', overflowY: 'auto', marginBottom: '1rem', fontSize: '0.85rem', fontFamily: 'monospace' }}>
+                      {diffView.diffs.map((part, index) => {
+                        const color = part.added ? '#4ade80' : part.removed ? '#f87171' : '#9ca3af';
+                        const bgColor = part.added ? 'rgba(74, 222, 128, 0.1)' : part.removed ? 'rgba(248, 113, 113, 0.1)' : 'transparent';
+                        const prefix = part.added ? '+ ' : part.removed ? '- ' : '  ';
+                        return <div key={index} style={{ color, backgroundColor: bgColor, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                          {part.value.split('\n').map((line, i, arr) => i < arr.length - 1 || line ? <div key={i}>{prefix}{line}</div> : null)}
+                        </div>;
+                      })}
+                    </div>
                   </div>
                 )}
                 <div className="button-row compact">
@@ -454,17 +466,6 @@ export function InspectorPane({
               <button className="secondary" onClick={() => showRestoreConfirm(item.id)}>Restore this snapshot…</button>
             )}
           </article>) : <p className="muted">No snapshots found. Create one before a risky edit or metadata change.</p>}</div>
-        </section>
-      )}
-      {activeInspectorTab === 'export' && (
-        <section className="inspector-section" role="tabpanel">
-          <p className="metadata-status">{exportStatus}</p>
-          <div className="provenance-card">
-            <div><span>Context Package</span><strong>Includes metadata, notes, provenance, visible text, snapshot history, and fenced HTML.</strong><p>Paste this directly into Claude, ChatGPT, or Cursor to give the agent full context before requesting changes.</p></div>
-            <div><span>Safety</span><strong>Local-first security reminder</strong><p>The package reminds the AI to avoid running arbitrary scripts locally if it is generating an execution script.</p></div>
-          </div>
-          <div className="button-row"><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={exportPromptPackage}>Export context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed artifact + wiki package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button></div>
-          {exportText && <pre>{exportText}</pre>}
         </section>
       )}
     </aside>

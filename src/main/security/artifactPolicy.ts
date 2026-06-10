@@ -35,12 +35,19 @@ export function shouldBlockArtifactRequest(url: string, networkAllowed = false) 
   }
 }
 
-export function wrapHtmlForSandbox(html: string, policy: ArtifactRenderPolicy) {
+export function wrapHtmlForSandbox(html: string, policy: ArtifactRenderPolicy, options?: { theme?: string }) {
   const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${escapeAttribute(policy.csp)}">`;
+  
+  let themeStyle = '';
+  if (options?.theme === 'dark') {
+    themeStyle = `<style id="imbas-theme-injection">html { filter: invert(1) hue-rotate(180deg); background: white; } img, video, iframe, canvas { filter: invert(1) hue-rotate(180deg); }</style>`;
+  }
+
+  const inject = `${cspMeta}${themeStyle}`;
   const withoutExistingCsp = stripExistingCspMeta(html);
-  if (/<head[^>]*>/i.test(withoutExistingCsp)) return withoutExistingCsp.replace(/<head([^>]*)>/i, `<head$1>${cspMeta}`);
-  if (/<html[^>]*>/i.test(withoutExistingCsp)) return withoutExistingCsp.replace(/<html([^>]*)>/i, `<html$1><head>${cspMeta}</head>`);
-  return `<!doctype html><html><head>${cspMeta}</head><body>${withoutExistingCsp}</body></html>`;
+  if (/<head[^>]*>/i.test(withoutExistingCsp)) return withoutExistingCsp.replace(/<head([^>]*)>/i, `<head$1>${inject}`);
+  if (/<html[^>]*>/i.test(withoutExistingCsp)) return withoutExistingCsp.replace(/<html([^>]*)>/i, `<html$1><head>${inject}</head>`);
+  return `<!doctype html><html><head>${inject}</head><body>${withoutExistingCsp}</body></html>`;
 }
 
 function stripExistingCspMeta(html: string) {

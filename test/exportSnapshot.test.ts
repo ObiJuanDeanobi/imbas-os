@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { createArtifact, createSnapshot, exportArtifactJson, exportArtifactMarkdown, listSnapshots, restoreSnapshot, updateArtifactNotes } from '../src/main/vault/vaultStore.ts';
+
+const exec = promisify(execCallback);
 
 test('notes can be updated and exported with provenance', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'artifact-vault-'));
@@ -27,15 +31,15 @@ test('notes can be updated and exported with provenance', async () => {
   }
 });
 
-test('createSnapshot increments metadata and writes snapshot files', async () => {
+test('createSnapshot increments metadata and creates a git commit', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'artifact-vault-'));
   try {
     const created = await createArtifact(root, { title: 'Snapshot me', html: '<title>Snapshot me</title>' });
     const metadata = await createSnapshot(root, created.metadata.id);
     assert.equal(metadata.snapshotCount, 2);
-    const snapshots = await readdir(path.join(created.bundlePath, 'snapshots'));
-    assert.equal(snapshots.filter((file) => file.endsWith('.html')).length, 2);
-    assert.equal(snapshots.filter((file) => file.endsWith('.json')).length, 2);
+    const { stdout } = await exec('git log --oneline', { cwd: root });
+    // Should have 2 commits: one for createArtifact, one for createSnapshot
+    assert.ok(stdout.trim().split('\n').length >= 2);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -45,11 +49,13 @@ test('restoreSnapshot restores previous html and records a new snapshot', async 
   const root = await mkdtemp(path.join(os.tmpdir(), 'artifact-vault-'));
   try {
     const created = await createArtifact(root, { title: 'Original', html: '<title>Original</title><p>one</p>', prompt: 'v1' });
-    const [firstSnapshot] = await listSnapshots(root, created.metadata.id);
+    const snapshotsBeforeChange = await listSnapshots(root, created.metadata.id);
+    assert.equal(snapshotsBeforeChange.length, 1);
+    
     await writeFile(path.join(created.bundlePath, 'artifact.html'), '<title>Changed</title><p>two</p>');
     await createSnapshot(root, created.metadata.id);
 
-    const restored = await restoreSnapshot(root, created.metadata.id, firstSnapshot.id);
+    const restored = await restoreSnapshot(root, created.metadata.id, snapshotsBeforeChange[0].id);
     assert.match(restored.html, /one/);
     assert.equal(restored.metadata.title, 'Original');
     assert.equal(restored.metadata.prompt, 'v1');

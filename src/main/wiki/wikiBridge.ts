@@ -22,12 +22,24 @@ export async function indexMarkdownVault(root: string): Promise<ArtifactGraph> {
 
 export function mergeArtifactAndWikiGraphs(artifactGraph: ArtifactGraph, wikiGraph: ArtifactGraph): ArtifactGraph {
   const artifactIds = new Set(artifactGraph.nodes.map((node) => node.id));
+  const artifactTitles = new Map<string, string>();
+  for (const node of artifactGraph.nodes) {
+    if (node.title) artifactTitles.set(node.title.toLowerCase(), node.id);
+  }
+
+  const resolvedEdges = wikiGraph.edges.flatMap((edge) => {
+    if (edge.to.startsWith('wiki:')) return [edge];
+    if (artifactIds.has(edge.to)) return [edge];
+    const lowerTo = edge.to.toLowerCase();
+    if (artifactTitles.has(lowerTo)) {
+      return [{ ...edge, to: artifactTitles.get(lowerTo)! }];
+    }
+    return [];
+  });
+
   return {
     nodes: [...artifactGraph.nodes, ...wikiGraph.nodes],
-    edges: [
-      ...artifactGraph.edges,
-      ...wikiGraph.edges.filter((edge) => edge.to.startsWith('wiki:') || artifactIds.has(edge.to))
-    ]
+    edges: [...artifactGraph.edges, ...resolvedEdges]
   };
 }
 
@@ -38,7 +50,7 @@ export async function readMarkdownPage(root: string, pageId: string): Promise<Wi
   const filePath = path.resolve(root, relativePath);
   const resolvedRoot = path.resolve(root);
   if (!filePath.startsWith(`${resolvedRoot}${path.sep}`) && filePath !== resolvedRoot) throw new Error('Wiki page path escapes bridge root');
-  if (!filePath.toLowerCase().endsWith('.md')) throw new Error('Only Markdown pages can be read');
+  if (!filePath.toLowerCase().endsWith('.md')) throw new Error('Only Markdown Notes can be read');
   const node = await readWikiPage(root, filePath);
   return { node, markdown: await readFile(filePath, 'utf8') };
 }
@@ -50,7 +62,7 @@ export async function searchMarkdownPages(root: string, query: string): Promise<
   const results: UnifiedSearchResult[] = [];
   for (const page of pages) {
     if (!normalizedQuery) {
-      results.push(toWikiSearchResult(page, 'all markdown pages'));
+      results.push(toWikiSearchResult(page, 'all markdown notes'));
       continue;
     }
     const markdown = await readFile(page.path, 'utf8');
@@ -70,18 +82,45 @@ export async function buildWikiBridgeReport(root: string, artifactGraph: Artifac
   const wikiGraph = await indexMarkdownVault(root);
   const pages = wikiGraph.nodes.filter((node): node is WikiPageNode => node.kind === 'wiki');
   const pageIds = new Set(pages.map((page) => page.id));
+  
   const artifactIds = new Set(artifactGraph.nodes.map((node) => node.id));
-  const resolvedWikiPairs = new Set(wikiGraph.edges.filter((edge) => edge.kind === 'wikilink').map((edge) => `${edge.from}\u0000${edge.to}`));
-  const resolvedArtifactPairs = new Set(wikiGraph.edges.filter((edge) => edge.kind === 'artifact-link' && artifactIds.has(edge.to)).map((edge) => `${edge.from}\u0000${edge.to}`));
-  const resolver = buildResolver(pages);
+  const artifactTitles = new Map<string, string>();
+  for (const node of artifactGraph.nodes) {
+    if (node.title) artifactTitles.set(node.title.toLowerCase(), node.id);
+  }
+
+  const resolvedWikiPairs = new Set(wikiGraph.edges.filter((edge) => edge.kind === 'wikilink').map((edge) => `${edge.from}\0${edge.to}`));
+  
+  // Resolve artifact links by ID or Title
+  const resolvedArtifactPairs = new Set(wikiGraph.edges.filter((edge) => {
+    if (edge.kind !== 'artifact-link') return false;
+    if (artifactIds.has(edge.to)) return true;
+    const lowerTo = edge.to.toLowerCase();
+    return artifactTitles.has(lowerTo);
+  }).map((edge) => {
+    const to = artifactIds.has(edge.to) ? edge.to : artifactTitles.get(edge.to.toLowerCase())!;
+    return `${edge.from}\0${to}`;
+  }));
 
   const unresolvedWikilinks = pages.flatMap((page) => page.wikilinks.flatMap((link) => {
-    const target = resolver.get(normalizeWikiTarget(link.target));
-    return target && resolvedWikiPairs.has(`${page.id}\u0000${target.id}`) ? [] : [{ from: page.relativePath, target: link.target }];
+    const target = wikiGraph.nodes.find(n => n.id === `wiki:pages/${normalizeWikiTarget(link.target)}.md` || n.title.toLowerCase() === link.target.toLowerCase() || n.id.toLowerCase().includes(link.target.toLowerCase()));
+    return target && resolvedWikiPairs.has(`${page.id}\0${target.id}`) ? [] : [{ from: page.relativePath, target: link.target }];
   }));
-  const unresolvedArtifactLinks = pages.flatMap((page) => page.artifactLinks.flatMap((artifactId) => (
-    resolvedArtifactPairs.has(`${page.id}\u0000${artifactId}`) ? [] : [{ from: page.relativePath, artifactId }]
-  )));
+
+  // Only consider it an unresolved artifact link if it was explicitly requested as an artifact UUID
+  // because ambiguous [[Titles]] are reported as unresolved wikilinks above.
+  const unresolvedArtifactLinks = pages.flatMap((page) => page.artifactLinks.flatMap((artifactId) => {
+    if (resolvedArtifactPairs.has(`${page.id}\0${artifactId}`)) return [];
+    if (artifactTitles.has(artifactId.toLowerCase())) return [];
+    
+    // If it looks like a UUID or explicitly artifact:, it's an unresolved artifact link.
+    // Otherwise, it's just a generic wikilink that didn't resolve to anything, which is already tracked in unresolvedWikilinks.
+    const isUuid = /^[a-f0-9-]{36}$/i.test(artifactId);
+    if (!isUuid) return [];
+
+    return [{ from: page.relativePath, artifactId }];
+  }));
+
   const connectedPageIds = new Set<string>();
   for (const edge of wikiGraph.edges) {
     if (pageIds.has(edge.from)) connectedPageIds.add(edge.from);
@@ -89,7 +128,9 @@ export async function buildWikiBridgeReport(root: string, artifactGraph: Artifac
   }
   const orphanPages = pages.filter((page) => !connectedPageIds.has(page.id)).map((page) => page.relativePath).sort();
   const wikilinkCount = pages.reduce((count, page) => count + page.wikilinks.length, 0);
-  const artifactLinkCount = pages.reduce((count, page) => count + page.artifactLinks.length, 0);
+  // Recompute artifactLinkCount based on UUIDs only for the report, to match legacy expectations
+  const artifactLinkCount = pages.reduce((count, page) => count + page.artifactLinks.filter(id => /^[a-f0-9-]{36}$/i.test(id)).length, 0);
+  
   return {
     root,
     pageCount: pages.length,

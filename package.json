@@ -23,7 +23,9 @@
     "verify:preview": "node scripts/verify-dev-preview.mjs",
     "android:check": "node scripts/check-android-scaffold.mjs",
     "docs:llms": "node scripts/generate-llms-full.mjs",
-    "docs:llms:check": "node scripts/generate-llms-full.mjs --check"
+    "docs:llms:check": "node scripts/generate-llms-full.mjs --check",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder"
   },
   "keywords": [
     "imbas-os",
@@ -54,9 +56,32 @@
     "@vitejs/plugin-react": "6.0.1",
     "concurrently": "9.2.1",
     "electron": "42.0.1",
+    "electron-builder": "^26.15.2",
     "tsx": "4.21.0",
     "typescript": "6.0.3",
     "vite": "8.0.11",
     "wait-on": "9.0.5"
+  },
+  "build": {
+    "appId": "com.imbas.os",
+    "productName": "Imbas OS",
+    "directories": {
+      "output": "release/builder"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": ["dmg"]
+    },
+    "win": {
+      "target": ["nsis"]
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Utility"
+    }
   }
 }

@@ -92,7 +92,7 @@ export async function searchMarkdownPagesInVault(root: string, query: string): P
   const results: UnifiedSearchResult[] = [];
   for (const page of pages) {
     if (!normalizedQuery) {
-      results.push(toSearchResult(page, 'all markdown pages'));
+      results.push(toSearchResult(page, 'all markdown notes'));
       continue;
     }
     const markdown = await readFile(page.path, 'utf8');
@@ -162,12 +162,12 @@ async function uniquePagePath(root: string, baseSlug: string) {
 }
 
 function resolveVaultMarkdownPath(root: string, pageId: string) {
-  if (!pageId.startsWith('wiki:')) throw new Error('Invalid Markdown page id');
+  if (!pageId.startsWith('wiki:')) throw new Error('Invalid Markdown Note id');
   const relativePath = pageId.slice('wiki:'.length);
-  if (!relativePath.startsWith(`${PAGES_DIR}/`) || !relativePath.toLowerCase().endsWith('.md')) throw new Error('Only vault-owned Markdown pages can be edited here');
+  if (!relativePath.startsWith(`${PAGES_DIR}/`) || !relativePath.toLowerCase().endsWith('.md')) throw new Error('Only vault-owned Markdown Notes can be edited here');
   const filePath = path.resolve(root, relativePath);
   const pagesRoot = path.resolve(root, PAGES_DIR);
-  if (!filePath.startsWith(`${pagesRoot}${path.sep}`)) throw new Error('Markdown page path escapes pages directory');
+  if (!filePath.startsWith(`${pagesRoot}${path.sep}`)) throw new Error('Markdown Note path escapes pages directory');
   return filePath;
 }
 

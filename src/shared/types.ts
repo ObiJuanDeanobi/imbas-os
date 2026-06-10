@@ -1,5 +1,6 @@
 export type TrustLevel = 'untrusted' | 'reviewed' | 'trusted';
 export type SourceType = 'paste' | 'file' | 'url' | 'generated';
+export type TaxonomyClass = 'dashboard' | 'tool' | 'report' | 'simulation' | 'site' | 'experiment' | 'other' | '';
 
 export type TrustAuditEntry = {
   at: string;
@@ -20,6 +21,7 @@ export type ArtifactMetadata = {
   sourcePath?: string;
   project?: string;
   trustLevel: TrustLevel;
+  taxonomy?: TaxonomyClass;
   tags: string[];
   hashes: { sha256Html: string };
   links: string[];
@@ -51,12 +53,14 @@ export type CreateArtifactInput = {
   provider?: string;
   sourcePath?: string;
   project?: string;
+  taxonomy?: TaxonomyClass;
   tags?: string[];
 };
 
 export type UpdateArtifactMetadataInput = {
   title?: string;
   tags?: string[];
+  taxonomy?: TaxonomyClass;
   trustLevel?: TrustLevel;
   trustReason?: string;
   prompt?: string;

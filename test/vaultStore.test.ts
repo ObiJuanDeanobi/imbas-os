@@ -4,6 +4,11 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { createArtifact, createArtifactFromFile, exportArtifactBundleToDirectory, importArtifactBundleFromDirectory, initVault, listArtifacts, readArtifact, sha256 } from '../src/main/vault/vaultStore.ts';
+import { existsSync } from 'node:fs';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const exec = promisify(execCallback);
 
 test('initVault creates a portable vault structure', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'artifact-vault-'));
@@ -13,12 +18,13 @@ test('initVault creates a portable vault structure', async () => {
     assert.equal(vault.artifactCount, 0);
     assert.ok(vault.artifactsDir.endsWith('artifacts'));
     assert.match(await readFile(path.join(root, '.vault', 'manifest.json'), 'utf8'), /"version": 1/);
+    assert.ok(existsSync(path.join(root, '.git')), 'should initialize a git repository');
   } finally {
     await rm(root, { recursive: true, force: true });
   }
 });
 
-test('createArtifact writes artifact.html metadata.json notes.md and first snapshot', async () => {
+test('createArtifact writes artifact.html metadata.json notes.md and creates a git commit', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'artifact-vault-'));
   const html = '<!doctype html><html><head><title>Review artifact</title></head><body>ok</body></html>';
   try {
@@ -98,5 +104,24 @@ test('portable bundle export and directory import round-trip artifact content', 
     await rm(root, { recursive: true, force: true });
     await rm(secondRoot, { recursive: true, force: true });
     await rm(exportRoot, { recursive: true, force: true });
+  }
+});
+
+test('syncVault configures remote and pushes successfully', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'artifact-vault-'));
+  const remoteDir = await mkdtemp(path.join(os.tmpdir(), 'remote-repo-'));
+  try {
+    await exec('git init --bare', { cwd: remoteDir });
+    const { syncVault } = await import('../src/main/vault/vaultStore.ts');
+    await createArtifact(root, { title: 'First', html: '<p>first</p>' });
+    
+    const { pushed, pulled } = await syncVault(root, remoteDir);
+    assert.ok(pushed);
+    
+    const { stdout } = await exec('git log main --oneline', { cwd: remoteDir });
+    assert.ok(stdout.includes('Create artifact'));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+    await rm(remoteDir, { recursive: true, force: true });
   }
 });

@@ -21,9 +21,27 @@ test('App layout structure includes Right Inspector', () => {
     const html = renderToString(<App />);
     assert.ok(html.includes('class="inspector-pane"'), 'Right inspector pane should exist in the layout');
   } catch (error: any) {
-    // If renderToString throws because of other missing globals or hooks,
-    // we might need a simpler mock, but this tests the structural intent.
     console.warn("Render threw an error, but we expect it might without full DOM:", error);
     throw error;
   }
+});
+
+test('App center workspace renders primary actions', () => {
+  // We need to render the App with an artifact selected to see the center workspace
+  (global as any).window = {
+    artifactVault: {
+      vaultInfo: async () => ({ root: '/mock/root', artifactCount: 1 }),
+      listArtifacts: async () => [{ id: 'art-1', title: 'Test Artifact', kind: 'artifact', tags: [] }],
+      searchUnified: async () => [{ id: 'art-1', title: 'Test Artifact', kind: 'artifact', tags: [] }],
+      readArtifact: async () => ({ metadata: { title: 'Test Artifact', tags: [], trustLevel: 'untrusted' }, notes: '' }),
+      listSnapshots: async () => [],
+      artifactGraph: async () => ({ nodes: [{ id: 'art-1', kind: 'artifact' }], edges: [] }),
+      syncStatus: async () => null,
+      conduitStatus: async () => null,
+    }
+  };
+
+  const html = renderToString(<App />);
+  assert.ok(html.includes('>Export<'), 'Center workspace should have Export button');
+  assert.ok(html.includes('>Copy AI context<'), 'Center workspace should have Copy AI context button');
 });

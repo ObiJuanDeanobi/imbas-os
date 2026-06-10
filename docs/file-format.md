@@ -26,7 +26,9 @@ In the current Electron skeleton, the default vault root is:
 <electron userData>/html-artifact-vault
 ```
 
-## Artifact bundle
+## Artifact bundle (Current Legacy)
+
+Current alpha vaults store bundles using a UUID folder name under `artifacts/`:
 
 ### `artifact.html`
 
@@ -69,6 +71,27 @@ Human-readable sidecar note. Markdown remains the durable note/export substrate.
 ### `snapshots/`
 
 Initial import writes the first HTML and metadata snapshot. Snapshot restore copies a previous HTML payload back to `artifact.html`, restores snapshot metadata fields, recomputes hashes/links, and records the restore as a new snapshot so the action remains reversible.
+
+## Target `.artifact/` bundle (Future)
+
+The intended public product direction migrates from `artifacts/<uuid>/` to a human-readable `.artifact/` folder that can live anywhere in the vault tree.
+
+```text
+my-dashboard.artifact/
+  artifact.html
+  metadata.json
+  notes.md
+  provenance.md
+  snapshots/
+  context/
+    ai-context.md
+```
+
+- **Identity**: The UUID remains the stable identity, but it lives inside `metadata.json` rather than the folder name.
+- **Location**: `.artifact/` bundles can be nested inside normal project folders next to standard `.md` pages.
+- **Required files**: `artifact.html` and `metadata.json` remain the minimum required files.
+- **Non-goals**: We will not break existing ID-based references. The `metadata.json` ID continues to be the primary key for the search index and graph.
+
 
 ## Indexing
 

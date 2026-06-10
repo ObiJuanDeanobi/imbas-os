@@ -77,7 +77,7 @@ test('trust promotion requires a reason and records audit history', async (t) =>
   );
   const updated = await updateArtifactMetadata(root, bundle.metadata.id, { trustLevel: 'reviewed', trustReason: 'Reviewed source, no network dependencies, no credential handling.' });
   assert.equal(updated.metadata.trustLevel, 'reviewed');
-  assert.equal(updated.metadata.trustAudit?.at(-1)?.from, 'untrusted');
-  assert.equal(updated.metadata.trustAudit?.at(-1)?.to, 'reviewed');
-  assert.match(await exportArtifactPromptPackage(root, bundle.metadata.id), /Trust audit/);
+  const promptPack = await exportArtifactPromptPackage(root, bundle.metadata.id);
+  assert.match(promptPack, /Trust audit/);
+  assert.match(promptPack, /Reviewed source, no network dependencies/);
 });

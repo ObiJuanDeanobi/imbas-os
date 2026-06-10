@@ -67,3 +67,11 @@ For every meaningful slice, record:
 - artifact paths and SHA256 when APK/tarball changes;
 - live service status if relevant;
 - known manual/device checks left.
+
+## Dependency update gate
+
+Automated updates (like Dependabot) for `devDependencies` can be merged after `npm run verify` passes.
+For runtime dependencies, especially `electron` and security-sensitive packages, the gate requires:
+1. `npm run verify` passes.
+2. A manual `npm start` test verifying the Artifact Vault UI and sandbox boundaries.
+3. Explicit maintainer sign-off on the security implications of the update.

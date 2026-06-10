@@ -754,13 +754,13 @@ Goal: grow beyond artifact storage into the broader local-first agent OS while k
 
 Subsystems:
 
-- **Conduit:** stable local API/connector layer for OpenClaw first, then Hermes/Codex/Claude Code.
+- **Conduit & MCP Server:** stable local API/connector layer for OpenClaw, plus a bundled standard MCP (Model Context Protocol) Server so any modern AI agent can instantly interface with the Vault.
 - **Runledger:** durable audit timeline for runs, actions, verification, and produced artifacts.
 - **Lorekeeper:** reviewed wiki/proposal workflow with managed blocks, citations, snapshots, restore.
 - **Memsocket:** memory/context engine, context events, search, retrieval, context packs.
 - **Sanctum:** trust, redaction, approval policy, secret handles, capability scopes.
 - **Atlas:** unified graph/search/navigation across artifacts, wiki, runs, memory, and projects.
-- **SyncCore:** backup, restore, export/import, sync manifests, conflict detection, delete/forget propagation.
+- **SyncCore (Git-First):** Treat the entire vault as a Git repository under the hood for free versioning, snapshots, conflict detection, and syncing via standard remotes.
 - **Android companion:** mobile capture, status, Runledger, Lorekeeper review, scoped approvals.
 - **CLI:** automation/admin surface for humans and agents.
 
@@ -832,7 +832,7 @@ Stretch/push-to-beta if needed:
 Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/human-facing-vault-shell.md).
 
 - [x] M2.1 shell redesign: branded app frame, left vault navigation, artifact list, center workspace, and right inspector.
-- [ ] M2.2 smart artifact taxonomy: dashboards, tools, reports, simulations, sites, experiments as metadata-backed views/filters.
+- [ ] M2.2 smart artifact taxonomy: dashboards, tools, reports, simulations, sites, experiments. Types should act as lenses (navigation aids) rather than rigid enforcing schemas.
 - [x] M2.3 inspector tabs: Details, Notes, Provenance, Snapshots, and AI Context backed by real artifact data.
 - [ ] M2.4 human vault navigation: Pages, Projects, Tags, Graph, with Runs hidden/disabled/private-preview-labelled until Runledger is ready.
 - [ ] M2.5 polish and accessibility: keyboard navigation, focus states, empty/error states, narrow-window behavior, and visual verification.
@@ -850,6 +850,7 @@ Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/huma
 ### M3 — Conduit + Runledger foundation
 
 - [ ] Stabilize Conduit local API contracts.
+- [ ] Bundle a standard MCP (Model Context Protocol) Server to expose vault read/search/write to standard external AI agents out of the box.
 - [ ] Add automatic AI-generated artifact capture through Conduit with Runledger provenance and safe destination rules.
 - [ ] Document connector protocol.
 - [ ] Harden OpenClaw connector path.
@@ -902,8 +903,8 @@ Human-facing shell direction: [`design/human-facing-vault-shell.md`](design/huma
 - [ ] CLI/admin commands for verification, import/export, context-pack generation, backup/restore, and diagnostics.
 - [ ] Machine-readable status output for automation and AI agents.
 - [ ] Backup/restore UI.
-- [ ] Portable export/import polish.
-- [ ] Conflict detection UX.
+- [ ] SyncCore (Git-First): implement Git operations under the hood for vault versioning, portable export, and remote syncing.
+- [ ] Conflict detection UX via Git merges/rebase.
 - [ ] Delete/forget propagation.
 - [ ] Fresh-system restore proof.
 
@@ -2149,7 +2150,9 @@ In the current Electron skeleton, the default vault root is:
 <electron userData>/html-artifact-vault
 ```
 
-## Artifact bundle
+## Artifact bundle (Current Legacy)
+
+Current alpha vaults store bundles using a UUID folder name under `artifacts/`:
 
 ### `artifact.html`
 
@@ -2192,6 +2195,27 @@ Human-readable sidecar note. Markdown remains the durable note/export substrate.
 ### `snapshots/`
 
 Initial import writes the first HTML and metadata snapshot. Snapshot restore copies a previous HTML payload back to `artifact.html`, restores snapshot metadata fields, recomputes hashes/links, and records the restore as a new snapshot so the action remains reversible.
+
+## Target `.artifact/` bundle (Future)
+
+The intended public product direction migrates from `artifacts/<uuid>/` to a human-readable `.artifact/` folder that can live anywhere in the vault tree.
+
+```text
+my-dashboard.artifact/
+  artifact.html
+  metadata.json
+  notes.md
+  provenance.md
+  snapshots/
+  context/
+    ai-context.md
+```
+
+- **Identity**: The UUID remains the stable identity, but it lives inside `metadata.json` rather than the folder name.
+- **Location**: `.artifact/` bundles can be nested inside normal project folders next to standard `.md` pages.
+- **Required files**: `artifact.html` and `metadata.json` remain the minimum required files.
+- **Non-goals**: We will not break existing ID-based references. The `metadata.json` ID continues to be the primary key for the search index and graph.
+
 
 ## Indexing
 

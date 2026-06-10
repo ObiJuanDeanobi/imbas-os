@@ -3,7 +3,7 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { createArtifact, createArtifactFromFile, createSnapshot, defaultVaultRoot, exportArtifactBundleToDirectory, exportArtifactBundleToZip, exportArtifactJson, exportArtifactMarkdown, exportArtifactPromptPackage, getArtifactGraph, importArtifactBundleFromDirectory, importArtifactBundleFromZip, initVault, listArtifacts, listSnapshots, readArtifact, restoreSnapshot, searchArtifacts, updateArtifactMetadata, updateArtifactNotes, readSnapshot } from './vault/vaultStore.js';
+import { createArtifact, createArtifactFromFile, createSnapshot, defaultVaultRoot, exportArtifactBundleToDirectory, exportArtifactBundleToZip, exportArtifactJson, exportArtifactMarkdown, exportArtifactPromptPackage, getArtifactGraph, importArtifactBundleFromDirectory, importArtifactBundleFromZip, initVault, listArtifacts, listSnapshots, readArtifact, restoreSnapshot, searchArtifacts, updateArtifactMetadata, updateArtifactNotes, readSnapshot, syncVault, deleteArtifacts } from './vault/vaultStore.js';
 import { exportMixedPromptPackage } from './vault/mixedExport.js';
 import { rebuildSearchIndex, searchArtifactsWithIndex } from './vault/searchIndex.js';
 import { renderPolicyForTrustLevel, shouldBlockArtifactRequest, wrapHtmlForSandbox } from './security/artifactPolicy.js';
@@ -136,9 +136,19 @@ function installArtifactProtocol() {
   protocol.handle('artifact', async (request) => {
     const url = new URL(request.url);
     const id = url.hostname;
+    const snapshotId = url.searchParams.get('snapshotId');
     const bundle = await readArtifact(vaultRoot, id);
     const policy = renderPolicyForTrustLevel(bundle.metadata.trustLevel);
-    const html = wrapHtmlForSandbox(bundle.html, policy);
+    let htmlContent = bundle.html;
+    if (snapshotId) {
+      try {
+        htmlContent = await readSnapshot(vaultRoot, id, snapshotId);
+      } catch (err) {
+        console.error('Failed to load snapshot for protocol', err);
+      }
+    }
+    const theme = url.searchParams.get('theme') ?? undefined;
+    const html = wrapHtmlForSandbox(htmlContent, policy, { theme });
     return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } });
   });
 }
@@ -185,13 +195,14 @@ ipcMain.handle('conduit:lorekeeper-snapshots:list', async (_event, targetPageId:
 ipcMain.handle('conduit:lorekeeper-snapshot:preview', async (_event, input: { targetPageId: string; snapshotPath: string }) => (await handleConduitRequest(new Request(`http://127.0.0.1/v0/wiki/snapshots/preview?targetPageId=${encodeURIComponent(input.targetPageId)}&snapshotPath=${encodeURIComponent(input.snapshotPath)}`), conduitStore)).body);
 ipcMain.handle('conduit:lorekeeper-snapshot:restore', async (_event, input: { targetPageId: string; snapshotPath: string; confirm: string }) => (await handleConduitRequest(new Request('http://127.0.0.1/v0/wiki/snapshots/restore', { method: 'POST', body: JSON.stringify(input) }), conduitStore)).body);
 ipcMain.handle('vault:info', async () => initVault(vaultRoot));
+ipcMain.handle('vault:sync', async (_event, remoteUrl?: string) => syncVault(vaultRoot, remoteUrl));
 ipcMain.handle('sync:status', async () => getSyncStatus(vaultRoot));
 ipcMain.handle('sync:rebuild-manifest', async () => rebuildSyncManifest(vaultRoot));
 ipcMain.handle('artifacts:list', async () => listArtifacts(vaultRoot));
 ipcMain.handle('artifacts:search', async (_event, query: string) => searchArtifacts(vaultRoot, query));
 ipcMain.handle('artifacts:search-indexed', async (_event, query: string) => searchArtifactsWithIndex(vaultRoot, query));
 ipcMain.handle('vault:search-unified', async (_event, query: string) => {
-  const artifactResults = (await searchArtifacts(vaultRoot, query)).map((artifact) => ({
+  const artifactResults = (await searchArtifactsWithIndex(vaultRoot, query)).map((artifact) => ({
     id: artifact.id,
     kind: 'artifact' as const,
     title: artifact.title,
@@ -234,7 +245,13 @@ ipcMain.handle('artifacts:import-bundle-zip', async () => {
 ipcMain.handle('artifacts:read', async (_event, id: string) => readArtifact(vaultRoot, id));
 ipcMain.handle('artifacts:update-notes', async (_event, id: string, notes: string) => updateArtifactNotes(vaultRoot, id, notes));
 ipcMain.handle('artifacts:update-metadata', async (_event, id: string, input) => updateArtifactMetadata(vaultRoot, id, input));
-ipcMain.handle('artifacts:snapshot', async (_event, id: string) => createSnapshot(vaultRoot, id));
+ipcMain.handle('artifacts:snapshot', async (_event, id: string) => {
+  return createSnapshot(vaultRoot, id);
+});
+ipcMain.handle('artifacts:delete', async (_event, ids: string[]) => {
+  await deleteArtifacts(vaultRoot, ids);
+  return true;
+});
 ipcMain.handle('artifacts:snapshots', async (_event, id: string) => listSnapshots(vaultRoot, id));
 ipcMain.handle('artifacts:read-snapshot', async (_event, id: string, snapshotId: string) => readSnapshot(vaultRoot, id, snapshotId));
 ipcMain.handle('artifacts:restore-snapshot', async (_event, id: string, snapshotId: string) => restoreSnapshot(vaultRoot, id, snapshotId));
@@ -251,6 +268,28 @@ ipcMain.handle('artifacts:export-bundle-zip', async (_event, id: string) => {
   const result = await dialog.showSaveDialog({ title: 'Export bundle as zip', defaultPath: `artifact-${id.slice(0, 8)}.zip`, filters: [{ name: 'Zip archives', extensions: ['zip'] }] });
   if (result.canceled || !result.filePath) return null;
   return exportArtifactBundleToZip(vaultRoot, id, result.filePath);
+});
+ipcMain.handle('artifacts:export-pdf', async (_event, id: string) => {
+  const result = await dialog.showSaveDialog({ title: 'Export as PDF', defaultPath: `artifact-${id.slice(0, 8)}.pdf`, filters: [{ name: 'PDF', extensions: ['pdf'] }] });
+  if (result.canceled || !result.filePath) return null;
+  const win = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+  installWindowGuards(win);
+  await win.loadURL(`artifact://${id}/`);
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const pdfBuffer = await win.webContents.printToPDF({
+    printBackground: true,
+    pageSize: 'A4',
+  });
+  await writeFile(result.filePath, pdfBuffer);
+  win.close();
+  return result.filePath;
 });
 ipcMain.handle('wiki:index-directory', async () => {
   const result = await dialog.showOpenDialog({ properties: ['openDirectory'], title: 'Index Markdown/wiki folder in read-only bridge mode' });

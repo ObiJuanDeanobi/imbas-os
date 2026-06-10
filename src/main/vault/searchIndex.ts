@@ -49,29 +49,36 @@ export async function searchArtifactsWithIndex(root: string, query: string): Pro
 
   const indexPath = searchIndexPath(root);
   const db = new DatabaseSync(indexPath, { open: true });
+  let rows: any[] = [];
   try {
     ensureIndexExists(db);
     const ftsQuery = toFtsQuery(normalizedQuery);
-    if (!ftsQuery) return [];
-    const rows = db.prepare(`
-      SELECT id, title, project, tags, notes, prompt, html_text AS htmlText
-      FROM artifact_fts
-      WHERE artifact_fts MATCH ?
-      ORDER BY rank
-      LIMIT 100
-    `).all(ftsQuery) as { id: string; title: string; project: string; tags: string; notes: string; prompt: string; htmlText: string }[];
-    const artifacts = await listArtifacts(root);
-    const byId = new Map(artifacts.map((artifact) => [artifact.id, artifact]));
-    return rows.flatMap((row) => {
-      const artifact = byId.get(row.id);
-      return artifact ? [{ ...artifact, matchReason: matchReason(row, normalizedQuery) }] : [];
-    });
+    if (ftsQuery) {
+      rows = db.prepare(`
+        SELECT id, title, project, tags, notes, prompt, html_text AS htmlText
+        FROM artifact_fts
+        WHERE artifact_fts MATCH ?
+        ORDER BY rank
+        LIMIT 100
+      `).all(ftsQuery);
+    }
   } catch (error) {
-    if (String(error).includes('no such table: artifact_fts')) return [];
-    throw error;
-  } finally {
     db.close();
+    if (String(error).includes('no such table: artifact_fts')) {
+      await rebuildSearchIndex(root);
+      return searchArtifactsWithIndex(root, query);
+    }
+    throw error;
   }
+  db.close();
+
+  if (!rows.length) return [];
+  const artifacts = await listArtifacts(root);
+  const byId = new Map(artifacts.map((artifact) => [artifact.id, artifact]));
+  return rows.flatMap((row) => {
+    const artifact = byId.get(row.id);
+    return artifact ? [{ ...artifact, matchReason: matchReason(row, normalizedQuery) }] : [];
+  });
 }
 
 function matchReason(row: { title: string; project: string; tags: string; notes: string; prompt: string; htmlText: string }, query: string) {
@@ -107,10 +114,10 @@ async function writeIndexManifest(db: DatabaseSync, rebuiltAt: string, artifactC
 function toFtsQuery(query: string) {
   return query
     .split(/\s+/)
-    .map((term) => term.replace(/"/g, ''))
+    .map((term) => term.replace(/["*()]/g, ''))
     .filter(Boolean)
-    .map((term) => `"${term}"`)
-    .join(' AND ');
+    .map((term) => `"${term}"*`)
+    .join(' OR ');
 }
 
 function stripHtml(html: string) {

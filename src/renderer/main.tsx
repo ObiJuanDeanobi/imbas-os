@@ -13,18 +13,20 @@ const vaultFilters = [
   { id: 'dashboard', label: 'Dashboards', hint: 'Visual summaries and status panels' },
   { id: 'tool', label: 'Tools', hint: 'Interactive utilities and editors' },
   { id: 'report', label: 'Reports', hint: 'Research, compliance, and analysis' },
-  { id: 'simulation', label: 'Simulations', hint: 'Lessons, quizzes, and models' },
-  { id: 'site', label: 'Sites', hint: 'Landing pages and microsites' },
-  { id: 'experiment', label: 'Experiments', hint: 'Prototypes and rough cuts' },
+  { id: 'trusted', label: 'Trusted Lens', hint: 'Reviewed & verified safe' },
+  { id: 'untrusted', label: 'Untrusted Lens', hint: 'Needs review / Sandbox only' },
   { id: 'inbox', label: 'Inbox / Untitled', hint: 'Needs triage' }
 ];
 
-function matchesVaultFilter(item: { title: string; tags: string[]; taxonomy?: string; project?: string; sourceOwnership?: string }, filter: string) {
+function matchesVaultFilter(item: { title: string; tags: string[]; taxonomy?: string; project?: string; trustLevel?: TrustLevel }, filter: string) {
   if (filter === 'all') return true;
   
   if (filter === 'inbox') {
     return !item.project || /inbox|untitled|imported|paste/.test([item.title, ...(item.tags ?? [])].join(' ').toLowerCase());
   }
+
+  if (filter === 'trusted') return item.trustLevel === 'trusted' || item.trustLevel === 'reviewed';
+  if (filter === 'untrusted') return item.trustLevel === 'untrusted';
 
   // Exact taxonomy match first if populated
   if (item.taxonomy && item.taxonomy !== '') {
@@ -61,6 +63,8 @@ export function App() {
   const [destinationTaxonomy, setDestinationTaxonomy] = useState<any>('');
   const [markdownTitle, setMarkdownTitle] = useState('Project note');
   const [markdownDraft, setMarkdownDraft] = useState('# Project note\n\nLink artifacts with `[[artifact:artifact-id]]` or wiki pages with `[[Page Name]]`.');
+  const [selectedBatchIds, setSelectedBatchIds] = useState<Set<string>>(new Set());
+  const [batchTagDraft, setBatchTagDraft] = useState('');
   const [query, setQuery] = useState('');
   const [projectFilter, setProjectFilter] = useState('');
   const [vaultFilter, setVaultFilter] = useState('all');
@@ -214,6 +218,16 @@ export function App() {
     setLastAction(`Rebuilt sync manifest with ${manifest.entries.length} source files. Index caches were not treated as source of truth.`);
   }
 
+  async function syncVaultWithRemote() {
+    setLastAction('Syncing with remote repository...');
+    try {
+      const { pushed, pulled } = await window.artifactVault.syncVault();
+      setLastAction(`Sync complete. Pulled: ${pulled}, Pushed: ${pushed}.`);
+    } catch (err: any) {
+      setLastAction(`Sync failed: ${err.message}. Ensure a remote is configured (e.g., git remote add origin <url>).`);
+    }
+  }
+
   async function indexWikiDirectory() {
     const nextGraph = await window.artifactVault.indexWikiDirectory();
     if (!nextGraph) return;
@@ -244,11 +258,41 @@ export function App() {
   }
 
   async function createVaultMarkdownPage() {
-    const page = await window.artifactVault.createMarkdownPage({ title: markdownTitle, markdown: markdownDraft, tags: ['vault-owned'] });
+    const page = await window.artifactVault.createMarkdownPage({ title: markdownTitle, markdown: markdownDraft });
+    setMarkdownDraft('');
     await refresh();
     setSelectedWikiId(page.node.id);
-    setSelectedId(null);
-    setLastAction(`Created vault-owned Markdown Note ${page.node.relativePath}. It is editable inside Imbas OS.`);
+    setActiveView('vault');
+    setVaultFilter('all');
+  }
+
+  async function batchDelete() {
+    if (!confirm(`Delete ${selectedBatchIds.size} artifact(s) forever?`)) return;
+    await window.artifactVault.deleteArtifacts(Array.from(selectedBatchIds));
+    setSelectedBatchIds(new Set());
+    await refresh();
+  }
+
+  async function batchTag() {
+    const ids = Array.from(selectedBatchIds);
+    const tag = batchTagDraft.trim();
+    if (!tag) return;
+    for (const id of ids) {
+      const artifact = artifacts.find(a => a.id === id);
+      if (!artifact) continue;
+      const nextTags = [...new Set([...artifact.tags, tag])];
+      await window.artifactVault.updateMetadata(id, { tags: nextTags });
+    }
+    setBatchTagDraft('');
+    setSelectedBatchIds(new Set());
+    await refresh();
+  }
+
+  async function batchContextPack() {
+    const ids = Array.from(selectedBatchIds);
+    const content = await window.artifactVault.exportMixedPromptPackage({ artifactIds: ids, wikiPageIds: [] });
+    await navigator.clipboard.writeText(content).catch(() => {});
+    alert(`Exported context pack for ${ids.length} artifacts to clipboard.`);
   }
 
   async function handleDrop(event: React.DragEvent) {
@@ -358,7 +402,28 @@ export function App() {
           <input placeholder="Search title, tags, notes, prompt, HTML…" value={query} onChange={(event) => setQuery(event.target.value)} />
           <select value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)}><option value="">All projects</option>{projectOptions.map((project) => <option key={project} value={project}>{project}</option>)}</select>
           <button className="secondary" onClick={rebuildSearchIndex}>{indexStats ? `Index rebuilt: ${indexStats.artifactCount} artifacts` : 'Rebuild SQLite search index'}</button>
-          {unifiedResults.map((item) => <button key={item.id} className={(item.kind === 'artifact' && item.id === selectedId) || item.id === selectedWikiId ? 'artifact-row active' : 'artifact-row'} onClick={() => { if (item.kind === 'artifact') { setSelectedId(item.id); setSelectedWikiId(null); } else { setSelectedWikiId(item.id); setSelectedId(null); } }}><strong>{item.kind === 'wiki' ? '◇ ' : ''}{item.title}</strong><span>{item.kind === 'wiki' ? `${item.sourceOwnership} · ${item.relativePath}` : `${item.project || 'No project'} · ${item.trustLevel}`} · {item.tags.join(', ') || 'untagged'}</span>{item.createdAt && <small>{new Date(item.createdAt).toLocaleString()}</small>}<em>matched {item.matchReason}</em></button>)}
+          {selectedBatchIds.size > 0 && (
+            <div className="batch-actions-bar" style={{ background: '#333', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <strong>{selectedBatchIds.size} selected</strong>
+              <button className="secondary" onClick={batchContextPack}>Copy Context Pack</button>
+              <input value={batchTagDraft} onChange={(e) => setBatchTagDraft(e.target.value)} placeholder="Add tag..." style={{ width: '100px' }} />
+              <button className="secondary" onClick={batchTag}>Tag All</button>
+              <button className="secondary" onClick={batchDelete} style={{ color: '#ff6b6b' }}>Delete All</button>
+              <button className="secondary" onClick={() => setSelectedBatchIds(new Set())}>Clear</button>
+            </div>
+          )}
+          {unifiedResults.map((item) => (
+            <div key={item.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.2rem' }}>
+              {item.kind === 'artifact' && (
+                <input type="checkbox" checked={selectedBatchIds.has(item.id)} onChange={(e) => {
+                  const next = new Set(selectedBatchIds);
+                  if (e.target.checked) next.add(item.id); else next.delete(item.id);
+                  setSelectedBatchIds(next);
+                }} />
+              )}
+              <button style={{ flex: 1 }} className={(item.kind === 'artifact' && item.id === selectedId) || item.id === selectedWikiId ? 'artifact-row active' : 'artifact-row'} onClick={() => { if (item.kind === 'artifact') { setSelectedId(item.id); setSelectedWikiId(null); } else { setSelectedWikiId(item.id); setSelectedId(null); } }}><strong>{item.kind === 'wiki' ? '◇ ' : ''}{item.title}</strong><span>{item.kind === 'wiki' ? `${item.sourceOwnership} · ${item.relativePath}` : `${item.project || 'No project'} · ${item.trustLevel}`} · {item.tags.join(', ') || 'untagged'}</span>{item.createdAt && <small>{new Date(item.createdAt).toLocaleString()}</small>}<em>matched {item.matchReason}</em></button>
+            </div>
+          ))}
           {!unifiedResults.length && <div className="empty-card"><strong>No vault items yet</strong><p className="muted">Seed the demo vault, import HTML, or index a Markdown/wiki folder in read-only bridge mode.</p></div>}
         </section>
         <section className="graph-panel">
@@ -394,13 +459,16 @@ export function App() {
           <p className="muted">Node <code>{syncStatus?.localNode.id.slice(0, 8) ?? 'loading'}</code> · {syncStatus?.trackedFiles ?? 0} tracked files</p>
           <p className="muted">Manifest: {syncStatus?.manifestGeneratedAt ? new Date(syncStatus.manifestGeneratedAt).toLocaleString() : 'not built yet'}</p>
           <p className="muted">{syncStatus?.changedFiles.length ?? 0} local changes · {syncStatus?.conflictCandidates.length ?? 0} conflict candidates</p>
-          <button className="secondary" onClick={rebuildSyncManifest}>Rebuild sync manifest</button>
+          <div className="button-row" style={{ marginTop: '0.5rem', gap: '0.5rem', display: 'flex' }}>
+            <button className="secondary" onClick={rebuildSyncManifest}>Rebuild sync manifest</button>
+            <button className="secondary" onClick={syncVaultWithRemote}>Sync with remote</button>
+          </div>
           {(syncStatus?.conflictCandidates.length ?? 0) > 0 && <div className="bridge-report">{syncStatus!.conflictCandidates.slice(0, 4).map((item) => <em key={item.path}>{item.reason}: {item.path}</em>)}</div>}
         </section>
       </aside>
       <section className="workspace">
         {activeView === 'command'
-          ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} mobilePairingChallenge={mobilePairingChallenge} mobilePairingQrDataUrl={mobilePairingQrDataUrl} onCreateMobilePairingChallenge={createMobilePairingChallenge} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onOpenVault={() => setActiveView('vault')} />
+          ? <CommandCenter vault={vault} artifacts={artifacts} graph={graph} syncStatus={syncStatus} conduitStatus={conduitStatus} mobilePairingChallenge={mobilePairingChallenge} mobilePairingQrDataUrl={mobilePairingQrDataUrl} onCreateMobilePairingChallenge={createMobilePairingChallenge} onSeedDemoVault={seedDemoVault} onRebuildSyncManifest={rebuildSyncManifest} onSyncVaultWithRemote={syncVaultWithRemote} onOpenVault={() => setActiveView('vault')} />
           : activeView === 'agent'
             ? <AgentConsole conduitStatus={conduitStatus} onSearchConduit={window.artifactVault.conduitSearch} onBuildContextPack={window.artifactVault.conduitContextPack} onDispatchOpenClaw={window.artifactVault.conduitOpenClawDispatch} onRunReplay={window.artifactVault.conduitRunReplay} onCreateLorekeeperProposal={window.artifactVault.conduitCreateLorekeeperProposal} onPreviewLorekeeperProposal={window.artifactVault.conduitPreviewLorekeeperProposal} onApproveLorekeeperProposal={window.artifactVault.conduitApproveLorekeeperProposal} onRejectLorekeeperProposal={window.artifactVault.conduitRejectLorekeeperProposal} onApplyLorekeeperProposal={window.artifactVault.conduitApplyLorekeeperProposal} onListLorekeeperSnapshots={window.artifactVault.conduitListLorekeeperSnapshots} onPreviewLorekeeperSnapshot={window.artifactVault.conduitPreviewLorekeeperSnapshot} onRestoreLorekeeperSnapshot={window.artifactVault.conduitRestoreLorekeeperSnapshot} onCreateArtifact={async (input) => { const artifact = await window.artifactVault.createArtifact(input); setIndexStats(null); await refresh(); setSelectedId(artifact.metadata.id); setSelectedWikiId(null); setActiveView('vault'); }} />
           : activeView === 'pages' ? <PagesView graph={graph} onSelectWiki={(id) => { setSelectedWikiId(id); setActiveView('vault'); setVaultFilter('all'); }} />
@@ -433,7 +501,7 @@ export function App() {
 }
 
 
-function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mobilePairingChallenge, onCreateMobilePairingChallenge, onSeedDemoVault, onRebuildSyncManifest, onOpenVault }: { vault: VaultInfo | null; artifacts: ArtifactSummary[]; graph: ArtifactGraph; syncStatus: SyncStatus | null; conduitStatus: any; mobilePairingChallenge: any; onCreateMobilePairingChallenge: () => Promise<void>; onSeedDemoVault: () => Promise<void>; onRebuildSyncManifest: () => Promise<void>; onOpenVault: () => void }) {
+function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mobilePairingChallenge, onCreateMobilePairingChallenge, onSeedDemoVault, onRebuildSyncManifest, onSyncVaultWithRemote, onOpenVault }: { vault: VaultInfo | null; artifacts: ArtifactSummary[]; graph: ArtifactGraph; syncStatus: SyncStatus | null; conduitStatus: any; mobilePairingChallenge: any; onCreateMobilePairingChallenge: () => Promise<void>; onSeedDemoVault: () => Promise<void>; onRebuildSyncManifest: () => Promise<void>; onSyncVaultWithRemote: () => Promise<void>; onOpenVault: () => void }) {
   const moduleEntries = Object.entries(conduitStatus?.modules ?? {}) as [string, any][];
   const recentRuns = (conduitStatus?.recentRunledger ?? conduitStatus?.recentRuns ?? []).slice(0, 5);
   const proposals = (conduitStatus?.recentLorekeeperProposals ?? []).slice(0, 4);
@@ -449,6 +517,7 @@ function CommandCenter({ vault, artifacts, graph, syncStatus, conduitStatus, mob
         <button onClick={onOpenVault}>Open Artifact Vault</button>
         <button className="secondary" onClick={onSeedDemoVault}>Seed demo workbench</button>
         <button className="secondary" onClick={onRebuildSyncManifest}>Rebuild sync manifest</button>
+        <button className="secondary" onClick={onSyncVaultWithRemote}>Sync with remote</button>
         <button className="secondary" onClick={onCreateMobilePairingChallenge}>Create Android pairing code</button>
       </div>
     </header>
@@ -829,28 +898,67 @@ function labelFor(graph: ArtifactGraph, id: string) {
 
 function GraphCanvas({ graph }: { graph: ArtifactGraph }) {
   const nodes = graph.nodes.slice(0, 36);
+  const [positions, setPositions] = useState<Record<string, {x: number, y: number}>>({});
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [edgeFilter, setEdgeFilter] = useState<'all' | 'artifact' | 'wiki'>('all');
+
+  useEffect(() => {
+    const center = 110;
+    const radius = 78;
+    setPositions(prev => {
+      const next = { ...prev };
+      let changed = false;
+      nodes.forEach((node, index) => {
+        if (!next[node.id]) {
+          const angle = (index / Math.max(nodes.length, 1)) * Math.PI * 2 - Math.PI / 2;
+          next[node.id] = { x: center + Math.cos(angle) * radius, y: center + Math.sin(angle) * radius };
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [graph.nodes]);
+
   if (!nodes.length) return <div className="graph-canvas empty-graph">No graph nodes yet</div>;
-  const center = 110;
-  const radius = 78;
-  const positions = new Map(nodes.map((node, index) => {
-    const angle = (index / Math.max(nodes.length, 1)) * Math.PI * 2 - Math.PI / 2;
-    return [node.id, { x: center + Math.cos(angle) * radius, y: center + Math.sin(angle) * radius }];
-  }));
+
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!draggingId) return;
+    const svg = e.currentTarget;
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const cursor = pt.matrixTransform(svg.getScreenCTM()!.inverse());
+    setPositions(prev => ({
+      ...prev,
+      [draggingId]: { x: cursor.x, y: cursor.y }
+    }));
+  };
+
   const visibleIds = new Set(nodes.map((node) => node.id));
-  return <svg className="graph-canvas" viewBox="0 0 220 220" role="img" aria-label="Artifact and wiki graph map">
-    {graph.edges.filter((edge) => visibleIds.has(edge.from) && visibleIds.has(edge.to)).map((edge) => {
-      const from = positions.get(edge.from)!;
-      const to = positions.get(edge.to)!;
-      return <line key={`${edge.from}-${edge.to}-${edge.kind ?? 'edge'}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} className={edge.kind === 'wikilink' ? 'wiki-edge' : 'artifact-edge'} />;
-    })}
-    {nodes.map((node) => {
-      const position = positions.get(node.id)!;
-      return <g key={node.id}>
-        <circle cx={position.x} cy={position.y} r={node.kind === 'wiki' ? 6 : 7.5} className={node.kind === 'wiki' ? 'wiki-node' : 'artifact-node'} />
-        <title>{node.kind === 'wiki' ? 'Wiki page' : 'Artifact'}: {node.title}</title>
-      </g>;
-    })}
-  </svg>;
+  return <div>
+    <svg className="graph-canvas" viewBox="0 0 220 220" role="img" aria-label="Artifact and wiki graph map" onPointerMove={handlePointerMove} onPointerUp={() => setDraggingId(null)} onPointerLeave={() => setDraggingId(null)}>
+      {graph.edges.filter((edge) => visibleIds.has(edge.from) && visibleIds.has(edge.to) && (edgeFilter === 'all' || (edgeFilter === 'wiki' && edge.kind === 'wikilink') || (edgeFilter === 'artifact' && edge.kind !== 'wikilink'))).map((edge) => {
+        const from = positions[edge.from];
+        const to = positions[edge.to];
+        if (!from || !to) return null;
+        return <line key={`${edge.from}-${edge.to}-${edge.kind ?? 'edge'}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} className={edge.kind === 'wikilink' ? 'wiki-edge' : 'artifact-edge'} />;
+      })}
+      {nodes.map((node) => {
+        const position = positions[node.id];
+        if (!position) return null;
+        return <g key={node.id} onPointerDown={() => setDraggingId(node.id)} style={{ cursor: draggingId === node.id ? 'grabbing' : 'grab' }}>
+          <circle cx={position.x} cy={position.y} r={node.kind === 'wiki' ? 6 : 7.5} className={node.kind === 'wiki' ? 'wiki-node' : 'artifact-node'} />
+          <text x={position.x + 10} y={position.y + 4} fontSize="8" fill="#888" style={{ pointerEvents: 'none' }}>{node.title.slice(0, 12)}</text>
+          <title>{node.kind === 'wiki' ? 'Wiki page' : 'Artifact'}: {node.title}</title>
+        </g>;
+      })}
+    </svg>
+    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', justifyContent: 'center' }}>
+      <button className="secondary" style={{ fontSize: '0.7rem' }} onClick={() => setEdgeFilter('all')}>All Links</button>
+      <button className="secondary" style={{ fontSize: '0.7rem' }} onClick={() => setEdgeFilter('wiki')}>Wiki Links</button>
+      <button className="secondary" style={{ fontSize: '0.7rem' }} onClick={() => setEdgeFilter('artifact')}>Artifact Links</button>
+    </div>
+  </div>;
 }
 
 function WikiBridgeReportCard({ report }: { report: WikiBridgeReport | null }) {
@@ -883,6 +991,8 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
   const [metadataProject, setMetadataProject] = useState(artifact.project ?? '');
   const [metadataTrustReason, setMetadataTrustReason] = useState('');
   const [snapshots, setSnapshots] = useState<ArtifactSnapshot[]>([]);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [runledgerTrace, setRunledgerTrace] = useState<any[]>([]);
 
   const outgoing = graph.edges.filter((edge) => edge.from === artifact.id);
   const incoming = graph.edges.filter((edge) => edge.to === artifact.id);
@@ -908,6 +1018,13 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
     });
     void window.artifactVault.listSnapshots(artifact.id).then((next) => {
       if (!cancelled) setSnapshots(next);
+    });
+    void window.artifactVault.conduitSearch(artifact.id).then((result) => {
+      if (!cancelled && result?.results?.timeline) {
+        setRunledgerTrace(result.results.timeline);
+      } else if (!cancelled && result?.results?.runledger) {
+        setRunledgerTrace(result.results.runledger);
+      }
     });
     return () => { cancelled = true; };
   }, [artifact.id]);
@@ -1026,6 +1143,15 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
     }
   }
 
+  async function exportPdf() {
+    const exportedPath = await window.artifactVault.exportPdf(artifact.id);
+    if (exportedPath) {
+      setExportStatus(`Exported PDF to ${exportedPath}`);
+      setShowExport(true);
+      setExportText(`PDF exported to:\n${exportedPath}`);
+    }
+  }
+
 
 
   return <div className="artifact-detail vault-detail-shell">
@@ -1045,15 +1171,29 @@ function ArtifactDetail({ artifact, graph, onRefresh, onIndexDirty }: { artifact
             <strong>{metadataTitle || artifact.title}</strong>
             <span>Sandboxed <code>artifact://</code> preview. Generated HTML is treated as hostile until reviewed.</span>
           </div>
-          <div className="button-row compact"><button onClick={() => window.open(`artifact://${artifact.id}/`)}>Open</button><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={() => setShowExport(!showExport)}>Export</button><button className="secondary" onClick={snapshot}>Snapshot</button></div>
+          <div className="button-row compact"><button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>Theme: {theme}</button><button onClick={() => window.open(`artifact://${artifact.id}/?theme=${theme}`)}>Open</button><button onClick={copyAiContext}>Copy AI context</button><button className="secondary" onClick={() => setShowExport(!showExport)}>Export</button><button className="secondary" onClick={snapshot}>Snapshot</button></div>
         </div>
         {showExport && <div className="export-panel" style={{ padding: '1rem', borderBottom: '1px solid #ddd', background: '#fafafa' }}>
           <p className="metadata-status">{exportStatus}</p>
           <p className="eyebrow nav-gap">Export formats</p>
-          <div className="button-row compact" style={{ marginBottom: '1rem' }}><button className="secondary" onClick={exportPromptPackage}>Context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button><button className="secondary" onClick={exportBundleZip}>Bundle zip</button></div>
+          <div className="button-row compact" style={{ marginBottom: '1rem' }}><button className="secondary" onClick={exportPromptPackage}>Context package</button><button className="secondary" onClick={exportMixedPromptPackage}>Mixed package</button><button className="secondary" onClick={exportMarkdown}>Markdown</button><button className="secondary" onClick={exportJson}>JSON</button><button className="secondary" onClick={exportBundleDirectory}>Bundle folder</button><button className="secondary" onClick={exportBundleZip}>Bundle zip</button><button className="secondary" onClick={exportPdf}>PDF</button></div>
           {exportText && <pre style={{ maxHeight: '300px', overflow: 'auto', background: '#111', color: '#eee', padding: '1rem', borderRadius: '8px' }}>{exportText}</pre>}
         </div>}
-        <iframe className="artifact-frame" title={artifact.title} src={`artifact://${artifact.id}/`} sandbox="allow-scripts" />
+        {runledgerTrace.length > 0 && <div className="provenance-panel" style={{ padding: '1rem', borderBottom: '1px solid #ddd', background: '#fdfdfd' }}>
+          <p className="eyebrow nav-gap">Runledger Provenance Trace</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+            {runledgerTrace.map((entry, idx) => (
+              <div key={idx} style={{ fontSize: '0.85rem', padding: '0.5rem', background: '#f5f5f5', borderRadius: '4px', borderLeft: `3px solid ${entry.outcome === 'completed' ? '#4CAF50' : '#2196F3'}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <strong>{entry.title || entry.record?.title}</strong>
+                  <span className="muted">{entry.createdAt ? new Date(entry.createdAt).toLocaleString() : ''}</span>
+                </div>
+                <div className="muted">{entry.summary || entry.record?.summary}</div>
+              </div>
+            ))}
+          </div>
+        </div>}
+        <iframe className="artifact-frame" title={artifact.title} src={`artifact://${artifact.id}/?theme=${theme}`} sandbox="allow-scripts" />
       </section>
     </div>
   </div>;
@@ -1127,17 +1267,46 @@ function PagesView({ graph, onSelectWiki }: { graph: ArtifactGraph; onSelectWiki
 function ProjectsView({ graph, onSelectProject }: { graph: ArtifactGraph; onSelectProject: (project: string) => void }) {
   const projects = [...new Set(graph.nodes.map(n => n.project).filter(Boolean))] as string[];
   projects.sort();
-  return <div className="vault-detail-shell" style={{ padding: '2rem' }}>
+
+  type Node = { name: string; fullPath?: string; children: Record<string, Node> };
+  const tree: Record<string, Node> = {};
+  for (const project of projects) {
+    const parts = project.split('/');
+    let current = tree;
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (!current[part]) current[part] = { name: part, children: {} };
+      if (i === parts.length - 1) current[part].fullPath = project;
+      current = current[part].children;
+    }
+  }
+
+  function renderTree(nodes: Record<string, Node>, depth = 0) {
+    return <ul style={{ listStyleType: 'none', paddingLeft: depth ? '1.5rem' : '0', margin: 0 }}>
+      {Object.values(nodes).map((node) => (
+        <li key={node.name} style={{ marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {node.fullPath ? (
+              <button className="secondary" style={{ padding: '0.2rem 0.5rem', margin: 0, textAlign: 'left' }} onClick={() => onSelectProject(node.fullPath!)}>
+                📁 <strong>{node.name}</strong>
+              </button>
+            ) : (
+              <span style={{ padding: '0.2rem 0.5rem', color: '#888' }}>📂 {node.name}</span>
+            )}
+          </div>
+          {Object.keys(node.children).length > 0 && renderTree(node.children, depth + 1)}
+        </li>
+      ))}
+    </ul>;
+  }
+
+  return <div className="vault-detail-shell" style={{ padding: '2rem', overflowY: 'auto' }}>
     <header className="detail-header">
       <h2>Projects / Workspaces</h2>
-      <p>{projects.length} distinct projects</p>
+      <p>{projects.length} distinct nested projects</p>
     </header>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-      {projects.map(project => (
-        <button key={project} className="secondary" onClick={() => onSelectProject(project)}>
-          <strong>{project}</strong>
-        </button>
-      ))}
+    <div style={{ marginTop: '2rem' }}>
+      {renderTree(tree)}
     </div>
   </div>;
 }

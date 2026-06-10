@@ -1,8 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { copyFile, cp, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { copyFile, cp, mkdir, readFile, readdir, stat, writeFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
+import AdmZip from 'adm-zip';
 import type { ArtifactBundle, ArtifactGraph, ArtifactMetadata, ArtifactSearchResult, ArtifactSnapshot, ArtifactSummary, CreateArtifactInput, UpdateArtifactMetadataInput, VaultInfo } from '../../shared/types.js';
+
+const exec = promisify(execCallback);
 
 export const ARTIFACT_HTML = 'artifact.html';
 export const METADATA_JSON = 'metadata.json';
@@ -13,6 +18,16 @@ export function defaultVaultRoot(appDataPath: string) {
   return path.join(appDataPath, 'html-artifact-vault');
 }
 
+async function commitVaultChanges(root: string, message: string) {
+  await exec('git add -A', { cwd: root });
+  try {
+    await exec(`git commit -m "${message.replace(/"/g, '\\"')}"`, { cwd: root });
+  } catch (error: any) {
+    const output = (error.stdout || '') + (error.stderr || '');
+    if (!output.includes('nothing to commit')) throw error;
+  }
+}
+
 export async function initVault(root: string): Promise<VaultInfo> {
   const artifactsDir = path.join(root, 'artifacts');
   await mkdir(artifactsDir, { recursive: true });
@@ -20,6 +35,12 @@ export async function initVault(root: string): Promise<VaultInfo> {
   const manifestPath = path.join(root, '.vault', 'manifest.json');
   if (!existsSync(manifestPath)) {
     await writeFile(manifestPath, JSON.stringify({ version: 1, createdAt: new Date().toISOString() }, null, 2));
+  }
+  if (!existsSync(path.join(root, '.git'))) {
+    await exec('git init', { cwd: root });
+    try { await exec('git branch -M main', { cwd: root }); } catch {}
+    await exec('git config user.name "Imbas OS" && git config user.email "vault@imbas.os"', { cwd: root });
+    await commitVaultChanges(root, 'Initial vault structure');
   }
   return { root, artifactsDir, artifactCount: await countArtifacts(artifactsDir) };
 }
@@ -42,6 +63,7 @@ export async function createArtifact(root: string, input: CreateArtifactInput): 
     sourcePath: input.sourcePath,
     project: input.project,
     trustLevel: 'untrusted',
+    taxonomy: input.taxonomy ?? '',
     tags: input.tags ?? [],
     hashes: { sha256Html: sha256(input.html) },
     links: extractArtifactLinks(`${input.html}\n${notes}\n${input.prompt ?? ''}`),
@@ -50,12 +72,12 @@ export async function createArtifact(root: string, input: CreateArtifactInput): 
   };
 
   const bundlePath = path.join(vault.artifactsDir, id);
-  await mkdir(path.join(bundlePath, SNAPSHOTS_DIR), { recursive: true });
+  await mkdir(bundlePath, { recursive: true });
   await writeFile(path.join(bundlePath, ARTIFACT_HTML), input.html);
   await writeFile(path.join(bundlePath, METADATA_JSON), JSON.stringify(metadata, null, 2));
   await writeFile(path.join(bundlePath, NOTES_MD), notes);
-  await writeFile(path.join(bundlePath, SNAPSHOTS_DIR, `${safeTimestamp(now)}.html`), input.html);
-  await writeFile(path.join(bundlePath, SNAPSHOTS_DIR, `${safeTimestamp(now)}.json`), JSON.stringify(metadata, null, 2));
+
+  await commitVaultChanges(root, `Create artifact ${id}`);
 
   return { metadata, html: input.html, notes, bundlePath };
 }
@@ -113,6 +135,41 @@ export async function exportArtifactBundleToDirectory(root: string, id: string, 
   return target;
 }
 
+export async function exportArtifactBundleToZip(root: string, id: string, targetZipPath: string): Promise<string> {
+  const bundle = await readArtifact(root, id);
+  const zip = new AdmZip();
+  zip.addLocalFolder(bundle.bundlePath);
+  await zip.writeZipPromise(targetZipPath);
+  return targetZipPath;
+}
+
+export async function importArtifactBundleFromZip(root: string, zipPath: string): Promise<ArtifactBundle> {
+  const zip = new AdmZip(zipPath);
+  const vault = await initVault(root);
+  const tmpDir = path.join(vault.root, '.vault', 'tmp', randomUUID());
+  await mkdir(tmpDir, { recursive: true });
+  await new Promise<void>((resolve, reject) => {
+    zip.extractAllToAsync(tmpDir, true, false, (error) => {
+      if (error) reject(error);
+      else resolve();
+    });
+  });
+  const created = await importArtifactBundleFromDirectory(root, tmpDir);
+  await rm(tmpDir, { recursive: true, force: true });
+  return created;
+}
+
+export async function readSnapshot(root: string, id: string, snapshotId: string): Promise<string> {
+  assertSafeId(id);
+  if (!/^[a-f0-9]{7,40}$/i.test(snapshotId)) throw new Error('Invalid snapshot id');
+  try {
+    const { stdout } = await exec(`git show ${snapshotId}:artifacts/${id}/${ARTIFACT_HTML}`, { cwd: root, maxBuffer: 10 * 1024 * 1024 });
+    return stdout;
+  } catch (error) {
+    throw new Error('Snapshot not found or cannot be read');
+  }
+}
+
 export async function listArtifacts(root: string): Promise<ArtifactSummary[]> {
   const vault = await initVault(root);
   const entries = await readdir(vault.artifactsDir, { withFileTypes: true });
@@ -150,6 +207,7 @@ export async function updateArtifactNotes(root: string, id: string, notes: strin
   const updatedMetadata = { ...metadata, updatedAt: new Date().toISOString(), links: extractArtifactLinks(`${html}\n${notes}\n${metadata.prompt}`) };
   await writeFile(path.join(bundlePath, NOTES_MD), notes);
   await writeFile(path.join(bundlePath, METADATA_JSON), JSON.stringify(updatedMetadata, null, 2));
+  await commitVaultChanges(root, `Update notes for ${id}`);
   return readArtifact(root, id);
 }
 
@@ -169,6 +227,7 @@ export async function updateArtifactMetadata(root: string, id: string, input: Up
     ...bundle.metadata,
     title: input.title === undefined ? bundle.metadata.title : sanitizeTitle(input.title),
     tags: input.tags === undefined ? bundle.metadata.tags : normalizeTags(input.tags),
+    taxonomy: input.taxonomy ?? bundle.metadata.taxonomy,
     trustLevel: nextTrustLevel,
     prompt: input.prompt ?? bundle.metadata.prompt,
     model: input.model ?? bundle.metadata.model,
@@ -180,6 +239,7 @@ export async function updateArtifactMetadata(root: string, id: string, input: Up
   };
   updatedMetadata.links = extractArtifactLinks(`${bundle.html}\n${bundle.notes}\n${updatedMetadata.prompt}`);
   await writeFile(path.join(bundle.bundlePath, METADATA_JSON), JSON.stringify(updatedMetadata, null, 2));
+  await commitVaultChanges(root, `Update metadata for ${id}`);
   return readArtifact(root, id);
 }
 
@@ -205,13 +265,66 @@ export async function searchArtifacts(root: string, query: string): Promise<Arti
   return results;
 }
 
-export async function getArtifactGraph(root: string): Promise<ArtifactGraph> {
+export async function getArtifactGraph(root: string, wikiNodes: any[] = []): Promise<ArtifactGraph> {
   const artifacts = await listArtifacts(root);
   const ids = new Set(artifacts.map((artifact) => artifact.id));
+  const titleToId = new Map<string, string>();
+  for (const a of artifacts) titleToId.set(a.title.toLowerCase(), a.id);
+  
+  const wikiTitles = new Map<string, string>();
+  for (const w of wikiNodes) {
+    wikiTitles.set(w.title.toLowerCase(), w.id);
+    // Also support filename matching without .md
+    const basename = w.path ? w.path.split('/').pop().replace(/\.md$/i, '') : '';
+    if (basename) wikiTitles.set(basename.toLowerCase(), w.id);
+  }
+  
   return {
     nodes: artifacts.map((artifact) => ({ id: artifact.id, kind: 'artifact', title: artifact.title, tags: artifact.tags, project: artifact.project })),
-    edges: artifacts.flatMap((artifact) => artifact.links.filter((to) => ids.has(to)).map((to) => ({ from: artifact.id, to, kind: 'artifact-link' })))
+    edges: artifacts.flatMap((artifact) => artifact.links.map((to) => {
+      if (ids.has(to)) return { from: artifact.id, to, kind: 'artifact-link' };
+      const lower = to.toLowerCase();
+      if (titleToId.has(lower)) return { from: artifact.id, to: titleToId.get(lower)!, kind: 'artifact-link' };
+      if (wikiTitles.has(lower)) return { from: artifact.id, to: wikiTitles.get(lower)!, kind: 'wikilink' };
+      return null;
+    }).filter(Boolean) as any)
   };
+}
+
+export async function syncVault(root: string, remoteUrl?: string): Promise<{ pulled: boolean; pushed: boolean }> {
+  if (remoteUrl) {
+    try {
+      await exec(`git remote add origin ${remoteUrl}`, { cwd: root });
+    } catch {
+      await exec(`git remote set-url origin ${remoteUrl}`, { cwd: root });
+    }
+  }
+
+  try {
+    await exec(`git config --get remote.origin.url`, { cwd: root });
+  } catch {
+    throw new Error('No remote repository configured for sync');
+  }
+
+  let pulled = false;
+  try {
+    await exec(`git pull --rebase origin main`, { cwd: root });
+    pulled = true;
+  } catch (err: any) {
+    if (!err.stderr?.includes("couldn't find remote ref") && !err.stderr?.includes("unknown revision")) {
+      throw new Error(`Sync pull failed: ${err.message}`);
+    }
+  }
+
+  let pushed = false;
+  try {
+    await exec(`git push -u origin HEAD`, { cwd: root });
+    pushed = true;
+  } catch (err: any) {
+    throw new Error(`Sync push failed: ${err.message}`);
+  }
+  
+  return { pulled, pushed };
 }
 
 export async function createSnapshot(root: string, id: string): Promise<ArtifactMetadata> {
@@ -223,41 +336,41 @@ export async function createSnapshot(root: string, id: string): Promise<Artifact
     snapshotCount: bundle.metadata.snapshotCount + 1,
     hashes: { sha256Html: sha256(bundle.html) }
   };
-  const snapshotDir = path.join(bundle.bundlePath, SNAPSHOTS_DIR);
-  await mkdir(snapshotDir, { recursive: true });
-  await writeFile(path.join(snapshotDir, `${safeTimestamp(now)}.html`), bundle.html);
-  await writeFile(path.join(snapshotDir, `${safeTimestamp(now)}.json`), JSON.stringify(metadata, null, 2));
   await writeFile(path.join(bundle.bundlePath, METADATA_JSON), JSON.stringify(metadata, null, 2));
+  await commitVaultChanges(root, `Explicit snapshot for ${id}`);
   return metadata;
 }
 
 export async function listSnapshots(root: string, id: string): Promise<ArtifactSnapshot[]> {
-  const bundle = await readArtifact(root, id);
-  const snapshotDir = path.join(bundle.bundlePath, SNAPSHOTS_DIR);
-  const entries = await readdir(snapshotDir).catch((): string[] => []);
-  return entries
-    .filter((entry) => entry.endsWith('.html'))
-    .map((entry) => entry.slice(0, -'.html'.length))
-    .filter((snapshotId) => entries.includes(`${snapshotId}.json`))
-    .sort()
-    .reverse()
-    .map((snapshotId) => ({
-      id: snapshotId,
-      createdAt: snapshotId.replace(/-(\d{3})Z$/, '.$1Z').replace(/T(\d{2})-(\d{2})-(\d{2})/, 'T$1:$2:$3'),
-      htmlPath: path.join(snapshotDir, `${snapshotId}.html`),
-      metadataPath: path.join(snapshotDir, `${snapshotId}.json`)
-    }));
+  try {
+    const { stdout } = await exec(`git log --format="%H|%cI" -- artifacts/${id}`, { cwd: root });
+    if (!stdout.trim()) return [];
+    
+    return stdout.trim().split('\n').map(line => {
+      const [commitHash, date] = line.split('|');
+      return {
+        id: commitHash,
+        createdAt: date,
+        htmlPath: `git://${commitHash}/artifacts/${id}/${ARTIFACT_HTML}`,
+        metadataPath: `git://${commitHash}/artifacts/${id}/${METADATA_JSON}`
+      };
+    });
+  } catch (error) {
+    return [];
+  }
 }
 
 export async function restoreSnapshot(root: string, id: string, snapshotId: string): Promise<ArtifactBundle> {
   assertSafeId(id);
-  assertSafeSnapshotId(snapshotId);
+  if (!/^[a-f0-9]{7,40}$/i.test(snapshotId)) throw new Error('Invalid snapshot id');
   const bundle = await readArtifact(root, id);
-  const snapshotDir = path.join(bundle.bundlePath, SNAPSHOTS_DIR);
-  const htmlPath = path.join(snapshotDir, `${snapshotId}.html`);
-  const metadataPath = path.join(snapshotDir, `${snapshotId}.json`);
-  const [html, snapshotMetadataRaw] = await Promise.all([readFile(htmlPath, 'utf8'), readFile(metadataPath, 'utf8')]);
-  const snapshotMetadata = JSON.parse(snapshotMetadataRaw) as ArtifactMetadata;
+  
+  const [htmlResult, metadataResult] = await Promise.all([
+    exec(`git show ${snapshotId}:artifacts/${id}/${ARTIFACT_HTML}`, { cwd: root, maxBuffer: 10 * 1024 * 1024 }),
+    exec(`git show ${snapshotId}:artifacts/${id}/${METADATA_JSON}`, { cwd: root, maxBuffer: 10 * 1024 * 1024 })
+  ]);
+  const html = htmlResult.stdout;
+  const snapshotMetadata = JSON.parse(metadataResult.stdout) as ArtifactMetadata;
   const now = new Date().toISOString();
   const restoredMetadata: ArtifactMetadata = {
     ...bundle.metadata,
@@ -274,10 +387,9 @@ export async function restoreSnapshot(root: string, id: string, snapshotId: stri
     updatedAt: now,
     snapshotCount: bundle.metadata.snapshotCount + 1
   };
-  await copyFile(htmlPath, path.join(bundle.bundlePath, ARTIFACT_HTML));
+  await writeFile(path.join(bundle.bundlePath, ARTIFACT_HTML), html);
   await writeFile(path.join(bundle.bundlePath, METADATA_JSON), JSON.stringify(restoredMetadata, null, 2));
-  await writeFile(path.join(snapshotDir, `${safeTimestamp(now)}.html`), html);
-  await writeFile(path.join(snapshotDir, `${safeTimestamp(now)}.json`), JSON.stringify(restoredMetadata, null, 2));
+  await commitVaultChanges(root, `Restore snapshot ${snapshotId} for ${id}`);
   return readArtifact(root, id);
 }
 
@@ -340,6 +452,21 @@ export async function exportArtifactPromptPackage(root: string, id: string): Pro
     `This context package was assembled from a local Imbas Artifact Vault bundle. Treat generated HTML as untrusted unless reviewed. Do not paste secrets into external AI tools.\n`;
 }
 
+export async function deleteArtifacts(root: string, ids: string[]): Promise<void> {
+  const vault = await initVault(root);
+  for (const id of ids) {
+    assertSafeId(id);
+    const bundleDir = path.join(vault.artifactsDir, id);
+    await rm(bundleDir, { recursive: true, force: true }).catch(() => {});
+  }
+  try {
+    await exec('git add -A', { cwd: root });
+    await exec(`git commit -m "Delete ${ids.length} artifact(s)" --allow-empty`, { cwd: root });
+  } catch (err) {
+    // ignore if nothing to commit
+  }
+}
+
 export function extractArtifactLinks(value: string): string[] {
   const links = new Set<string>();
   const patterns = [
@@ -349,6 +476,13 @@ export function extractArtifactLinks(value: string): string[] {
   ];
   for (const pattern of patterns) {
     for (const match of value.matchAll(pattern)) links.add(match[1]);
+  }
+  const obsidianPattern = /\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|([^\]]+))?\]\]/g;
+  for (const match of value.matchAll(obsidianPattern)) {
+    const target = match[1]?.trim();
+    if (target && !target.toLowerCase().startsWith('artifact:')) {
+      links.add(target);
+    }
   }
   return [...links].sort();
 }
@@ -416,6 +550,4 @@ function assertSafeId(id: string) {
   if (!/^[a-f0-9-]{36}$/i.test(id)) throw new Error('Invalid artifact id');
 }
 
-function assertSafeSnapshotId(snapshotId: string) {
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/.test(snapshotId)) throw new Error('Invalid snapshot id');
-}
+

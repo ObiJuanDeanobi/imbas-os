@@ -6,9 +6,9 @@ import type { MixedPromptPackageInput } from '../../shared/types.js';
 export async function exportMixedPromptPackage(vaultRoot: string, wikiRoot: string, input: MixedPromptPackageInput): Promise<string> {
   const artifactIds = [...new Set(input.artifactIds ?? [])];
   const wikiPageIds = [...new Set(input.wikiPageIds ?? [])];
-  if (!artifactIds.length && !wikiPageIds.length) throw new Error('Select at least one Markdown page or artifact');
+  if (!artifactIds.length && !wikiPageIds.length) throw new Error('Select at least one Markdown Note or artifact');
   const externalWikiPageIds = wikiPageIds.filter((id) => !id.startsWith('wiki:pages/'));
-  if (externalWikiPageIds.length && !wikiRoot) throw new Error('Index a Markdown/wiki folder before exporting external Markdown pages');
+  if (externalWikiPageIds.length && !wikiRoot) throw new Error('Index a Markdown/wiki folder before exporting external Markdown Notes');
 
   const pages = await Promise.all(wikiPageIds.map((id) => id.startsWith('wiki:pages/') ? readMarkdownPageFromVault(vaultRoot, id) : readMarkdownPage(wikiRoot, id)));
   const artifacts = await Promise.all(artifactIds.map((id) => readArtifact(vaultRoot, id)));
@@ -19,17 +19,17 @@ export async function exportMixedPromptPackage(vaultRoot: string, wikiRoot: stri
   return `# Mixed AI context package: Markdown + HTML artifacts\n\n` +
     `Use this package to continue work across durable Markdown context and safely replayable HTML artifacts. Preserve local-first assumptions, do not add network dependencies unless explicitly requested, and treat imported HTML as active untrusted content unless reviewed.\n\n` +
     `## Package inventory\n\n` +
-    `- Markdown pages: ${pages.length}\n` +
+    `- Markdown Notes: ${pages.length}\n` +
     `- Included HTML artifacts: ${artifacts.length}\n` +
     `- Referenced artifact IDs: ${[...linkedArtifactIds].sort().join(', ') || 'none'}\n\n` +
-    `## Markdown pages\n\n` +
+    `## Markdown Notes\n\n` +
     (pages.length ? pages.map((page) => `### ${page.node.title}\n\n` +
       `- Page ID: ${page.node.id}\n` +
       `- Relative path: ${page.node.relativePath}\n` +
       `- Source ownership: ${page.node.sourceOwnership}\n` +
       `- Tags: ${page.node.tags.join(', ') || 'none'}\n` +
       `- Artifact links: ${page.node.artifactLinks.map((id) => `artifact://${id}`).join(', ') || 'none'}\n\n` +
-      `\`\`\`markdown\n${page.markdown}\n\`\`\`\n`).join('\n') : '_No Markdown pages selected._\n') +
+      `\`\`\`markdown\n${page.markdown}\n\`\`\`\n`).join('\n') : '_No Markdown Notes selected._\n') +
     `\n## HTML artifacts\n\n` +
     (artifacts.length ? artifacts.map((bundle) => `### ${bundle.metadata.title}\n\n` +
       `- Artifact ID: ${bundle.metadata.id}\n` +

@@ -105,8 +105,8 @@ test('InspectorPane displays snapshot options when Snapshots tab is selected', (
   assert.ok(html.includes('Create snapshot'), 'Should display snapshot button');
 });
 
-test('InspectorPane displays export options when Export tab is selected', () => {
+test('InspectorPane does not display Export tab', () => {
   const artifact = { id: 'art-123', kind: 'artifact' };
-  const html = renderToString(<InspectorPane selected={artifact} defaultTab="export" graph={{ nodes: [], edges: [] }} onRefresh={async () => {}} onIndexDirty={() => {}} />);
-  assert.ok(html.includes('Copy AI context'), 'Should display AI context copy button');
+  const html = renderToString(<InspectorPane selected={artifact} defaultTab="details" graph={{ nodes: [], edges: [] }} onRefresh={async () => {}} onIndexDirty={() => {}} />);
+  assert.ok(!html.includes('>Export<'), 'Should not display Export tab');
 });
